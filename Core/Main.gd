@@ -61,9 +61,20 @@ func _load_mods():
 	if _mods_loaded:
 		return
 
+	# This function only needs to be run for builds, as the Mods folder already
+	# exists when running in-editor.
+	if OS.has_feature("editor"):
+		print("skipping mod loading because we are in-editor...")
+		_mods_loaded = true
+		return
+
 	# Scan for mods and add them.
-	print("loading mods...")
 	var mods_dir : String = OS.get_executable_path().get_base_dir().path_join("Mods")
+	if not DirAccess.dir_exists_absolute(mods_dir):
+		print("mods folder \"", mods_dir, "\" does not exist")
+		return
+
+	print("loading mods from \"", mods_dir, "\"...")
 	var mods_zip_list : PackedStringArray = DirAccess.get_files_at(mods_dir)
 	for mod_zip in mods_zip_list:
 		print("  loading: ", mod_zip)
