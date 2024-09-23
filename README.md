@@ -14,11 +14,11 @@ you look too closely into my code crimes.
 
 1. Clone the repo.
 
-```
-git clone --recursive https://github.com/ExpiredPopsicle/SnekStudio.git
-```
-If you didn't do the `--recursive` parameter, then you'll have to do
-`git submodule init` and `git submodule update` inside the repo.
+   ```
+   git clone --recursive https://github.com/ExpiredPopsicle/SnekStudio.git
+   ```
+   If you didn't do the `--recursive` parameter, then you'll have to do
+   `git submodule init` and `git submodule update` inside the repo.
 
 2. Open the project up in Godot 4.3.
 
@@ -27,7 +27,7 @@ If you didn't do the `--recursive` parameter, then you'll have to do
 	1. Click on the "Python Builds" tab in the bottom of the Godot editor. Note
 	   that you will only see this tab if the KiriPythonRPCWrapper addon is
 	   enabled, which it should be.
-	
+
 	2. Click the "Download" button next to the platform(s) you want to build
 	   for.
 
@@ -35,44 +35,44 @@ If you didn't do the `--recursive` parameter, then you'll have to do
 
 5. Load up a model.
 
-Note: Only VRM 0.0 models are currently supported. VRM 1.x will have serious issues.
+   Note: Only VRM 0.0 models are currently supported. VRM 1.x will have serious issues.
 
-File -> Open VRM...
+   File -> Open VRM...
 
 6. Configure the MediaPipe Tracker.
 
-Mods -> Mod List...
+   Mods -> Mod List...
 
-Select MediaPipeController.
+   Select MediaPipeController.
 
 7. Select a video device from the Video Device list.
 
-Sometimes there will be duplicate devices. If the one you want doesn't
-work, try the duplicate.
+   Sometimes there will be duplicate devices. If the one you want doesn't
+   work, try the duplicate.
 
 8. Select blend shapes mode.
 
-If your VRM supports the 50-something extra blend shapes (the "Perfect
-Sync" blend shapes, ARKit blend shapes, MediaPipe blend shapes, etc),
-then make sure "Use MediaPipe Shapes" is checked and "Use basic VRM
-shapes" is un-checked.
+   If your VRM supports the 50-something extra blend shapes (the
+   "Perfect Sync" blend shapes, ARKit blend shapes, MediaPipe blend
+   shapes, etc), then make sure "Use MediaPipe Shapes" is checked and
+   "Use basic VRM shapes" is un-checked.
 
-If your VRM does NOT support those, then make sure "Use MediaPipe
-Shapes" is un-checked and "Use basic VRM shapes" is checked.
+   If your VRM does NOT support those, then make sure "Use MediaPipe
+   Shapes" is un-checked and "Use basic VRM shapes" is checked.
 
 9. Set arm rest angle.
 
-After this, you can close the Mods settings.
+   After this, you can close the Mods settings.
 
 10. Set the window to transparent, if desired.
 
-Settings -> Window... -> Transparent background
+    Settings -> Window... -> Transparent background
 
-Should work with OBS Xcomposite capture.
+    Should work with OBS Xcomposite capture.
 
 11. (Optional) Set up colliders and then thrown object redeems.
 
-Note: Thrown objects will not work without colliders.
+    Note: Thrown objects will not work without colliders.
 
 ## Project Goals
 
