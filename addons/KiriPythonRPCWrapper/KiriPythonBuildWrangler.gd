@@ -128,6 +128,9 @@ func unpack_python(overwrite : bool = false):
 	var python_archive_path : String = _detect_archive_for_runtime()
 	var reader : KiriTARReader = KiriTARReader.new()
 	var err : Error = reader.open(python_archive_path)
+	
+	# If you hit this assert, you probably need to download the right Python
+	# build using the Python Builds tab down at the bottom.
 	assert(err == OK)
 
 	var cache_status_filename : String = cache_path_godot.path_join(".completed_unpack")
