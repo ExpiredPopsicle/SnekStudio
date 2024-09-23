@@ -250,17 +250,6 @@ func reset_settings_to_default():
 	# FIXME: Make it default to screen center?
 	get_viewport().mode &= ~Window.MODE_MAXIMIZED
 
-	# Add basic default MediaPipeController.
-	var mp_mod = load("res://Mods/MediaPipe/MediaPipeController.tscn").instantiate()
-	$Mods.add_child(mp_mod)
-	mp_mod.scene_init()
-
-	# Add basic lighting setup.
-	var scene_mod = load("res://Mods/Scene_Basic/Scene_Basic.tscn").instantiate()
-	$Mods.add_child(scene_mod)
-	scene_mod.scene_init()
-
-
 	# Update UI with defaults.
 	_force_update_ui()
 
@@ -491,10 +480,44 @@ func load_settings(path : String = ""):
 
 	# Load and parse the file.
 	var file = FileAccess.open(settings_filename, FileAccess.READ)
-	var settings_dict = {}
+	var settings_dict = {
+		"mods" : [
+			{
+				"name": "MediaPipeController",
+				"scene_path": "res://Mods/MediaPipe/MediaPipeController.tscn",
+				"settings": {
+				"arm_rest_angle": 45,
+				"debug_visible_hand_trackers": false,
+				"frame_rate_limit": 60,
+				"hand_confidence_time_threshold": 1,
+				"hand_count_change_time_threshold": 1,
+				"hand_tracking_enabed": true,
+				"mirror_mode": true,
+				"tracking_pause": false,
+				"use_external_tracker": false,
+				"use_mediapipe_shapes": true,
+				"use_vrm_basic_shapes": false,
+				"video_device": []
+				}
+			},
+			{
+				"name": "SceneBasic",
+				"scene_path": "res://Mods/Scene_Basic/Scene_Basic.tscn",
+				"settings": {
+				"draw_ground_plane": true,
+				"light_ambient_color": "ffffffff",
+				"light_ambient_multiplier": 0.5,
+				"light_directional_color": "ffffffff",
+				"light_directional_multiplier": 0.5,
+				"light_directional_pitch": -37.8007940368435,
+				"light_directional_yaw": 36.680506409178
+				}
+			}
+		]}
+
 	if file:
 		var file_contents = file.get_as_text()
-		file.close()	
+		file.close()
 		settings_dict = JSON.parse_string(file_contents)
 	
 	# Set everything to default.

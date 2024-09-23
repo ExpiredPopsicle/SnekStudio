@@ -33,6 +33,10 @@ you look too closely into my code crimes.
 
 4. Run it from the editor.
 
+   First-time startup will take a long time and appear to freeze at first! This
+   is because it's downloading Python modules it needs. (Visual feedback for
+   this will be added later.)
+
 5. Load up a model.
 
    Note: Only VRM 0.0 models are currently supported. VRM 1.x will have serious issues.
@@ -66,13 +70,13 @@ you look too closely into my code crimes.
 
 10. Set the window to transparent, if desired.
 
-    Settings -> Window... -> Transparent background
+	Settings -> Window... -> Transparent background
 
-    Should work with OBS Xcomposite capture.
+	Should work with OBS Xcomposite capture.
 
 11. (Optional) Set up colliders and then thrown object redeems.
 
-    Note: Thrown objects will not work without colliders.
+	Note: Thrown objects will not work without colliders.
 
 ## Project Goals
 
