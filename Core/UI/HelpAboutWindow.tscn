@@ -11,10 +11,10 @@ script = ExtResource("2_a3tdr")
 label_text = "Help: About"
 
 [node name="WindowBorder" parent="." index="0"]
-anchor_right = 1.104
-anchor_bottom = 1.032
-offset_right = -0.208069
-offset_bottom = 1.07196
+anchor_right = 0.978
+anchor_bottom = 1.178
+offset_right = 0.0439758
+offset_bottom = 0.0879517
 
 [node name="WindowTitlePanel" parent="." index="1"]
 offset_right = 312.0
@@ -46,7 +46,7 @@ stretch_mode = 3
 [node name="Label_NameAndVersion" type="Label" parent="MarginContainer/CenterContainer/VBoxContainer" index="1"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Kiri Avatar Render
+text = "SnekStudio
 v0.TooEarlyToHaveAVersionNumber
 "
 horizontal_alignment = 1
@@ -54,8 +54,10 @@ horizontal_alignment = 1
 [node name="Label" type="Label" parent="MarginContainer/CenterContainer/VBoxContainer" index="2"]
 layout_mode = 2
 text = "
-
 Contributors:
 
-Drikanis for helping me figure out Python module load path stuff"
+Drikanis for helping me figure out Python module load path stuff
+
+GenericFireDemon for coming up with the name \"Snudio\". This is now an official alternate pronunciation for SnekStudio."
 horizontal_alignment = 1
+autowrap_mode = 2
