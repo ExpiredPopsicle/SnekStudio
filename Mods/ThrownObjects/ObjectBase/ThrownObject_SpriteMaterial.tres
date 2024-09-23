@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3 uid="uid://bja5ngmfru7kh"]
+
+[ext_resource type="Shader" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteShader.gdshader" id="1_56biy"]
+[ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="2_88kjm"]
+
+[resource]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("1_56biy")
+shader_parameter/rotation = null
+shader_parameter/uniform_scale = 1.0
+shader_parameter/texture_albedo = ExtResource("2_88kjm")

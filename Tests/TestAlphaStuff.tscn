@@ -1,0 +1,40 @@
+[gd_scene load_steps=7 format=3 uid="uid://cnrjvv1wc6glw"]
+
+[ext_resource type="Shader" path="res://Tests/TestAlphaStuff.gdshader" id="1_g0hof"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_vitmx"]
+
+[sub_resource type="Environment" id="Environment_6dupw"]
+background_mode = 1
+
+[sub_resource type="BoxMesh" id="BoxMesh_odlbe"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5pclu"]
+render_priority = 0
+shader = ExtResource("1_g0hof")
+
+[sub_resource type="SphereMesh" id="SphereMesh_4hfuf"]
+
+[node name="TestAlphaStuff" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.91623)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.93495)
+mesh = SubResource("CylinderMesh_vitmx")
+skeleton = NodePath("../Camera3D")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_6dupw")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.694972, 0.411486, 0.589655, 0, 0.820062, -0.572275, -0.719037, 0.397715, 0.56992, 0.470082, -0.00958455, -1.37033)
+mesh = SubResource("BoxMesh_odlbe")
+surface_material_override/0 = SubResource("ShaderMaterial_5pclu")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.639144, -0.296516, -0.705526)
+mesh = SubResource("SphereMesh_4hfuf")

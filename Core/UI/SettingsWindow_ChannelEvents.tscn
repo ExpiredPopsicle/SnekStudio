@@ -1,0 +1,97 @@
+[gd_scene load_steps=3 format=3 uid="uid://c2wap5df10scn"]
+
+[ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_uy3rq"]
+[ext_resource type="Script" path="res://Core/UI/SettingsWindow_ChannelEvents.gd" id="2_q1o80"]
+
+[node name="ChannelEvents" instance=ExtResource("1_uy3rq")]
+offset_right = 518.0
+script = ExtResource("2_q1o80")
+label_text = "Channel Events"
+
+[node name="WindowTitlePanel" parent="." index="1"]
+offset_right = 518.0
+
+[node name="WindowTitle" parent="WindowTitlePanel" index="0"]
+offset_right = 486.0
+text = "Channel Events"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." index="2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" index="0"]
+layout_mode = 2
+
+[node name="TextEditFakeUsername" type="TextEdit" parent="VBoxContainer/HBoxContainer" index="0"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Username"
+
+[node name="TextEditFakeDisplayname" type="TextEdit" parent="VBoxContainer/HBoxContainer" index="1"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Displayname
+"
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer" index="1"]
+layout_mode = 2
+
+[node name="TextEditFakeChatMessage" type="TextEdit" parent="VBoxContainer/HBoxContainer2" index="0"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Chat message"
+
+[node name="TextEditChatBitsCount" type="TextEdit" parent="VBoxContainer/HBoxContainer2" index="1"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 36)
+layout_mode = 2
+size_flags_horizontal = 4
+placeholder_text = "Bits"
+
+[node name="ButtonFakeChatMessage" type="Button" parent="VBoxContainer/HBoxContainer2" index="2"]
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+text = "Test Chat"
+
+[node name="HBoxContainer3" type="HBoxContainer" parent="VBoxContainer" index="2"]
+layout_mode = 2
+
+[node name="TextEditFakeRedeemName" type="TextEdit" parent="VBoxContainer/HBoxContainer3" index="0"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Redeem Name"
+
+[node name="ButtonFakeRedeem" type="Button" parent="VBoxContainer/HBoxContainer3" index="1"]
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+text = "Test Redeem"
+
+[node name="HBoxContainer4" type="HBoxContainer" parent="VBoxContainer" index="3"]
+layout_mode = 2
+
+[node name="TextEditRaidUserCount" type="TextEdit" parent="VBoxContainer/HBoxContainer4" index="0"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "User count"
+
+[node name="ButtonFakeRaid" type="Button" parent="VBoxContainer/HBoxContainer4" index="1"]
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+text = "Test Raid"
+
+[connection signal="pressed" from="VBoxContainer/HBoxContainer2/ButtonFakeChatMessage" to="." method="_on_button_fake_chat_message_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer3/ButtonFakeRedeem" to="." method="_on_button_fake_redeem_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer4/ButtonFakeRaid" to="." method="_on_button_fake_raid_pressed"]

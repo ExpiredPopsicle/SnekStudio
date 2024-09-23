@@ -1,0 +1,66 @@
+[gd_scene load_steps=11 format=3 uid="uid://bst148ok43uyo"]
+
+[ext_resource type="Script" path="res://Core/Main.gd" id="1_88riu"]
+[ext_resource type="PackedScene" uid="uid://dqrb5gghpk1iu" path="res://Core/UI/UI_Root.tscn" id="2_a0eek"]
+[ext_resource type="PackedScene" uid="uid://dq62o1q7l83ro" path="res://Core/CameraBoom/CameraBoom.tscn" id="3_ur4kn"]
+[ext_resource type="Script" path="res://Core/ModelController.gd" id="5_upw4c"]
+[ext_resource type="Script" path="res://Core/AudioInput/AudioStreamRecord.gd" id="10_dpnxj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nh3ai"]
+bg_color = Color(1, 0.164706, 0.776471, 1)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_jmxhl"]
+sky_energy_multiplier = 7.83
+
+[sub_resource type="Sky" id="Sky_1idd5"]
+sky_material = SubResource("ProceduralSkyMaterial_jmxhl")
+
+[sub_resource type="Environment" id="Environment_w4pqy"]
+background_mode = 3
+background_color = Color(0.952941, 0, 0.835294, 1)
+sky = SubResource("Sky_1idd5")
+ambient_light_source = 2
+ambient_light_color = Color(1, 1, 1, 1)
+reflected_light_source = 1
+
+[sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_djr57"]
+
+[node name="SnekStudio_Main" type="Node3D"]
+script = ExtResource("1_88riu")
+
+[node name="CanvasLayer2" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="UI_Root" parent="CanvasLayer2" node_paths=PackedStringArray("controller", "camera_boom") instance=ExtResource("2_a0eek")]
+unique_name_in_owner = true
+controller = NodePath("../../ModelController")
+camera_boom = NodePath("../../CameraBoom")
+
+[node name="BackgroundLayer" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="BackgroundPanel" type="Panel" parent="BackgroundLayer"]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_nh3ai")
+
+[node name="CameraBoom" parent="." instance=ExtResource("3_ur4kn")]
+transform = Transform3D(1, 0, 0, 0, 0.994522, 0.104528, 0, -0.104528, 0.994522, 0, 1.7, 0)
+
+[node name="Mods" type="Node" parent="."]
+
+[node name="ModelController" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 3.49691e-07, 0, 1, 0, -3.49691e-07, 0, 1, 0, 0, 0)
+script = ExtResource("5_upw4c")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_w4pqy")
+
+[node name="AudioStreamRecord" type="AudioStreamPlayer" parent="."]
+stream = SubResource("AudioStreamMicrophone_djr57")
+bus = &"Record"
+script = ExtResource("10_dpnxj")

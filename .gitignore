@@ -1,0 +1,19 @@
+# Godot 4+ specific ignores
+.godot/
+.tmp
+
+# We need to get rid of this feature.
+file_manifest.txt
+
+# Some random junk Krita leaves around.
+*.kra~
+*.png~
+__pycache__
+
+# Extra junk for the RPC wrapper
+addons/KiriPythonRPCWrapper/github_release_cache.json
+addons/KiriPythonRPCWrapper/StandalonePythonBuilds/*.tar.gz
+addons/KiriPythonRPCWrapper/StandalonePythonBuilds/*.tar.zst
+
+# Stuff we removed right before release
+StuffToRemove

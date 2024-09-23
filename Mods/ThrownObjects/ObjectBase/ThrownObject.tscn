@@ -1,0 +1,64 @@
+[gd_scene load_steps=10 format=3 uid="uid://fhm0lw7jf81x"]
+
+[ext_resource type="Script" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject.gd" id="1_orge0"]
+[ext_resource type="Material" uid="uid://bja5ngmfru7kh" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteMaterial.tres" id="2_if6gk"]
+[ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="3_ah5ng"]
+[ext_resource type="Texture2D" uid="uid://cfwkhvhltarbp" path="res://Mods/ThrownObjects/Objects/Bit/ThrownObject_Bit_Splat.png" id="4_6cjhr"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_7pkfo"]
+radius = 0.25
+height = 0.5
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_gdyn5"]
+margin = 0.25
+radius = 0.25
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_vc10y"]
+particle_flag_align_y = true
+spread = 7.45
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ykc6p"]
+transparency = 2
+alpha_scissor_threshold = 0.5
+alpha_antialiasing_mode = 0
+cull_mode = 2
+albedo_color = Color(0.831373, 0, 0, 1)
+albedo_texture = ExtResource("4_6cjhr")
+
+[sub_resource type="QuadMesh" id="QuadMesh_52sko"]
+material = SubResource("StandardMaterial3D_ykc6p")
+size = Vector2(0.063, 0.063)
+
+[node name="ThrownObject" type="RigidBody3D"]
+collision_layer = 0
+max_contacts_reported = 1
+contact_monitor = true
+script = ExtResource("1_orge0")
+
+[node name="MeshInstance" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_7pkfo")
+skeleton = NodePath("../CollisionShape")
+
+[node name="CollisionShape" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_gdyn5")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+attenuation_model = 3
+volume_db = -20.0
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+material_override = ExtResource("2_if6gk")
+billboard = 1
+alpha_cut = 1
+texture_filter = 0
+texture = ExtResource("3_ah5ng")
+
+[node name="Particles" type="GPUParticles3D" parent="."]
+emitting = false
+amount = 32
+explosiveness = 0.24
+randomness = 0.48
+process_material = SubResource("ParticleProcessMaterial_vc10y")
+draw_pass_1 = SubResource("QuadMesh_52sko")
+
+[connection signal="body_entered" from="." to="." method="_on_RigidBody_body_entered"]

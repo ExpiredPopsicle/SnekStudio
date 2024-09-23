@@ -1,0 +1,36 @@
+[gd_scene load_steps=8 format=3 uid="uid://x2lvcayajn8h"]
+
+[ext_resource type="PackedScene" uid="uid://fhm0lw7jf81x" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject.tscn" id="1_o5gg8"]
+[ext_resource type="Shader" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteShader.gdshader" id="2_2y6oe"]
+[ext_resource type="AudioStream" uid="uid://yahb15irkchs" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_Sound_HitHurt3.wav" id="2_q4o26"]
+[ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="3_nrcxs"]
+[ext_resource type="PackedScene" uid="uid://54v2r4n427cx" path="res://Mods/ThrownObjects/Objects/Bastard/bastard42_baking3.glb" id="4_vlclt"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_og2nf"]
+size = Vector3(0.167779, 0.171842, 0.94422)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8s18f"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("2_2y6oe")
+shader_parameter/rotation = null
+shader_parameter/uniform_scale = 1.0
+shader_parameter/texture_albedo = ExtResource("3_nrcxs")
+
+[node name="ThrownObject_Bastard" instance=ExtResource("1_o5gg8")]
+collision_sound = ExtResource("2_q4o26")
+collision_force = 5.0
+
+[node name="MeshInstance" parent="." index="0"]
+visible = false
+
+[node name="CollisionShape" parent="." index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0370556, 0.0123457, 0.11347)
+shape = SubResource("BoxShape3D_og2nf")
+
+[node name="Sprite3D" parent="." index="3"]
+visible = false
+material_override = SubResource("ShaderMaterial_8s18f")
+
+[node name="bastard42_baking3" parent="." index="5" instance=ExtResource("4_vlclt")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, -0.127556)

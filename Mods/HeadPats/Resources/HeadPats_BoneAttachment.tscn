@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://dl2mo3ygrhbi3"]
+
+[ext_resource type="Script" path="res://Mods/HeadPats/Resources/HeadPats_BoneAttachment.gd" id="1_wi6xn"]
+[ext_resource type="SpriteFrames" uid="uid://c6neld0rvb4he" path="res://Mods/HeadPats/Resources/Sprites/HeadPats_SpriteFrames.tres" id="1_xdojq"]
+
+[node name="HeadPats_BoneAttachment" type="BoneAttachment3D"]
+bone_name = "Head"
+script = ExtResource("1_wi6xn")
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
+transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, 0, 0.2, 0.22)
+billboard = 1
+sprite_frames = ExtResource("1_xdojq")
+autoplay = "default"
+frame = 1
+frame_progress = 0.355753

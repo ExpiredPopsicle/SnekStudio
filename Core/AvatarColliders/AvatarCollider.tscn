@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://330dxln7qmex"]
+
+[ext_resource type="Script" path="res://Core/AvatarColliders/AvatarCollider.gd" id="1_e26wh"]
+[ext_resource type="Material" uid="uid://bqyjie0rp7som" path="res://Core/AvatarColliders/AvatarColliderEditorMaterial.tres" id="2_w6emv"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_muviq"]
+resource_local_to_scene = true
+radius = 0.11
+height = 0.22
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_ptt4o"]
+resource_local_to_scene = true
+radius = 0.11
+
+[node name="AvatarCollider" type="BoneAttachment3D"]
+bone_name = "Head"
+script = ExtResource("1_e26wh")
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+collision_mask = 2
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CharacterBody3D"]
+visible = false
+mesh = SubResource("SphereMesh_muviq")
+skeleton = NodePath("../..")
+surface_material_override/0 = ExtResource("2_w6emv")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
+shape = SubResource("SphereShape3D_ptt4o")

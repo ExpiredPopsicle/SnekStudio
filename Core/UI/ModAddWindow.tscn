@@ -1,0 +1,42 @@
+[gd_scene load_steps=3 format=3 uid="uid://ixbpqyxh3wjq"]
+
+[ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_m4xge"]
+[ext_resource type="Script" path="res://Core/UI/ModAddWindow.gd" id="2_aj25v"]
+
+[node name="ModAddWindow" instance=ExtResource("1_m4xge")]
+script = ExtResource("2_aj25v")
+close_button_visible = null
+label_text = "Add Mod"
+
+[node name="WindowTitle" parent="WindowTitlePanel" index="0"]
+text = "Add Mod"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." index="2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Mods_List" type="ItemList" parent="VBoxContainer" index="0"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" index="1"]
+layout_mode = 2
+size_flags_vertical = 8
+
+[node name="Button_AddMod" type="Button" parent="VBoxContainer/HBoxContainer" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Add"
+
+[node name="Button_Cancel" type="Button" parent="VBoxContainer/HBoxContainer" index="1"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cancel"
+
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/Button_AddMod" to="." method="_on_button_add_mod_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/Button_Cancel" to="." method="_on_button_cancel_pressed"]

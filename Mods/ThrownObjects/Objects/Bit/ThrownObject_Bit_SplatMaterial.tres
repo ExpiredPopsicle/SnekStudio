@@ -1,0 +1,8 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://cjo0tg5rrnc7g"]
+
+[ext_resource type="Texture2D" uid="uid://cfwkhvhltarbp" path="res://Mods/ThrownObjects/Objects/Bit/ThrownObject_Bit_Splat.png" id="1_g3b3r"]
+
+[resource]
+transparency = 1
+albedo_color = Color(0.831373, 0, 0, 1)
+albedo_texture = ExtResource("1_g3b3r")

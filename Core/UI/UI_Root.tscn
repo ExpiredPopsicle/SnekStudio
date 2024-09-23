@@ -1,0 +1,195 @@
+[gd_scene load_steps=12 format=3 uid="uid://dqrb5gghpk1iu"]
+
+[ext_resource type="Script" path="res://Core/UI/UI_Root.gd" id="1_nc2n8"]
+[ext_resource type="PackedScene" uid="uid://yq6jyoi206yb" path="res://Core/UI/SettingsWindow_Sound.tscn" id="2_22ujg"]
+[ext_resource type="PackedScene" uid="uid://1yetg6crf27v" path="res://Core/UI/HelpControlsWindow.tscn" id="2_kenqi"]
+[ext_resource type="PackedScene" uid="uid://y6nky8evh76x" path="res://Core/UI/SettingsWindow_Colliders.tscn" id="2_m5fmr"]
+[ext_resource type="PackedScene" uid="uid://d25kthtdlqgfo" path="res://Core/UI/ModsWindow.tscn" id="2_v48gv"]
+[ext_resource type="PackedScene" uid="uid://cmwophradpbf7" path="res://Core/UI/HelpAboutWindow.tscn" id="3_krby6"]
+[ext_resource type="PackedScene" uid="uid://6rc2mjibeujw" path="res://Core/UI/SettingsWindow_VMC.tscn" id="4_kl5fl"]
+[ext_resource type="PackedScene" uid="uid://ixbpqyxh3wjq" path="res://Core/UI/ModAddWindow.tscn" id="6_ohgoj"]
+[ext_resource type="PackedScene" uid="uid://c2wap5df10scn" path="res://Core/UI/SettingsWindow_ChannelEvents.tscn" id="7_0a1sx"]
+[ext_resource type="PackedScene" uid="uid://kxrsf0p1se2x" path="res://Core/UI/SettingsWindow_Scene.tscn" id="10_7flul"]
+[ext_resource type="PackedScene" uid="uid://c0krlpbiun1ic" path="res://Core/UI/SettingsWindow_Window.tscn" id="11_5qt8l"]
+
+[node name="UI_Root" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+script = ExtResource("1_nc2n8")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+custom_minimum_size = Vector2(0, 32)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+color = Color(0, 0, 0, 1)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ColorRect"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.062
+offset_bottom = 28.52
+
+[node name="MenuBar" type="MenuBar" parent="ColorRect/HBoxContainer"]
+layout_mode = 2
+
+[node name="File" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar"]
+title = "acsdcscsc"
+size = Vector2i(145, 124)
+item_count = 6
+item_0/text = "Open VRM..."
+item_0/id = 0
+item_1/text = ""
+item_1/id = 5
+item_1/separator = true
+item_2/text = "Save settings..."
+item_2/id = 3
+item_3/text = "Load settings..."
+item_3/id = 4
+item_4/text = ""
+item_4/id = 2
+item_4/separator = true
+item_5/text = "Quit"
+item_5/id = 1
+
+[node name="Settings" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar"]
+size = Vector2i(176, 100)
+item_count = 5
+item_0/text = "General settings..."
+item_0/id = 0
+item_1/text = "Colliders..."
+item_1/id = 1
+item_2/text = "Sound..."
+item_2/id = 2
+item_3/text = "Scene..."
+item_3/id = 3
+item_4/text = "Window..."
+item_4/id = 4
+
+[node name="Mods" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar"]
+item_count = 2
+item_0/text = "Mod list..."
+item_0/id = 0
+item_1/text = "Channel Event Tester..."
+item_1/id = 1
+
+[node name="Control" type="Control" parent="ColorRect/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MenuBar2" type="MenuBar" parent="ColorRect/HBoxContainer"]
+layout_mode = 2
+
+[node name="Help" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar2"]
+item_count = 2
+item_0/text = "Controls..."
+item_0/id = 0
+item_1/text = "About..."
+item_1/id = 1
+
+[node name="SettingsSaveDialog" type="FileDialog" parent="."]
+size = Vector2i(603, 162)
+access = 2
+filters = PackedStringArray("*.json")
+
+[node name="SettingsLoadDialog" type="FileDialog" parent="."]
+title = "Open a File"
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.json")
+
+[node name="VRMFileLoadDialog" type="FileDialog" parent="."]
+title = "Open a File"
+size = Vector2i(392, 162)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.vrm")
+
+[node name="ModsWindow" parent="." instance=ExtResource("2_v48gv")]
+visible = false
+offset_left = 247.0
+offset_top = 148.0
+offset_right = 886.0
+offset_bottom = 513.0
+
+[node name="HelpControlsWindow" parent="." instance=ExtResource("2_kenqi")]
+visible = false
+offset_left = 287.0
+offset_top = 298.0
+offset_right = 565.0
+offset_bottom = 454.0
+
+[node name="HelpAboutWindow" parent="." instance=ExtResource("3_krby6")]
+visible = false
+offset_left = 394.0
+offset_top = 228.0
+offset_right = 672.0
+offset_bottom = 384.0
+focus_mode = 0
+
+[node name="ModAddWindow" parent="." instance=ExtResource("6_ohgoj")]
+visible = false
+offset_left = 363.0
+offset_top = 255.0
+offset_right = 641.0
+offset_bottom = 512.0
+
+[node name="ChannelEvents" parent="." instance=ExtResource("7_0a1sx")]
+visible = false
+offset_left = 664.0
+offset_top = 103.0
+offset_right = 1088.0
+offset_bottom = 259.0
+
+[node name="SettingsWindow_Colliders" parent="." instance=ExtResource("2_m5fmr")]
+visible = false
+offset_left = 308.0
+offset_top = 160.0
+offset_right = 858.0
+offset_bottom = 491.0
+
+[node name="SettingsWindow_General" parent="." instance=ExtResource("4_kl5fl")]
+visible = false
+offset_left = 281.0
+offset_top = 171.0
+offset_right = 956.0
+offset_bottom = 484.0
+
+[node name="SettingsWindow_Sound" parent="." instance=ExtResource("2_22ujg")]
+visible = false
+offset_left = 466.0
+offset_top = 225.0
+offset_right = 744.0
+offset_bottom = 381.0
+
+[node name="SettingsWindow_Scene" parent="." instance=ExtResource("10_7flul")]
+visible = false
+offset_left = 241.0
+offset_top = 206.0
+offset_right = 859.0
+offset_bottom = 497.0
+
+[node name="SettingsWindow_Window" parent="." instance=ExtResource("11_5qt8l")]
+visible = false
+offset_left = 390.0
+offset_top = 214.0
+offset_right = 668.0
+offset_bottom = 370.0
+
+[connection signal="resized" from="." to="." method="_on_resized"]
+[connection signal="id_pressed" from="ColorRect/HBoxContainer/MenuBar/File" to="." method="_on_file_id_pressed"]
+[connection signal="id_pressed" from="ColorRect/HBoxContainer/MenuBar/Settings" to="." method="_on_settings_id_pressed"]
+[connection signal="id_pressed" from="ColorRect/HBoxContainer/MenuBar/Mods" to="." method="_on_mods_id_pressed"]
+[connection signal="id_pressed" from="ColorRect/HBoxContainer/MenuBar2/Help" to="." method="_on_help_id_pressed"]
+[connection signal="file_selected" from="SettingsSaveDialog" to="." method="_on_settings_save_dialog_file_selected"]
+[connection signal="file_selected" from="SettingsLoadDialog" to="." method="_on_settings_load_dialog_file_selected"]
+[connection signal="file_selected" from="VRMFileLoadDialog" to="." method="_on_vrm_load_file_dialog_file_selected"]

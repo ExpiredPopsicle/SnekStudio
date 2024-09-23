@@ -1,0 +1,71 @@
+[gd_scene load_steps=2 format=3 uid="uid://hjuwfff87y26"]
+
+[ext_resource type="Script" path="res://Mods/ThrownObjects/UI/ObjectThrower_Settings.gd" id="1_uvxcp"]
+
+[node name="ObjectThrower_Settings" type="VBoxContainer"]
+custom_minimum_size = Vector2(0, 500)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_uvxcp")
+
+[node name="GridContainer" type="GridContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 2
+
+[node name="Label_BitOnlyRedeem" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Bit-only redeem"
+
+[node name="Value_BitOnlyRedeem" type="CheckBox" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label_ObjectsPerBit" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Objects per bit"
+
+[node name="Value_ObjectsPerBit" type="SpinBox" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+value = 1.0
+
+[node name="Label_RedeemName" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Redeem name"
+
+[node name="Value_RedeemName" type="TextEdit" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+scroll_fit_content_height = true
+
+[node name="Label_CountMultiplier" type="Label" parent="GridContainer"]
+layout_mode = 2
+text = "Count multiplier"
+
+[node name="Value_CountMulitplier" type="SpinBox" parent="GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+value = 1.0
+
+[node name="Label_ThrowableList" type="Label" parent="."]
+layout_mode = 2
+text = "Throwable list (select multiple for random selection)"
+
+[node name="Value_ThrowableList" type="ItemList" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+select_mode = 1
+
+[connection signal="toggled" from="GridContainer/Value_BitOnlyRedeem" to="." method="_on_value_bit_only_redeem_toggled"]
+[connection signal="value_changed" from="GridContainer/Value_ObjectsPerBit" to="." method="_on_value_objects_per_bit_value_changed"]
+[connection signal="text_changed" from="GridContainer/Value_RedeemName" to="." method="_on_value_redeem_name_text_changed"]
+[connection signal="value_changed" from="GridContainer/Value_CountMulitplier" to="." method="_on_value_count_mulitplier_value_changed"]
+[connection signal="multi_selected" from="Value_ThrowableList" to="." method="_on_value_throwable_list_multi_selected"]

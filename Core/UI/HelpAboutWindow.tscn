@@ -1,0 +1,61 @@
+[gd_scene load_steps=4 format=3 uid="uid://cmwophradpbf7"]
+
+[ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_twewb"]
+[ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="2_1srki"]
+[ext_resource type="Script" path="res://Core/UI/HelpAboutWindow.gd" id="2_a3tdr"]
+
+[node name="HelpAboutWindow" instance=ExtResource("1_twewb")]
+offset_right = 502.0
+offset_bottom = 404.0
+script = ExtResource("2_a3tdr")
+label_text = "Help: About"
+
+[node name="WindowBorder" parent="." index="0"]
+anchor_right = 1.104
+anchor_bottom = 1.032
+offset_right = -0.208069
+offset_bottom = 1.07196
+
+[node name="WindowTitlePanel" parent="." index="1"]
+offset_right = 312.0
+
+[node name="WindowTitle" parent="WindowTitlePanel" index="0"]
+offset_right = 280.0
+text = "Help: About"
+
+[node name="MarginContainer" type="MarginContainer" parent="." index="2"]
+layout_mode = 2
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="CenterContainer" type="CenterContainer" parent="MarginContainer" index="0"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/CenterContainer" index="0"]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/CenterContainer/VBoxContainer" index="0"]
+layout_mode = 2
+texture = ExtResource("2_1srki")
+stretch_mode = 3
+
+[node name="Label_NameAndVersion" type="Label" parent="MarginContainer/CenterContainer/VBoxContainer" index="1"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Kiri Avatar Render
+v0.TooEarlyToHaveAVersionNumber
+"
+horizontal_alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/CenterContainer/VBoxContainer" index="2"]
+layout_mode = 2
+text = "
+
+Contributors:
+
+Drikanis for helping me figure out Python module load path stuff"
+horizontal_alignment = 1

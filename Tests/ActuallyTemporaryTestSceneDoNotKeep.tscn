@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://cfyj0iusmscol"]
+
+[ext_resource type="Material" uid="uid://bqyjie0rp7som" path="res://Core/AvatarColliders/AvatarColliderEditorMaterial.tres" id="1_i1qha"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_hbomo"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_wjymj"]
+
+[node name="ActuallyTemporaryTestSceneDoNotKeep" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_hbomo")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.212191, 0.270121, 0.139594)
+mesh = SubResource("SphereMesh_wjymj")
+surface_material_override/0 = ExtResource("1_i1qha")

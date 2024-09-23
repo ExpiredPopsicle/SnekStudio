@@ -1,0 +1,63 @@
+[gd_scene load_steps=2 format=3 uid="uid://6x6yyh0kdbok"]
+
+[ext_resource type="Script" path="res://addons/KiriPythonRPCWrapper/UpdateUI/PythonBuildUpdateUI.gd" id="1_cg85i"]
+
+[node name="PythonBuildUpdateUi" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_cg85i")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PlatformGridContainer" type="GridContainer" parent="ScrollContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 3
+
+[node name="Label3" type="Label" parent="ScrollContainer/MarginContainer/VBoxContainer/PlatformGridContainer"]
+layout_mode = 2
+text = "Platform"
+
+[node name="Label4" type="Label" parent="ScrollContainer/MarginContainer/VBoxContainer/PlatformGridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Build"
+
+[node name="Label8" type="Label" parent="ScrollContainer/MarginContainer/VBoxContainer/PlatformGridContainer"]
+layout_mode = 2
+text = "Download"
+
+[node name="Button_UpdateReleaseAssets" type="Button" parent="ScrollContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Update Release Assets"
+
+[connection signal="pressed" from="ScrollContainer/MarginContainer/VBoxContainer/Button_UpdateReleaseAssets" to="." method="_on_update_button_pressed"]

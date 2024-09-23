@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8f1nk1cehpdy"]
+
+[ext_resource type="Script" path="res://Mods/ModelToggle/ModelToggle.gd" id="1_qyh8s"]
+
+[node name="ModelToggle" type="Node"]
+script = ExtResource("1_qyh8s")

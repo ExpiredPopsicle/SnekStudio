@@ -1,0 +1,81 @@
+[gd_scene load_steps=4 format=3 uid="uid://cq0bbpieyhdug"]
+
+[ext_resource type="Script" path="res://Core/UI/BasicSubWindow.gd" id="1_f1sax"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uo2qt"]
+bg_color = Color(0.239216, 0.239216, 0.239216, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.109804, 0.109804, 0.109804, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aj8ap"]
+bg_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="BasicSubWindow" type="Control"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 278.0
+offset_bottom = 156.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 1
+script = ExtResource("1_f1sax")
+
+[node name="WindowBorder" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -8.0
+offset_top = -32.0
+offset_right = 8.0
+offset_bottom = 8.0
+focus_mode = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_uo2qt")
+
+[node name="WindowTitlePanel" type="Panel" parent="."]
+clip_contents = true
+layout_mode = 0
+offset_top = -24.0
+offset_right = 278.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_aj8ap")
+
+[node name="WindowTitle" type="Label" parent="WindowTitlePanel"]
+clip_contents = true
+layout_mode = 1
+offset_left = 8.0
+offset_right = 246.0
+offset_bottom = 26.0
+text = "Window"
+clip_text = true
+
+[node name="CloseButton" type="Button" parent="WindowTitlePanel"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -24.0
+grow_horizontal = 0
+grow_vertical = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 10
+text = "x"
+
+[connection signal="resized" from="." to="." method="_on_resized"]
+[connection signal="gui_input" from="WindowBorder" to="." method="_on_window_border_gui_input"]
+[connection signal="mouse_entered" from="WindowBorder" to="." method="_on_window_border_mouse_entered"]
+[connection signal="mouse_exited" from="WindowBorder" to="." method="_on_window_border_mouse_exited"]
+[connection signal="gui_input" from="WindowTitlePanel" to="." method="_on_window_title_panel_gui_input"]
+[connection signal="pressed" from="WindowTitlePanel/CloseButton" to="." method="_on_close_button_pressed"]

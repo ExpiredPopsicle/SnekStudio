@@ -1,0 +1,34 @@
+[gd_resource type="SpriteFrames" load_steps=7 format=3 uid="uid://c6neld0rvb4he"]
+
+[ext_resource type="Texture2D" uid="uid://dvs43oql2xf3k" path="res://Mods/HeadPats/Resources/Sprites/frame0000.png" id="1_kh34o"]
+[ext_resource type="Texture2D" uid="uid://dyfh2n4osw4yr" path="res://Mods/HeadPats/Resources/Sprites/frame0001.png" id="2_i2cdc"]
+[ext_resource type="Texture2D" uid="uid://dr6mq1v8fc2g5" path="res://Mods/HeadPats/Resources/Sprites/frame0002.png" id="3_g2wsr"]
+[ext_resource type="Texture2D" uid="uid://b716n82r8ynjw" path="res://Mods/HeadPats/Resources/Sprites/frame0003.png" id="4_8enu1"]
+[ext_resource type="Texture2D" uid="uid://dc7nxf6nh47c4" path="res://Mods/HeadPats/Resources/Sprites/frame0004.png" id="5_60kfp"]
+[ext_resource type="Texture2D" uid="uid://dm8lacpvr2c1b" path="res://Mods/HeadPats/Resources/Sprites/frame0005.png" id="6_8w5pp"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_kh34o")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_i2cdc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_g2wsr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_8enu1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_60kfp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_8w5pp")
+}],
+"loop": true,
+"name": &"default",
+"speed": 20.0
+}]

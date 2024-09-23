@@ -1,0 +1,10 @@
+[submodule "addons/TwitchGD4"]
+	path = addons/TwitchGD4
+	url = https://github.com/ExpiredPopsicle/TwitchGD4.git
+[submodule "addons/godot-vrm"]
+	path = addons/godot-vrm
+	url = https://github.com/V-Sekai/godot-vrm.git
+	branch = only-addon
+[submodule "addons/Godot-MToon-Shader"]
+	path = addons/Godot-MToon-Shader
+	url = https://github.com/V-Sekai/Godot-MToon-Shader

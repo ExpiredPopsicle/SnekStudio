@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://csepmx8e2i1ws"]
+
+[ext_resource type="Script" path="res://Mods/VMCController/VMCController.gd" id="1_je8hp"]
+[ext_resource type="Script" path="res://Mods/VMCController/KiriOSC/KiriOSC.gd" id="2_6yow6"]
+
+[node name="VMCController" type="Node"]
+script = ExtResource("1_je8hp")
+
+[node name="KiriOSCServer" type="Node" parent="."]
+script = ExtResource("2_6yow6")
+
+[connection signal="message_received" from="KiriOSCServer" to="." method="_on_OSCServer_message_received"]
