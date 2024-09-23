@@ -314,8 +314,9 @@ func _update_for_new_model_if_needed():
 
 func _scan_video_devices():
 
-	var device_list : Array = tracker_python_process.call_rpc_sync(
+	var dl = tracker_python_process.call_rpc_sync(
 		"enumerate_camera_devices", [])
+	var device_list : Array = dl if dl is Array else []
 	print(device_list)
 
 	for device in device_list:
