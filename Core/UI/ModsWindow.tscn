@@ -6,6 +6,7 @@
 [node name="ModsWindow" instance=ExtResource("1_sdail")]
 offset_right = 563.0
 offset_bottom = 380.0
+mouse_force_pass_scroll_events = false
 script = ExtResource("2_whal8")
 label_text = "Mods"
 
