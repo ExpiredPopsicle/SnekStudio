@@ -221,6 +221,8 @@ static func apply_animations(model, shape_dict, mirror_mode):
 
 	# Merge blend shapes with overridden stuff.
 	var combined_blend_shape_last_values = shape_dict.duplicate()
+
+	# FIXME: Should we restore this, or just rely on other mods down the stack?
 #	for k in overridden_blend_shape_values.keys():
 #		if k in combined_blend_shape_last_values:
 #			combined_blend_shape_last_values[k] = max(
@@ -229,15 +231,30 @@ static func apply_animations(model, shape_dict, mirror_mode):
 #		else:
 #			combined_blend_shape_last_values[k] =  overridden_blend_shape_values[k]
 
-
-
+	# Blend shapes are treated as the maximum value of any animations that
+	# reference them.
+	#
+	# FIXME: Maybe these should be like the weighted averages, too?
+	#   Sometimes someone might want to set a lower influence for some
+	#   blendshape proxies.
 	var blend_shape_maximums = {}
-	var total_bone_rotations = {
-		#"EyeLeft" : Quaternion(),
-		#"EyeRight" : Quaternion()
-		# FIXME: Add the path to the bone INSIDE the skeleton (It'll be a NodePath)
-	}
+
+	# These are for value tracks. We're going to treat them as a weighted
+	# average. There's an added twist in that, if the total weight is less than
+	# 1.0, then we fill in the rest of the weighted average (1.0-weight) with
+	# the values from the "RESET" animation.
+	var value_average_totals = {}
+	var value_average_weights = {}
+	var value_rest_values = {}
+
+	var total_bone_rotations = {}
+
 	var anim_player : AnimationPlayer = model.find_child("AnimationPlayer", true, false)
+	var anim_list : PackedStringArray = anim_player.get_animation_list()
+
+	anim_player.play("RESET")
+	anim_player.advance(0)
+	anim_player.stop()
 
 	if anim_player:
 		#print("list...")
@@ -248,12 +265,21 @@ static func apply_animations(model, shape_dict, mirror_mode):
 			#combined_blend_shape_last_values = {
 				#"lookLeft" : combined_blend_shape_last_values["lookLeft"]
 			#}
-		
+
+		# Find all the "rest" values to blend with.
+		var rest_anim : Animation = anim_player.get_animation("RESET")
+		if rest_anim:
+			for track_index in range(0, rest_anim.get_track_count()):
+				if rest_anim.track_get_type(track_index) == Animation.TYPE_VALUE:
+					var track_path : NodePath = rest_anim.track_get_path(track_index)
+					value_rest_values[track_path] = \
+						rest_anim.track_get_key_value(track_index, 0)
+
 		for anim_name in combined_blend_shape_last_values.keys():
 
 			# Skip any animations that don't exist in this VRM.				
 			var full_anim_name = anim_name
-			
+
 			if mirror_mode:
 				if full_anim_name.contains("Left"):
 					full_anim_name = full_anim_name.replace("Left", "Right")
@@ -280,12 +306,14 @@ static func apply_animations(model, shape_dict, mirror_mode):
 				continue
 				
 			# Iterate through every track on the animation.
-			#print("Anim ", anim_name, " track count: ", anim.get_track_count())\
 			for track_index in range(0, anim.get_track_count()):
 
 				var anim_path : NodePath = anim.track_get_path(track_index)
 			
 				if anim.track_get_type(track_index) == Animation.TYPE_ROTATION_3D:
+
+					# These tracks typically apply to eye direction stuff. The
+					# VRM addon sets these up for us.
 
 					if not anim_path in total_bone_rotations:
 						total_bone_rotations[anim_path] = Quaternion()
@@ -299,7 +327,6 @@ static func apply_animations(model, shape_dict, mirror_mode):
 					var rest_orientation = Quaternion()
 					if bone_index != -1:
 						rest_orientation = node_to_modify.get_bone_rest(bone_index).basis.get_rotation_quaternion()
-					
 					
 					var alpha = combined_blend_shape_last_values[anim_name]
 					#alpha /= 10
@@ -318,8 +345,6 @@ static func apply_animations(model, shape_dict, mirror_mode):
 		
 				if anim.track_get_type(track_index) == Animation.TYPE_BLEND_SHAPE:
 
-					#print("  track: ", anim.track_get_path(track_index))
-
 					# Create the key if it does not exist.
 					if not (anim_path in blend_shape_maximums.keys()):
 						blend_shape_maximums[anim_path] = 0.0
@@ -328,6 +353,20 @@ static func apply_animations(model, shape_dict, mirror_mode):
 					blend_shape_maximums[anim_path] = max(
 						blend_shape_maximums[anim_path],
 						combined_blend_shape_last_values[anim_name] * anim.track_get_key_value(track_index, 0))
+
+				if anim.track_get_type(track_index) == Animation.TYPE_VALUE:
+
+					# Values: Add to our weighted average.
+					if not value_average_totals.has(anim_path):
+						value_average_totals[anim_path] = \
+							anim.track_get_key_value(track_index, 0) * combined_blend_shape_last_values[anim_name]
+						value_average_weights[anim_path] = \
+							combined_blend_shape_last_values[anim_name]
+					else:
+						value_average_totals[anim_path] += \
+							anim.track_get_key_value(track_index, 0) * combined_blend_shape_last_values[anim_name]
+						value_average_weights[anim_path] += \
+							combined_blend_shape_last_values[anim_name]
 
 		# Iterate through every max animation value and set it on the
 		# appropriate blend shape on the object.
@@ -340,6 +379,24 @@ static func apply_animations(model, shape_dict, mirror_mode):
 					object_to_animate.set(
 						"blend_shapes/" + anim_path_max_value_key.get_subname(0),
 						blend_shape_maximums[anim_path_max_value_key])
+
+			# Handle "value" track types. Typically material properties.
+			for value_key in value_average_totals.keys():
+
+				# Add in the "rest" value if we're under 1.0 total influence.
+				if value_average_weights[value_key] < 1.0:
+					value_average_totals[value_key] += \
+						(1.0 - value_average_weights[value_key]) * \
+						value_rest_values[value_key]
+					value_average_weights[value_key] = 1.0
+
+				# Apply average value.
+				var object_to_animate : Node = anim_root.get_node(value_key)
+				if object_to_animate:
+					var avg_value = value_average_totals[value_key] / value_average_weights[value_key]
+					object_to_animate.set_indexed(
+						NodePath(value_key.get_concatenated_subnames()),
+						avg_value)
 
 			for anim_path_rotation_key in total_bone_rotations.keys():
 				var bone_name = anim_path_rotation_key.get_subname(0)
