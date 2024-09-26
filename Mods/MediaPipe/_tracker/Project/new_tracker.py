@@ -115,6 +115,10 @@ class MediaPipeTracker:
 
             self.video_device_capture = cv2.VideoCapture(self.video_device_index)
 
+            # Enforce low-res capture for performance reasons.
+            self.video_device_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            self.video_device_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
             print("Done opening a video device!")
             sys.stdout.flush()
 
