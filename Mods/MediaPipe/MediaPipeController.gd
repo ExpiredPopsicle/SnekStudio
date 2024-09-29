@@ -21,6 +21,8 @@ var blend_shape_last_values = {}
 var _current_model_root : Node = null
 var hand_rest_trackers = {}
 var _init_complete = false
+
+# FIXME: Make this a dictionary (spine, left hand, right hand, etc)
 var _ikchains = []
 
 # Settings stuff
@@ -262,7 +264,7 @@ func _update_arm_rest_positions():
 			hand_rest_trackers[side].transform.basis = rotation_basis
 
 func _setup_ik_chains():
-	
+
 	_ikchains = []
 	
 	var chain_spine = MediaPipeController_IKChain.new()
@@ -329,37 +331,6 @@ func _scan_video_devices():
 	_devices_list.insert(0, "None")
 	_devices_by_list_entry["None"] = { "index" : -1 }
 
-
-func _get_tracker_executable():
-	var script_path = self.get_script().get_path()
-	var script_dirname = script_path.get_base_dir()
-	var actual_module_path = ProjectSettings.globalize_path(script_dirname)
-
-	var executable_name = "snekstudio_mediapipetracker_linux/snekstudio_mediapipetracker_linux"
-	if OS.get_name() == "Windows":
-		executable_name = "snekstudio_mediapipetracker_windows/snekstudio_mediapipetracker_windows.exe"
-	
-	var executable_path = actual_module_path.path_join("_tracker/Project/dist").path_join(executable_name)
-
-	# FIXME: REAL UGLY HACK
-	var paths_to_check = [executable_path, "./snekstudio_mediapipetracker_linux"]
-	
-	# FIXME: EVEN UGLIER HACK OH GOD IT JUST GETS WORSE AND WORSE
-	#paths_to_check = [actual_module_path.path_join("_tracker/run_linux_sourcetree.bsh")]
-	
-	for path in paths_to_check:
-		if FileAccess.file_exists(path):
-			return path
-	
-	# FIXME
-	print("CAN'T FIND THE TRACKER EXECUTABLE!")
-	return ""
-
-	#return executable_path
-	
-	# FIXME: Hack hack hack hack
-	#return "./snekstudio_mediapipetracker_linux"
-
 func start_tracker():
 	
 	tracker_python_process.call_rpc_sync(
@@ -377,9 +348,9 @@ func start_tracker():
 	else:
 		video_device_index_to_use = -1
 
+	# FIXME: Replace this all with a single settings dict.
 	tracker_python_process.call_rpc_async(
 		"set_video_device_number", [video_device_index_to_use])
-
 	tracker_python_process.call_rpc_async(
 		"set_hand_count_change_time_threshold", [hand_count_change_time_threshold])
 

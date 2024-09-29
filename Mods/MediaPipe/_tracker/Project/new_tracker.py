@@ -24,6 +24,8 @@ import argparse
 import re
 import gc
 
+import traceback
+
 class MediaPipeTracker:
 
     def __init__(self):
@@ -110,23 +112,23 @@ class MediaPipeTracker:
                 return
 
             # Try opening it!
-            print("Opening a video device!")
-            sys.stdout.flush()
+            self._write_log("Opening a video device!")
 
             self.video_device_capture = cv2.VideoCapture(self.video_device_index)
 
             # Enforce low-res capture for performance reasons.
-            self.video_device_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-            self.video_device_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-
-            print("Done opening a video device!")
-            sys.stdout.flush()
+            try:
+                self.video_device_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+                self.video_device_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+            except Exception as e:
+                # Failed? Whatever. Just use the resolution it's stuck with.
+                pass
 
             if self.video_device_capture.isOpened():
-                self._send_status_packet("Video device acquired")
+                self._write_log("Video device acquired")
             else:
                 self.video_device_capture = None
-                self._send_status_packet("Failed to open video device: %s" % str(self.video_device_index))
+                self._write_log("Failed to open video device: %s" % str(self.video_device_index))
 
     def _init_mediapipe(self):
 
@@ -174,16 +176,27 @@ class MediaPipeTracker:
 
         self._shutdown_mediapipe()
 
-        print("Init face landmarker...")
+        self._write_log("Init face landmarker...")
         self.landmarker = FaceLandmarker.create_from_options(options)
 
-        # print("Init pose landmarker...")
+        # self._write_log("Init pose landmarker...")
         # self.landmarker_pose = vision.PoseLandmarker.create_from_options(options_pose)
 
-        print("Init hand landmarker...")
+        self._write_log("Init hand landmarker...")
         self.landmarker_hands = vision.HandLandmarker.create_from_options(options_hands)
 
-        print("Init done")
+        self._write_log("Init done")
+
+    def _write_log(self, *args):
+        try:
+            print(*args)
+        except Exception as e:
+            # Concerning...
+            pass
+        try:
+            self._send_status_packet(" ".join(str(s) for s in args))
+        except Exception as e:
+            pass
 
     def _send_status_packet(self, status_str):
 
@@ -192,8 +205,6 @@ class MediaPipeTracker:
         };
         output_data_json = json.dumps(output_data, indent=4).encode("utf-8")
         self._udp_socket.sendto(output_data_json, ("127.0.0.1", self.udp_port_number))
-
-        print(status_str)
 
     # Create a face landmarker instance with the live stream mode:
     def _handle_result_face(
@@ -229,7 +240,7 @@ class MediaPipeTracker:
             output_image: mediapipe.Image, timestamp_ms: int):
 
         self._last_hand_result_timestamp = timestamp_ms
-        # print("HAND RESULTS: ", timestamp_ms)
+        # self._write_log("HAND RESULTS: ", timestamp_ms)
         # return
 
         with self.frames_queued_mutex:
@@ -240,11 +251,11 @@ class MediaPipeTracker:
         if self.last_hand_count != len(result.hand_landmarks):
             self.last_hand_count = len(result.hand_landmarks)
             self.time_since_hand_count_changed = 0.0
-            print("Hand count changed.")
+            self._write_log("Hand count changed.")
         else:
             self.time_since_hand_count_changed += 1.0
         if self.time_since_hand_count_changed < self.time_since_hand_count_changed_threshold:
-            print("Waiting on hand count change.")
+            self._write_log("Waiting on hand count change.")
             return
 
         # Default confidence to zero in case we don't see any hand
@@ -423,188 +434,198 @@ class MediaPipeTracker:
 
     def _tracker_worker_thread_func(self):
 
-        # Deadlock-avoidance.
+        try:
 
-        print("locking mutex before init mediapipe")
-        with self.the_big_ugly_mutex:
 
-            self._init_mediapipe()
+            # Deadlock-avoidance.
 
-            self._send_status_packet("Initializing MediaPipe")
-
-            # Re-init hand tracking data every time we restart the
-            # tracker.
-            for side in ["left", "right"]:
-                self.last_hand_data[side]["position"]             = numpy.array([0.0, 0.0, 0.0])
-                self.last_hand_data[side]["position_confidence"]  = 0.0
-                self.last_hand_data[side]["rotation_matrix"]      = numpy.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
-                self.last_hand_data[side]["landmarks"]            = []
-
-            # We'll pause tracking if another hand has come on-screen, because it
-            # can get confused between the two of them when one has the wrong
-            # handedness (but we can't easily distinguish it yet from the one that's
-            # already on-screen). FIXME: Do it with a distance-check?
-            self.time_since_hand_count_changed = 0.0
-
-            self.last_hand_count = 0
-
-            self.debug_try_closest_hand_when_confidence_low = False
-
-        input_image = None
-        success = True
-        start_time = time.time()
-        frame_count = 0
-
-        # We'll send this when we're panicking from too many frames queued, as
-        # a last-ditch attempt to un-clog the queue before we get a deadlock
-        # thanks to the MediaPipe bug.
-        blank_image_cv2 = numpy.zeros((1,1,3), dtype=numpy.uint8)
-        blank_image_mp = mediapipe.Image(
-            mediapipe.ImageFormat.SRGB,
-            data=blank_image_cv2)
-
-        # Main capturing loop.
-        last_frame_time = 0
-        while not self.should_quit_threads:
-
-            # Wait for the minimum frame time.
-            time_to_sleep = self.minimum_frame_time - (time.time() - last_frame_time)
-            if time_to_sleep > 0.0:
-                time.sleep(time_to_sleep)
-
-            # If the video device got disconnected, reconnect it.
-            self._open_video_device()
-
-            print("locking mutex before main loop iteration")
+            self._write_log("locking mutex before init mediapipe")
             with self.the_big_ugly_mutex:
 
-                last_frame_time = time.time()
+                self._init_mediapipe()
 
-                last_timestamp_used = int(time.time() * 1000)
-                if self.video_device_capture:
-                    success, image = self.video_device_capture.read()
-                else:
-                    # No camera connected at the moment. Just feed in
-                    # blank images.
-                    success = True
-                    image = blank_image_cv2.copy()
+                self._write_log("Initializing MediaPipe")
 
-                if success:
+                # Re-init hand tracking data every time we restart the
+                # tracker.
+                for side in ["left", "right"]:
+                    self.last_hand_data[side]["position"]             = numpy.array([0.0, 0.0, 0.0])
+                    self.last_hand_data[side]["position_confidence"]  = 0.0
+                    self.last_hand_data[side]["rotation_matrix"]      = numpy.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+                    self.last_hand_data[side]["landmarks"]            = []
 
-                    # Convert image to MediaPipe.
-                    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-                    # FIXME: Find out why we do this. I think it was
-                    # mentioned in the MediaPipe tutorial.
-                    image.flags.writeable = False
-                    mp_image = mediapipe.Image(
-                        image_format=mediapipe.ImageFormat.SRGB,
-                        data=image)
+                # We'll pause tracking if another hand has come on-screen, because it
+                # can get confused between the two of them when one has the wrong
+                # handedness (but we can't easily distinguish it yet from the one that's
+                # already on-screen). FIXME: Do it with a distance-check?
+                self.time_since_hand_count_changed = 0.0
 
-                    # Generate a timestamp to feed into the MediaPipe
-                    # system. If we're still somehow inside the same
-                    # millisecond as the last processed image, then skip
-                    # this frame.
-                    this_time = int(time.time() * 1000)
-                    if this_time <= last_timestamp_used:
-                        continue
+                self.last_hand_count = 0
 
-                    # Check to see if we have too many face tracking
-                    # frames queued.
-                    need_reset = False
-                    with self.frames_queued_mutex:
-                        if self.frames_queued_face > 5:
-                            need_reset = True
-                        else:
-                            self.frames_queued_face += 1
+                self.debug_try_closest_hand_when_confidence_low = False
 
-                    # Reset if we have too face frames queued. Avoid a
-                    # deadlock.
-                    if need_reset:
-                        # Deadlock-avoidance.
-                        self.landmarker._runner.restart()
-                        self.frames_queued_face = 0
+            input_image = None
+            success = True
+            start_time = time.time()
+            frame_count = 0
+
+            # We'll send this when we're panicking from too many frames queued, as
+            # a last-ditch attempt to un-clog the queue before we get a deadlock
+            # thanks to the MediaPipe bug.
+            blank_image_cv2 = numpy.zeros((1,1,3), dtype=numpy.uint8)
+            blank_image_mp = mediapipe.Image(
+                mediapipe.ImageFormat.SRGB,
+                data=blank_image_cv2)
+
+            # Main capturing loop.
+            last_frame_time = 0
+            while not self.should_quit_threads:
+
+                # Wait for the minimum frame time.
+                time_to_sleep = self.minimum_frame_time - (time.time() - last_frame_time)
+                if time_to_sleep > 0.0:
+                    time.sleep(time_to_sleep)
+
+                # If the video device got disconnected, reconnect it.
+                self._open_video_device()
+
+                self._write_log("locking mutex before main loop iteration")
+                with self.the_big_ugly_mutex:
+
+                    last_frame_time = time.time()
+                    last_timestamp_used = int(time.time() * 1000)
+
+                    # Capture a frame.
+                    if self.video_device_capture:
+                        success, image = self.video_device_capture.read()
                     else:
-                        self.landmarker.detect_async(mp_image, this_time)
+                        # No camera connected at the moment. Just feed in
+                        # blank images.
+                        success = True
+                        image = blank_image_cv2.copy()
 
-                    # Hands
+                    if success:
 
-                    # If the last result we got back was too much time
-                    # since the last one we queued up, then wait until
-                    # some amount of time (which we guess in the most
-                    # convoluted way possible) has passed.
-                    #
-                    # FIXME: Make this less stupid. Make it make
-                    # sense. Then apply it to the face tracking.
-                    hand_landmarker_time_skew = self._last_hand_detect_timestamp - self._last_hand_result_timestamp
-                    if hand_landmarker_time_skew > 50: # FIXME: Make configurable (milliseconds)
-                        self._last_hand_result_timestamp += this_time - self._last_hand_detect_timestamp
-                    else:
-                        # Check to see if we have too many hand tracking
+                        # Convert image to MediaPipe.
+                        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+                        # FIXME: Find out why we do this. I think it was
+                        # mentioned in the MediaPipe tutorial.
+                        image.flags.writeable = False
+                        mp_image = mediapipe.Image(
+                            image_format=mediapipe.ImageFormat.SRGB,
+                            data=image)
+
+                        # Generate a timestamp to feed into the MediaPipe
+                        # system. If we're still somehow inside the same
+                        # millisecond as the last processed image, then skip
+                        # this frame.
+                        this_time = int(time.time() * 1000)
+                        if this_time <= last_timestamp_used:
+                            continue
+
+                        # Check to see if we have too many face tracking
                         # frames queued.
                         need_reset = False
                         with self.frames_queued_mutex:
                             if self.frames_queued_face > 5:
                                 need_reset = True
                             else:
-                                self.frames_queued_hands += 1
+                                self.frames_queued_face += 1
 
-                        # If we do have too many frames queued, just reset
-                        # the tracker to avoid a deadlock.
+                        # Reset if we have too face frames queued. Avoid a
+                        # deadlock.
                         if need_reset:
-                            self.landmarker_hands._runner.restart()
-                            self.frames_queued_hands = 0
+                            # Deadlock-avoidance.
+                            self.landmarker._runner.restart()
+                            self.frames_queued_face = 0
                         else:
-                            self.landmarker_hands.detect_async(mp_image, this_time)
-                            self._last_hand_detect_timestamp = this_time
+                            self.landmarker.detect_async(mp_image, this_time)
 
-                    # Track the last timestamp because we have to keep
-                    # these monotonically increasing and we can't send
-                    # the same timestamp twice.
-                    last_timestamp_used = this_time
+                        # Hands
 
-                    # Generate the dictionary we're going to send back
-                    # to SnekStudio.
-                    output_data = {
-                        "hand_left_origin" :
+                        # If the last result we got back was too much time
+                        # since the last one we queued up, then wait until
+                        # some amount of time (which we guess in the most
+                        # convoluted way possible) has passed.
+                        #
+                        # FIXME: Make this less stupid. Make it make
+                        # sense. Then apply it to the face tracking.
+                        hand_landmarker_time_skew = self._last_hand_detect_timestamp - self._last_hand_result_timestamp
+                        if hand_landmarker_time_skew > 50: # FIXME: Make configurable (milliseconds)
+                            self._last_hand_result_timestamp += this_time - self._last_hand_detect_timestamp
+                        else:
+                            # Check to see if we have too many hand tracking
+                            # frames queued.
+                            need_reset = False
+                            with self.frames_queued_mutex:
+                                if self.frames_queued_face > 5:
+                                    need_reset = True
+                                else:
+                                    self.frames_queued_hands += 1
+
+                            # If we do have too many frames queued, just reset
+                            # the tracker to avoid a deadlock.
+                            if need_reset:
+                                self.landmarker_hands._runner.restart()
+                                self.frames_queued_hands = 0
+                            else:
+                                self.landmarker_hands.detect_async(mp_image, this_time)
+                                self._last_hand_detect_timestamp = this_time
+
+                        # Track the last timestamp because we have to keep
+                        # these monotonically increasing and we can't send
+                        # the same timestamp twice.
+                        last_timestamp_used = this_time
+
+                        # Generate the dictionary we're going to send back
+                        # to SnekStudio.
+                        output_data = {
+                            "hand_left_origin" :
                             self.last_hand_data["left"]["position"].tolist(),
-                        "hand_left_rotation" :
+                            "hand_left_rotation" :
                             self.last_hand_data["left"]["rotation_matrix"].tolist(),
-                        "hand_left_score" :
-                            self.last_hand_data["left"]["position_confidence"],
-                        "hand_right_origin" :
-                            self.last_hand_data["right"]["position"].tolist(),
-                        "hand_right_rotation" :
-                            self.last_hand_data["right"]["rotation_matrix"].tolist(),
-                        "hand_right_score" :
-                            self.last_hand_data["right"]["position_confidence"],
-                        "head_origin" :
-                            self.last_head_position.tolist(),
-                        "head_quat" :
-                            self.last_head_quat.tolist(),
-                        "blendshapes" : self.last_blendshapes
-                    }
+                            "hand_left_score" :
+                                self.last_hand_data["left"]["position_confidence"],
+                            "hand_right_origin" :
+                                self.last_hand_data["right"]["position"].tolist(),
+                            "hand_right_rotation" :
+                                self.last_hand_data["right"]["rotation_matrix"].tolist(),
+                            "hand_right_score" :
+                                self.last_hand_data["right"]["position_confidence"],
+                            "head_origin" :
+                                self.last_head_position.tolist(),
+                            "head_quat" :
+                                self.last_head_quat.tolist(),
+                            "blendshapes" : self.last_blendshapes
+                        }
 
-                    output_landmarks_left = []
-                    for k in self.last_hand_data["left"]["landmarks"]:
-                        output_landmarks_left.append(k.tolist())
+                        output_landmarks_left = []
+                        for k in self.last_hand_data["left"]["landmarks"]:
+                            output_landmarks_left.append(k.tolist())
 
-                    output_landmarks_right = []
-                    for k in self.last_hand_data["right"]["landmarks"]:
-                        output_landmarks_right.append(k.tolist())
+                        output_landmarks_right = []
+                        for k in self.last_hand_data["right"]["landmarks"]:
+                            output_landmarks_right.append(k.tolist())
 
-                    output_data["hand_landmarks_left"] = output_landmarks_left
-                    output_data["hand_landmarks_right"] = output_landmarks_right
+                        output_data["hand_landmarks_left"] = output_landmarks_left
+                        output_data["hand_landmarks_right"] = output_landmarks_right
 
-                    output_data_json = json.dumps(output_data, indent=4).encode("utf-8")
+                        output_data_json = json.dumps(output_data, indent=4).encode("utf-8")
 
-                    with self.frames_queued_mutex:
-                        status_packet_str = "Tracking data sending. (Queue: %2d hand, %2d face)" % (self.frames_queued_hands, self.frames_queued_face)
-                    self._send_status_packet(status_packet_str)
+                        with self.frames_queued_mutex:
+                            status_packet_str = "Tracking data sending. (Queue: %2d hand, %2d face)" % (self.frames_queued_hands, self.frames_queued_face)
+                        self._write_log(status_packet_str)
 
-                    # Output the packet.
-                    self._udp_socket.sendto(output_data_json, ("127.0.0.1", self.udp_port_number))
+                        # Output the packet.
+                        self._udp_socket.sendto(output_data_json, ("127.0.0.1", self.udp_port_number))
 
-        self._send_status_packet("Quitting")
+            self._write_log("Quitting")
+
+        except Exception as e:
+
+            exception_string_generator = traceback.TracebackException.from_exception(e)
+            exception_string = "".join(exception_string_generator.format())
+            self._write_log(exception_string)
 
     def start_tracker(self):
 
@@ -612,20 +633,20 @@ class MediaPipeTracker:
             stop_tracker()
 
         assert(not self._tracker_worker_thread)
-        print("Starting worker thread.")
+        self._write_log("Starting worker thread.")
         self._tracker_worker_thread = threading.Thread(
             target=self._tracker_worker_thread_func,
             daemon=True)
         self._tracker_worker_thread.start()
-        print("Starting worker thread done.")
+        self._write_log("Starting worker thread done.")
 
     def stop_tracker(self):
 
         assert(self._tracker_worker_thread)
         self.should_quit_threads = True
-        print("Waiting for worker thread to join.")
+        self._write_log("Waiting for worker thread to join.")
         self._tracker_worker_thread.join()
-        print("Worker thread joined.")
+        self._write_log("Worker thread joined.")
         self._tracker_worker_thread = None
         self.should_quit_threads = False
 
