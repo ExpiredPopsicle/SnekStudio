@@ -176,47 +176,6 @@ static func fixup_eyes(shape_dict_new : Dictionary):
 
 	return shape_dict_new
 
-# FIXME: This function doesn't do anything anymore. It's full of commented-out
-#   stuff that we need to re-implement and some of it will be obsolete when
-#   stuff gets properly parameterized.
-static func handle_blendshapes(
-	model : Node3D,
-	shape_dict_from_tracker : Dictionary,
-	shape_dict_last_frame : Dictionary,
-	use_vrm_basic_shapes : bool,
-	use_mediapipe_shapes : bool,
-	mirror_mode : bool,
-	delta : float):
-
-	# Actual output shape dictionary. Start off identical to last frame.
-	var shape_dict_new = shape_dict_from_tracker.duplicate()
-
-	# Map audio level to jaw-open?
-	# FIXME: Currently disabled because Godot audio capture on Linux is
-	#   borked (which means I can't test it).
-	# FIXME: Make it toggleable on/off.
-	#var audio_level = get_input_audio_level()
-	#if "jawOpen" in shape_dict_from_tracker:
-	#	shape_dict_from_tracker["jawOpen"] = max(shape_dict_from_tracker["jawOpen"], audio_level * 100.0)
-
-#	# Enhance "eye-wide".		
-#	if ("eyeWideLeft" in shape_dict_new) and \
-#		("eyeWideRight" in shape_dict_new):
-#
-#		var eye_wide_scale = 5.0
-#		shape_dict_new["eyeWideLeft"] = clamp(shape_dict_new["eyeWideLeft"] * eye_wide_scale, 0.0, 1.0)
-#		shape_dict_new["eyeWideRight"] = clamp(shape_dict_new["eyeWideRight"] * eye_wide_scale, 0.0, 1.0)
-#
-##		var eye_wide_avg = \
-##			(shape_dict_new["eyeWideRight"] +
-##			shape_dict_new["eyeWideLeft"]) / 2.0
-##
-##		shape_dict_new["eyeWideRight"] = eye_wide_avg
-##		shape_dict_new["eyeWideLeft"] = eye_wide_avg
-
-	return shape_dict_new
-
-
 static func apply_animations(model, shape_dict, mirror_mode):
 
 	# Merge blend shapes with overridden stuff.
@@ -251,6 +210,7 @@ static func apply_animations(model, shape_dict, mirror_mode):
 
 	var anim_player : AnimationPlayer = model.find_child("AnimationPlayer", true, false)
 	var anim_list : PackedStringArray = anim_player.get_animation_list()
+	var anim_root = anim_player.get_node(anim_player.root_node)
 
 	anim_player.play("RESET")
 	anim_player.advance(0)
@@ -289,14 +249,12 @@ static func apply_animations(model, shape_dict, mirror_mode):
 			# Case-correct the animation name, and also verify that it's even
 			# in the list.
 			var found_animation_in_list = false
-			for possible_anim_name in anim_player.get_animation_list():
+			for possible_anim_name in anim_list:
 				if possible_anim_name.to_lower() == full_anim_name.to_lower():
 					full_anim_name = possible_anim_name
 					found_animation_in_list = true
 					break
 			
-			#if not (full_anim_name in anim_player.get_animation_list()):
-			#	continue
 			if not found_animation_in_list:
 				continue
 
@@ -319,7 +277,6 @@ static func apply_animations(model, shape_dict, mirror_mode):
 						total_bone_rotations[anim_path] = Quaternion()
 
 					# Get the rest orientation.
-					var anim_root = anim_player.get_node(anim_player.root_node)
 					var bone_name = anim_path.get_subname(0)
 					var node_to_modify_path = str(anim_path.get_concatenated_names())
 					var node_to_modify : Skeleton3D = anim_root.get_node(node_to_modify_path)
@@ -370,7 +327,6 @@ static func apply_animations(model, shape_dict, mirror_mode):
 
 		# Iterate through every max animation value and set it on the
 		# appropriate blend shape on the object.
-		var anim_root = anim_player.get_node(anim_player.root_node)
 		if anim_root:
 
 			for anim_path_max_value_key in blend_shape_maximums.keys():

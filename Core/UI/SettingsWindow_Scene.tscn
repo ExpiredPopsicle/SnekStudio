@@ -22,3 +22,10 @@ grow_vertical = 2
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 2
 columns = 2
+
+[node name="Label" type="Label" parent="." index="3"]
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "These settings were moved into the Scene_Basic module setttings."

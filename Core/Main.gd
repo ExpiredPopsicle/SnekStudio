@@ -405,7 +405,7 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 			set_background_color(Color.html(settings_dict["background_color"]))
 
 		# Audio settings.
-		var audio_needs_restart = false
+		var _audio_needs_restart = false
 		if _setting_changed("volume_output", old_settings_dict, settings_dict):
 			AudioServer.set_bus_volume_db(
 				AudioServer.get_bus_index("Master"),
@@ -420,10 +420,10 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 			print("output device before setting input: ", AudioServer.get_output_device())
 			AudioServer.set_input_device(settings_dict["sound_device_input"])
 			print("output device after setting input:  ", AudioServer.get_output_device())
-			audio_needs_restart = true
+			_audio_needs_restart = true
 		#else:
 		#	AudioServer.set_input_device("Default")
-#		if audio_needs_restart:
+#		if _audio_needs_restart:
 #			$AudioStreamRecord.stop()
 #			$AudioStreamRecord.play()
 

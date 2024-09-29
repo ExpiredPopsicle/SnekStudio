@@ -495,15 +495,15 @@ func settings_window_add_selector(
 	
 	var selection_widget = null
 	
-	var callback = func(selection_widget):
+	var callback = func(widget):
 		var new_value = []
 		var selected_items = []
-		if selection_widget is ItemList:
-			selected_items = selection_widget.get_selected_items()
-		elif selection_widget is OptionButton:
-			selected_items.append(selection_widget.get_selected_id())
+		if widget is ItemList:
+			selected_items = widget.get_selected_items()
+		elif widget is OptionButton:
+			selected_items.append(widget.get_selected_id())
 		for k in selected_items:			
-			new_value.append(selection_widget.get_item_text(k))
+			new_value.append(widget.get_item_text(k))
 		modify_setting(setting_name, new_value)
 	
 	if use_combobox:
@@ -518,15 +518,11 @@ func settings_window_add_selector(
 			selection_widget.select_mode = ItemList.SELECT_MULTI
 
 		selection_widget.multi_selected.connect(
-			(func(index, selection_widget): callback.call(selection_widget)).bind(selection_widget))
+			(func(_index, widget): callback.call(widget)).bind(selection_widget))
 
 	selection_widget.item_selected.connect(
-		(func(index, selection_widget): callback.call(selection_widget)).bind(selection_widget))
+		(func(_index, widget): callback.call(widget)).bind(selection_widget))
 
-	#slider_widget.value_changed.connect(
-	#	func(new_value): modify_setting(
-	#		setting_name,
-	#		new_value))
 	for item in initial_values:
 		selection_widget.add_item(item)
 	

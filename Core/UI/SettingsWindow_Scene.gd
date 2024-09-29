@@ -1,8 +1,7 @@
 extends BasicSubWindow
 
 func settings_changed_from_app():
-	var app = _get_app_root()
-	var settings_dict = app.serialize_settings(true, false)
+	pass
 
 func show_window():
 	super.show_window()

@@ -18,7 +18,6 @@ var hand_time_since_last_update = [0.0, 0.0]
 var hand_time_since_last_missing = [0.0, 0.0]
 var mirrored_last_frame = true
 var blend_shape_last_values = {}
-var _current_model_root : Node = null
 var hand_rest_trackers = {}
 var _init_complete = false
 
@@ -446,15 +445,6 @@ func process_new_packets(model, delta):
 				# FIXME: Make optional.
 				shape_dict_new = functions_blendshapes.fixup_eyes(shape_dict_new)
 				
-				shape_dict_new = functions_blendshapes.handle_blendshapes(
-					model,
-					shape_dict_new,
-					blend_shape_last_values,
-					use_vrm_basic_shapes,
-					use_mediapipe_shapes,
-					mirror_mode,
-					delta)
-				
 				functions_blendshapes.apply_animations(
 					model, shape_dict_new, mirror_mode)
 				
@@ -491,6 +481,8 @@ func rotate_bone_in_global_space(
 		bs_rotation)
 
 func _process(delta):
+
+	var skel = get_app().get_skeleton()
 
 	if tracker_python_process:
 		tracker_python_process.poll()
@@ -531,7 +523,6 @@ func _process(delta):
 	# This just moves the body based on the head position.
 	var head_pos = $Head.transform.origin
 	var model_pos = model_root.transform.origin
-	var model_y = model_pos.y
 	
 	if true:
 		# FIXME: Make this adjustable, at the very least.
@@ -562,15 +553,12 @@ func _process(delta):
 		# FIXME: Make these adjustable.
 		var model_origin_offset = Vector3(0.0, 2.0, 0.0)
 		var arbitrary_scale = 1.0
-		var smoothness = 2.0
 		var score_exponent = 1.5
 		var score_threshold = 0.1
 		var head_rotation_scale = 2.0
 
-		# These are for transforming individual feature points into from the
+		# These are for transforming individual feature points from the
 		# mediapipe hand coordinate into skeleton coordinates.
-		var hand_landmark_position_multiplier = Vector3(1.0, 1.0, 1.0)
-	
 		var hand_origin_multiplier = Vector3(1.0, 1.0, 1.0)
 		var head_origin_multiplier = Vector3(1.0, 1.0, 1.0)
 		var head_quat_multiplier = [1.0, 1.0, 1.0, 1.0]
@@ -585,8 +573,7 @@ func _process(delta):
 	
 			tracker_left = $Hand_Right
 			tracker_right = $Hand_Left
-			
-			hand_landmark_position_multiplier = Vector3(-1.0, 1.0, 1.0)
+
 		# -----------------------------------------------------------------------------------------
 		# Hand packets
 
@@ -599,26 +586,28 @@ func _process(delta):
 
 		# FIXME: Code smell. Replace with a function call.
 		var per_hand_data = [
-			[ "Left", hand_landmarks_left,
-			  tracker_left,
-			  hand_rest_reference_left, 0 ],
-			[ "Right", hand_landmarks_right,
-			  tracker_right,
-			  hand_rest_reference_right, 1 ] ]
+			{
+				"side" : "Left",
+				"tracker_object" : tracker_left,
+				"rest_reference_object" : hand_rest_reference_left,
+				"index" : 0
+			}, {
+				"side" : "Right",
+			  	"tracker_object" : tracker_right,
+				"rest_reference_object" : hand_rest_reference_right,
+				"index" : 1
+			}
+		 ]
 		
-		for hand in per_hand_data:
-			
-			var time_since_last_update = hand_time_since_last_update[hand[4]]
-			var time_since_last_missing = hand_time_since_last_missing[hand[4]]
-				
-			
-			var hand_str = hand[0]
+		for hand_data in per_hand_data:
+
+			var time_since_last_update = hand_time_since_last_update[hand_data["index"]]
+			var time_since_last_missing = hand_time_since_last_missing[hand_data["index"]]
+
+			var hand_str = hand_data["side"]
 			var hand_str_lower = hand_str.to_lower()
-			var landmarks = hand[1]
-			var tracker_ob = hand[2]
-			#var fix_basis = hand[3]
-	
-		
+			var tracker_ob = hand_data["tracker_object"]
+
 			var hand_score_str = "hand_" + hand_str_lower + "_score"
 			var hand_origin_str = "hand_" + hand_str_lower + "_origin"
 			var hand_rotation_str = "hand_" + hand_str_lower + "_rotation"
@@ -638,12 +627,12 @@ func _process(delta):
 				time_since_last_update += delta
 				time_since_last_missing = 0.0
 
-			hand_time_since_last_update[hand[4]] = time_since_last_update
-			hand_time_since_last_missing[hand[4]] = time_since_last_missing
+			hand_time_since_last_update[hand_data["index"]] = time_since_last_update
+			hand_time_since_last_missing[hand_data["index"]] = time_since_last_missing
 
 			if time_since_last_update > arm_reset_time:
 				
-				var reference_ob = hand[3]
+				var reference_ob = hand_data["rest_reference_object"]
 				# Move hand to rest position.
 				tracker_ob.global_transform.origin = tracker_ob.global_transform.origin.lerp(
 					reference_ob.global_transform.origin, arm_reset_speed) # FIXME: Hardcoded value.
@@ -673,7 +662,6 @@ func _process(delta):
 				#
 				# FIXME: Hardcoded values all over this part.
 				#
-				var skel = get_app().get_skeleton()
 				var chest_transform_global_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
 				var min_z = (skel.global_transform * chest_transform_global_pose).origin
 				if target_origin.z < min_z.z + 0.2:
@@ -728,7 +716,7 @@ func _process(delta):
 					new_rotation = Basis(new_rot_quat)
 				
 				#var new_rot_ortho = new_rotation.orthonormalized().get_rotation_quaternion()
-				var old_rot_ortho = tracker_ob.transform.basis.orthonormalized()
+				#var old_rot_ortho = tracker_ob.transform.basis.orthonormalized()
 				#var new_quat = old_rot_ortho.slerp(new_rotation, 0.1) 
 				# FIXME: Hardcoded smoothing factor
 				#tracker_ob.transform.basis = Basis(rotation_basis.get_rotation_quaternion())
@@ -804,7 +792,6 @@ func _process(delta):
 		# ---------------------------------------------------------------------
 		# IK stuff starts here
 
-		var skel = get_app().get_skeleton()
 		var skel_offset = Transform3D()
 
 		# Spine IK

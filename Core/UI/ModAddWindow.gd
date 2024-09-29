@@ -7,13 +7,11 @@ func _ready():
 	
 	_get_app_root()._load_mods()
 	
-	var dir_access = DirAccessWithMods.new()
-
 	var mod_scene_files = []
 
-	var mod_dirs = dir_access.get_directory_list("res://Mods")
+	var mod_dirs = DirAccessWithMods.get_directory_list("res://Mods")
 	for mod_dir in mod_dirs:
-		var file_list = dir_access.get_file_list("res://Mods/" + mod_dir)
+		var file_list = DirAccessWithMods.get_file_list("res://Mods/" + mod_dir)
 		for filename in file_list:
 			if filename.ends_with("tscn"):
 				mod_scene_files.append("res://Mods/" + mod_dir + "/" + filename)

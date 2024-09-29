@@ -36,11 +36,10 @@ var do_pole_targets = true
 var do_rotate_to_match_tracker = true
 
 
-func debug_print_chain_rotation_mapping(
+func _debug_print_chain_rotation_mapping(
 	skel : Skeleton3D,
 	base_bone_index : int,
-	tip_bone_index : int,
-	main_axis_of_rotation : Vector3):
+	tip_bone_index : int):
 
 	# Print a graph of the head-to-hips distances based on spine bone
 	# pitches. Find the max extension angle.
@@ -48,7 +47,7 @@ func debug_print_chain_rotation_mapping(
 	var found_max_extension_angle = 0.0
 	var found_max_extension_angle_distance = 0.0
 	while n <= PI:
-		var dist = attempt_spine_rotation(skel, n, base_bone_index, tip_bone_index, main_axis_of_rotation)
+		var dist = attempt_spine_rotation(skel, n, base_bone_index, tip_bone_index)
 		var barstr = ""
 		var barcounter = 0
 		while barcounter < dist:
@@ -61,7 +60,7 @@ func debug_print_chain_rotation_mapping(
 			found_max_extension_angle_distance = dist
 			found_max_extension_angle = n
 
-	#print("MAX EXTENSION ANGLE: ", found_max_extension_angle)
+	print("MAX EXTENSION ANGLE: ", found_max_extension_angle)
 
 func rotate_chain_so_tip_points_in_direction(
 	skel : Skeleton3D,
@@ -105,15 +104,11 @@ func rotate_chain_to_pole_target(
 	tip_bone_index : int,
 	pole_direction_target_skeleton_space : Vector3):
 
-	
-
 	# Get average bone direction.
 	var current_bone_index = skel.get_bone_parent(tip_bone_index)
 	var total_bone_offset = Vector3(0.0, 0.0, 0.0)
 	var base_bone_origin = skel.get_bone_global_pose(base_bone_index).origin
-	var bone_total = 0
 	while current_bone_index != base_bone_index:
-		bone_total += 1
 		total_bone_offset += skel.get_bone_global_pose(current_bone_index).origin - base_bone_origin
 		current_bone_index = skel.get_bone_parent(current_bone_index)
 	
@@ -169,10 +164,6 @@ func rotate_chain_to_pole_target(
 func chain_distribute_bone_roll(
 	base_bone_index : int,
 	tip_bone_index : int):
-	
-	var tip_bone_rotation : Quaternion = \
-		skeleton.get_bone_rest(tip_bone_index).basis.get_rotation_quaternion().inverse() * \
-		skeleton.get_bone_pose_rotation(tip_bone_index)
 
 	# Count up bones.
 	var bone_count = 1
@@ -189,7 +180,7 @@ func chain_distribute_bone_roll(
 		tip_bone_roll_axis += skeleton.get_bone_rest(tip_bone_child).origin
 	tip_bone_roll_axis = tip_bone_roll_axis.normalized()
 
-	var current_tip_rotation = \
+	var current_tip_rotation : Quaternion = \
 		skeleton.get_bone_rest(tip_bone_index).basis.get_rotation_quaternion().inverse() * \
 		skeleton.get_bone_pose_rotation(tip_bone_index)
 
@@ -252,7 +243,6 @@ func rotate_chain_twist_on_secondary_axis(
 	base_bone_index : int,
 	tip_bone_index : int,
 	target_transform_worldspace : Transform3D,
-	secondary_axis_of_rotation : Vector3,
 	forward_axis_for_secondary_rotation : Vector3,
 	rotation_scale : float):
 	
@@ -322,19 +312,10 @@ func do_ik_chain(target_transform):
 		
 	if _calculated_distance_to_angle_mappings == null:	
 		evaluate_bone_chain_limit()
-		
-	var rotation_low = self.rotation_low
-	var rotation_high = self.rotation_high
 	
 	var base_bone_index = skeleton.find_bone(base_bone)
 	var tip_bone_index = skeleton.find_bone(tip_bone)
-
-	#debug_print_chain_rotation_mapping(
-	#	skeleton, base_bone_index, tip_bone_index, main_axis_of_rotation)
-
 	var current_bone_index = tip_bone_index
-	var first_bone = current_bone_index
-	var last_bone = current_bone_index
 
 	# Reset all rotations.
 	while current_bone_index != -1:
@@ -346,27 +327,12 @@ func do_ik_chain(target_transform):
 	
 	if do_ik_curve:
 
-		# Get the distance from the un-posed version of the skeleton.
-		var head_dist_default = \
-			(skeleton.get_bone_global_pose(tip_bone_index).origin -
-			skeleton.get_bone_global_pose(base_bone_index).origin).length()
-
-		#var rotation_low = 0.0
-		#var rotation_high = PI
-		
 		var hips_global = skeleton.global_transform * skeleton.get_bone_global_pose(base_bone_index).origin
-		var head_global = skeleton.global_transform * skeleton.get_bone_global_pose(tip_bone_index).origin
 		var head_tracker_global = target_transform.origin
-		
-		var head_dist_target # = head_dist_default - sin(float(Time.get_ticks_msec()) / 1000.0) / 5.0
 
-		#var head_dist_target = ($Head.transform.origin - skel.get_bone_global_pose(skel.find_bone("Hips")).origin).length()
+		var head_dist_target : float = (hips_global - head_tracker_global).length()
 
-		var head_offset = head_tracker_global - head_global
-		
-		head_dist_target = (hips_global - head_tracker_global).length()
-		
-		var best_angle = _calculated_max_extension_angle
+		var best_angle : float = _calculated_max_extension_angle
 		
 		if head_dist_target <= _calculated_min_extension_distance:
 			best_angle = _calculated_min_extension_angle
@@ -392,20 +358,20 @@ func do_ik_chain(target_transform):
 		attempt_spine_rotation(
 			skeleton, best_angle,
 			base_bone_index,
-			tip_bone_index, main_axis_of_rotation)
+			tip_bone_index)
 
 	# -----------------------------------------------------------------------------------------
 	# Simpler approach attempt
 
 #		var max_dist_angle = 0.0
 #		var min_dist_angle = PI
-#		var max_dist = attempt_spine_rotation(max_dist_angle, base_bone_index, tip_bone_index, main_axis_of_rotation)
-#		var min_dist = attempt_spine_rotation(min_dist_angle, base_bone_index, tip_bone_index, main_axis_of_rotation)
+#		var max_dist = attempt_spine_rotation(max_dist_angle, base_bone_index, tip_bone_index)
+#		var min_dist = attempt_spine_rotation(min_dist_angle, base_bone_index, tip_bone_index)
 #
 #		var lerp_alpha = (head_dist_target - min_dist) / (max_dist - min_dist)
 #		lerp_alpha = clamp(lerp_alpha, 0.0, 1.0)
 #		var use_angle = lerp(max_dist_angle, min_dist_angle, 1.0 - lerp_alpha)
-#		attempt_spine_rotation(use_angle, base_bone_index, tip_bone_index, main_axis_of_rotation)
+#		attempt_spine_rotation(use_angle, base_bone_index, tip_bone_index)
 
 	
 	# -----------------------------------------------------------------------------------------
@@ -414,7 +380,7 @@ func do_ik_chain(target_transform):
 	if do_yaw and do_yaw_global:
 		rotate_chain_twist_on_secondary_axis(
 			skeleton, base_bone_index, tip_bone_index,
-			target_transform, secondary_axis_of_rotation,
+			target_transform,
 			Vector3(0.0, 0.0, 1.0), 0.25)
 
 	# -----------------------------------------------------------------------------------------
@@ -464,8 +430,7 @@ func rotate_bone_in_global_space(
 func attempt_spine_rotation(
 	skel : Skeleton3D,
 	rotation_amount, base_bone_index,
-	tip_bone_index,
-	main_axis_of_rotation):
+	tip_bone_index):
 		
 	var current_bone_index = tip_bone_index
 	var first_bone = current_bone_index
@@ -483,11 +448,7 @@ func attempt_spine_rotation(
 	rotation_amount /= bone_count
 	
 	while current_bone_index != -1 and current_bone_index != base_bone_index:
-		
-		var parent_bone_index = skel.get_bone_parent(current_bone_index)
-		
 		rotate_bone_in_global_space(skel, current_bone_index, main_axis_of_rotation, rotation_amount)
-		
 		current_bone_index = skel.get_bone_parent(current_bone_index)
 		last_bone = current_bone_index
 	
@@ -520,7 +481,7 @@ func evaluate_bone_chain_limit():
 	while n <= rotation_high:
 		var dist = attempt_spine_rotation(
 			skeleton, n, base_bone_index,
-			tip_bone_index, main_axis_of_rotation)
+			tip_bone_index)
 		
 #		# Debug display.
 #		var barstr = ""
@@ -547,7 +508,7 @@ func evaluate_bone_chain_limit():
 		
 		var dist = attempt_spine_rotation(
 			skeleton, angle, base_bone_index,
-			tip_bone_index, main_axis_of_rotation)
+			tip_bone_index)
 		output_mapping.append( [dist, angle] )
 	
 	# Sanity check.
