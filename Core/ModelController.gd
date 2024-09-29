@@ -63,8 +63,11 @@ func load_vrm(path):
 		# Remove whatever was already there.
 		var existing_model = get_node_or_null("Model")
 		if existing_model:
-			#_remove_colliders()
-			remove_child(existing_model)
+			# We can't remove this from the scene immediately because some
+			# signals need to be cleaned up which still require the model to be
+			# in the scene. So let's just rename it to make room for the new one
+			# and queue_free().
+			existing_model.name = "Old_Model"
 			existing_model.queue_free()
 	
 		# Add new model to the scene.
