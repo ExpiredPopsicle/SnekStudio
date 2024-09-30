@@ -79,6 +79,8 @@ class MediaPipeTracker:
         # FIXME: Seed with values?
         self.last_blendshapes = {}
 
+        self.time_since_last_face_detection = 10.0
+
         # These are for more deadlock avoidance, so we can keep track
         # of how behind the hand tracker is.
         self._last_hand_result_timestamp = (time.time() * 1000)
@@ -213,11 +215,13 @@ class MediaPipeTracker:
             output_image: mediapipe.Image, timestamp_ms: int):
 
         for transform in result.facial_transformation_matrixes:
+            self.time_since_last_face_detection = 0.0
             self.last_head_position = kiri_math.get_origin_from_mediapipe_transform_matrix(transform) / 100.0
             self.last_head_quat = kiri_math.quaternion_mirror_rotation_on_x_axis(
                 kiri_math.matrix_to_quaternion(transform))
 
         for face in result.face_blendshapes:
+            self.time_since_last_face_detection = 0.0
             for shape in face:
 
                 # FIXME: Make this scaling value configurable. And
@@ -532,6 +536,11 @@ class MediaPipeTracker:
                             else:
                                 self.frames_queued_face += 1
 
+                        # This will get reset immediately if we detect
+                        # a face. Otherwise it'll be how many frames
+                        # since the last face detection.
+                        self.time_since_last_face_detection += 1.0
+
                         # Reset if we have too face frames queued. Avoid a
                         # deadlock.
                         if need_reset:
@@ -596,7 +605,8 @@ class MediaPipeTracker:
                                 self.last_head_position.tolist(),
                             "head_quat" :
                                 self.last_head_quat.tolist(),
-                            "blendshapes" : self.last_blendshapes
+                            "blendshapes" : self.last_blendshapes,
+                            "head_missing_time" : self.time_since_last_face_detection
                         }
 
                         output_landmarks_left = []

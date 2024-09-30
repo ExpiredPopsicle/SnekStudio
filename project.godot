@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="SnekStudio"
+config/name="SnekStudio_dev2"
 config/version="0.1.TooEarlyToHaveAVersionNumber"
 run/main_scene="res://Core/Main.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")

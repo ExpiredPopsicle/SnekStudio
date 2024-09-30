@@ -21,6 +21,9 @@ var blend_shape_last_values = {}
 var hand_rest_trackers = {}
 var _init_complete = false
 
+var frames_missing_before_spine_reset = 6.0
+var blend_to_rest_speed = 4.5
+
 # FIXME: Make this a dictionary (spine, left hand, right hand, etc)
 var _ikchains = []
 
@@ -103,6 +106,9 @@ func _ready():
 
 	add_tracked_setting("hand_confidence_time_threshold", "Hand confidence time threshold", { "min" : 0.0, "max" : 20.0 })
 	add_tracked_setting("hand_count_change_time_threshold", "Hand count change time threshold", { "min" : 0.0, "max" : 20.0 })
+
+	add_tracked_setting("frames_missing_before_spine_reset", "Tracking loss frames before resetting to rest pose", { "min" : -1.0, "max" : 120.0, "step" : 1.0 })
+	add_tracked_setting("blend_to_rest_speed", "Blend back to rest pose speed", { "min" : 0.0, "max" : 10.0, "step" : 0.1 })
 
 	_scan_video_devices()
 	
@@ -394,6 +400,7 @@ func process_new_packets(model, delta):
 			
 			last_parsed_data["head_quat"] = parsed_data["head_quat"]
 			last_parsed_data["head_origin"] = parsed_data["head_origin"]
+			last_parsed_data["head_missing_time"] = parsed_data["head_missing_time"]
 			
 			for hand_name in [ "left", "right" ]:
 				var hand_score_str = "hand_" + hand_name + "_score"
@@ -444,7 +451,12 @@ func process_new_packets(model, delta):
 				# Eye fixups.
 				# FIXME: Make optional.
 				shape_dict_new = functions_blendshapes.fixup_eyes(shape_dict_new)
-				
+
+				# Blend back to a rest position if we have lost tracking.
+				if frames_missing_before_spine_reset < last_parsed_data["head_missing_time"]:
+					shape_dict_new = functions_blendshapes.apply_rest_shapes(
+						blend_shape_last_values, delta, blend_to_rest_speed)
+
 				functions_blendshapes.apply_animations(
 					model, shape_dict_new, mirror_mode)
 				
@@ -482,7 +494,7 @@ func rotate_bone_in_global_space(
 
 func _process(delta):
 
-	var skel = get_app().get_skeleton()
+	var skel : Skeleton3D = get_app().get_skeleton()
 
 	if tracker_python_process:
 		tracker_python_process.poll()
@@ -769,26 +781,33 @@ func _process(delta):
 		
 		# FIXME: Hardcoded transform
 		var head_origin_array = parsed_data["head_origin"]
-		$Head.transform.origin = $Head.transform.origin.lerp(
-			model_origin_offset +
-			(Vector3(
-				head_origin_array[0],
-				head_origin_array[1],
-				head_origin_array[2]) * head_origin_multiplier) * arbitrary_scale,
+		if parsed_data["head_missing_time"] <= frames_missing_before_spine_reset:
+			$Head.transform.origin = $Head.transform.origin.lerp(
+				model_origin_offset +
+				(Vector3(
+					head_origin_array[0],
+					head_origin_array[1],
+					head_origin_array[2]) * head_origin_multiplier) * arbitrary_scale,
+					delta_scale * 0.5) # FIXME: Hardcoded smoothing.
+			var head_quat_array = parsed_data["head_quat"]
+			var head_euler = Basis(Quaternion(
+				head_quat_array[0] * head_quat_multiplier[0],
+				head_quat_array[1] * head_quat_multiplier[1],
+				head_quat_array[2] * head_quat_multiplier[2],
+				head_quat_array[3] * head_quat_multiplier[3])).get_euler()
+			$Head.transform.basis = $Head.transform.basis.slerp(
+				Basis.from_euler(head_euler * head_rotation_scale),
 				delta_scale * 0.5) # FIXME: Hardcoded smoothing.
-		
-		var head_quat_array = parsed_data["head_quat"]
-		var head_euler = Basis(Quaternion(
-			head_quat_array[0] * head_quat_multiplier[0],
-			head_quat_array[1] * head_quat_multiplier[1],
-			head_quat_array[2] * head_quat_multiplier[2],
-			head_quat_array[3] * head_quat_multiplier[3])).get_euler()
-		$Head.transform.basis = $Head.transform.basis.slerp(
-			Basis.from_euler(head_euler * head_rotation_scale),
-			delta_scale * 0.5) # FIXME: Hardcoded smoothing.
-		
+		else:
 
-		
+			# Haven't had face tracker data in a while? Just blend us back to a
+			# rest position.
+			var head_index : int = skel.find_bone("Head")
+			var rest_global : Transform3D = skel.get_bone_rest(head_index)
+			$Head.global_transform.basis = Basis(
+				$Head.global_transform.basis.get_rotation_quaternion().slerp(
+					rest_global.basis.get_rotation_quaternion(), blend_to_rest_speed * delta))
+
 		# ---------------------------------------------------------------------
 		# IK stuff starts here
 
