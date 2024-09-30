@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://Mods/MediaPipe/MediaPipeController.gd" id="1_swir5"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_lqc5h"]
+size = Vector3(0.2, 0.2, 0.2)
 
 [node name="MediaPipeController" type="Node"]
 script = ExtResource("1_swir5")

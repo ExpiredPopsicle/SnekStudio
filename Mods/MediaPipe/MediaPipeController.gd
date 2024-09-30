@@ -23,6 +23,9 @@ var _init_complete = false
 
 var frames_missing_before_spine_reset = 6.0
 var blend_to_rest_speed = 4.5
+var head_vertical_offset : float = -0.2
+var hips_vertical_blend_speed : float = 6.0
+
 
 # FIXME: Make this a dictionary (spine, left hand, right hand, etc)
 var _ikchains = []
@@ -109,6 +112,9 @@ func _ready():
 
 	add_tracked_setting("frames_missing_before_spine_reset", "Tracking loss frames before resetting to rest pose", { "min" : -1.0, "max" : 120.0, "step" : 1.0 })
 	add_tracked_setting("blend_to_rest_speed", "Blend back to rest pose speed", { "min" : 0.0, "max" : 10.0, "step" : 0.1 })
+
+	add_tracked_setting("head_vertical_offset", "Head vertical offset", { "min" : -1.0, "max" : 1.0 })
+	add_tracked_setting("hips_vertical_blend_speed", "Hips vertical blend speed", { "min" : 0.0, "max" : 20.0 })
 
 	_scan_video_devices()
 	
@@ -216,7 +222,12 @@ func scene_init():
 	remove_child(right_rest)
 	root.add_child(left_rest)
 	root.add_child(right_rest)
-	
+
+	# Set the head tracker to match the model's head position.
+	var head_bone_index = get_skeleton().find_bone("Head")
+	$Head.global_transform = get_skeleton().get_bone_global_rest(
+		head_bone_index)
+
 	_setup_ik_chains()
 	_update_arm_rest_positions()
 	
@@ -549,7 +560,9 @@ func _process(delta):
 		
 		# FIXME: Hard-coded fudge factor.
 		# FIXME: Why can't we just map this directly again? It looks like we're shrugging when the arms get set up wrong or something.
-		model_root.transform.origin.y = lerp(model_pos.y, head_pos.y - head_rest_transform.origin.y + -0.2, 0.1)
+		model_root.transform.origin.y = lerp(
+			model_pos.y, head_pos.y - head_rest_transform.origin.y + head_vertical_offset,
+			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
 
 	process_new_packets(model_root, delta)
 
