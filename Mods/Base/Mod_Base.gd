@@ -508,6 +508,8 @@ func settings_window_add_selector(
 	
 	if use_combobox:
 		selection_widget = OptionButton.new()
+		selection_widget.fit_to_longest_item = false
+		selection_widget.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		selection_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	else:
 		selection_widget = ItemList.new()
