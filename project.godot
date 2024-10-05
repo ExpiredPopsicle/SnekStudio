@@ -15,6 +15,8 @@ config/version="0.1.1"
 run/main_scene="res://Core/Main.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 run/max_fps=60
+boot_splash/bg_color=Color(1, 1, 1, 1)
+boot_splash/image="res://Core/UI/Images/logo.png"
 config/icon="res://Core/UI/Images/kiri_smug.png"
 
 [audio]
@@ -34,7 +36,7 @@ window/vsync/vsync_mode=0
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/Godot-MToon-Shader/plugin.cfg", "res://addons/KiriPythonRPCWrapper/plugin.cfg", "res://addons/SnekStudioExport/plugin.cfg", "res://addons/TwitchGD4/plugin.cfg", "res://addons/godot-vrm/addons/Godot-MToon-Shader/plugin.cfg", "res://addons/godot-vrm/addons/vrm/plugin.cfg", "res://addons/godot-vrm/plugin.cfg")
+enabled=PackedStringArray("res://addons/Godot-MToon-Shader/plugin.cfg", "res://addons/KiriPythonRPCWrapper/plugin.cfg", "res://addons/SnekStudioExport/plugin.cfg", "res://addons/TwitchGD4/plugin.cfg", "res://addons/godot-vrm/plugin.cfg")
 
 [filesystem]
 

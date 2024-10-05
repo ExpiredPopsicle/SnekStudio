@@ -1,28 +1,27 @@
 [gd_scene load_steps=4 format=3 uid="uid://cmwophradpbf7"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_twewb"]
-[ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="2_1srki"]
+[ext_resource type="Texture2D" uid="uid://bkrrv568qmxc6" path="res://Core/UI/Images/logo_small.svg" id="2_hgb31"]
 [ext_resource type="Script" path="res://Core/UI/HelpAboutWindow_NameAndVersion.gd" id="4_3xs7y"]
 
 [node name="HelpAboutWindow" instance=ExtResource("1_twewb")]
-offset_right = 327.0
-offset_bottom = 277.0
-mouse_force_pass_scroll_events = true
+offset_right = 442.0
+offset_bottom = 316.0
 
 [node name="WindowBorder" parent="." index="0"]
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="WindowTitlePanel" parent="." index="1"]
-offset_right = 327.0
+offset_right = 442.0
 
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
-offset_right = 295.0
+offset_right = 410.0
 
 [node name="MarginContainer" type="MarginContainer" parent="." index="2"]
 layout_mode = 0
-offset_right = 327.0
-offset_bottom = 277.0
+offset_right = 442.0
+offset_bottom = 316.0
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
@@ -36,8 +35,8 @@ layout_mode = 2
 
 [node name="TextureRect" type="TextureRect" parent="MarginContainer/CenterContainer/VBoxContainer" index="0"]
 layout_mode = 2
-texture = ExtResource("2_1srki")
-stretch_mode = 3
+texture = ExtResource("2_hgb31")
+stretch_mode = 4
 
 [node name="Label_NameAndVersion" type="Label" parent="MarginContainer/CenterContainer/VBoxContainer" index="1"]
 unique_name_in_owner = true
