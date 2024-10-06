@@ -137,24 +137,32 @@ func setup_python(force_unpack_extras : bool = false):
 		
 		# Get a list of all the wheel files.
 		var wheels_path : String = _build_wrangler._get_cache_path_godot().path_join("packaged_scripts/addons/KiriPythonRPCWrapper/Wheels")
-		var platform_wheels_path = wheels_path.path_join(KiriPythonBuildWrangler.get_host_os_name())
-		var wheel_list : PackedStringArray = DirAccess.get_files_at(platform_wheels_path)
+		if DirAccess.dir_exists_absolute(wheels_path):
+			var platform_wheels_path = wheels_path.path_join(KiriPythonBuildWrangler.get_host_os_name())
+			var wheel_list : PackedStringArray = DirAccess.get_files_at(platform_wheels_path)
 
-		var pip_args : PackedStringArray = [
-			"-m", "pip", "install",
-		]
+			if len(wheel_list):
 
-		# Add every wheel file in the directory as an argument.
-		for wheel in wheel_list:
-			if wheel.ends_with(".whl"):
-				pip_args.append(ProjectSettings.globalize_path(platform_wheels_path.path_join(wheel)))
+				var pip_args : PackedStringArray = [
+					"-m", "pip", "install",
+				]
 
-		# Run pip.
-		var output : Array = []
-		var pip_result = execute_python(pip_args, output, true, false)
-		if pip_result != 0:
-			OS.alert("Pip installation failed!\n" + "\n".join(output))
-			return false
+				# Add every wheel file in the directory as an argument.
+				for wheel in wheel_list:
+					if wheel.ends_with(".whl"):
+						pip_args.append(ProjectSettings.globalize_path(platform_wheels_path.path_join(wheel)))
+
+				# Run pip.
+				var output : Array = []
+				var pip_result = execute_python(pip_args, output, true, false)
+				if pip_result != 0:
+					OS.alert("Pip installation failed!\n" + "\n".join(output))
+					return false
+
+			else:
+				print("No wheel files detected. Skipping pip install.")
+		else:
+			print("Wheel directory does not exist. Skipping pip install.")
 
 	# FIXME: Delete wheel files? I don't think we need them anymore. If we made
 	# it this far, then we know we succeeded at the install.
