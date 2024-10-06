@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="SnekStudio_dev2"
+config/name="SnekStudio"
 config/version="0.1.1"
 run/main_scene="res://Core/Main.tscn"
 config/use_custom_user_dir=true

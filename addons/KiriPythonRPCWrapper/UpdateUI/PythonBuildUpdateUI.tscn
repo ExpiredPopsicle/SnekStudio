@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://addons/KiriPythonRPCWrapper/UpdateUI/PythonBuildUpdateUI.gd" id="1_cg85i"]
 
 [node name="PythonBuildUpdateUi" type="Control"]
+custom_minimum_size = Vector2(0, 128)
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

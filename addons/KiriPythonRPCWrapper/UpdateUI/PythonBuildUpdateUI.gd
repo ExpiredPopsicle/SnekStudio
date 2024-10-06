@@ -461,6 +461,7 @@ func _on_button_download_requirements_pressed(platform_name) -> void:
 	var requirements_path : String = download_path.path_join("requirements.txt")
 	var requirements_file : FileAccess = FileAccess.open(requirements_path, FileAccess.WRITE)
 	requirements_file.store_string(_platform_status["requirements"])
+	requirements_file.close()
 
 	print("Downloading requirements...")
 	
