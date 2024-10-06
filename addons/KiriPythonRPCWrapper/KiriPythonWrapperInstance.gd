@@ -133,6 +133,7 @@ func setup_python(force_unpack_extras : bool = false):
 			FileAccess.open(extraction_path, FileAccess.WRITE).store_buffer(bytes)
 
 	# Run pip to install packages from .whl files.
+	var successfully_ran_pip_setup : bool = false
 	if needs_setup:
 		
 		# Get a list of all the wheel files.
@@ -159,6 +160,8 @@ func setup_python(force_unpack_extras : bool = false):
 					OS.alert("Pip installation failed!\n" + "\n".join(output))
 					return false
 
+				successfully_ran_pip_setup = true
+
 			else:
 				print("No wheel files detected. Skipping pip install.")
 		else:
@@ -168,11 +171,12 @@ func setup_python(force_unpack_extras : bool = false):
 	# it this far, then we know we succeeded at the install.
 	
 	# Write success marker.
-	cache_status = _build_wrangler.get_cache_status()
-	cache_status["requirements_installed"] = platform_status["requirements"]
-	if data_hash != null:
-		cache_status["extra_data_hash"] = data_hash
-	_build_wrangler.write_cache_status(cache_status)
+	if successfully_ran_pip_setup:
+		cache_status = _build_wrangler.get_cache_status()
+		cache_status["requirements_installed"] = platform_status["requirements"]
+		if data_hash != null:
+			cache_status["extra_data_hash"] = data_hash
+		_build_wrangler.write_cache_status(cache_status)
 	
 	return true
 
