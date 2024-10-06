@@ -1,7 +1,8 @@
 @tool
 extends Control
 
-# These names must match the output from OS.get_name(). 
+# These names must match the output from
+# KiriPythonBuildWrangler.get_host_os_name().
 var _platform_list : Array = [
 	"Linux",
 	"Windows",

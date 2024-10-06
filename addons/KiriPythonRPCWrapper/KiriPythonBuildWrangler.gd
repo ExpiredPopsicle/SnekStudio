@@ -13,7 +13,7 @@ var _python_release_info : Dictionary = {}
 ## Detect the Python archive based on the current platform and the status in
 ## platform_status.json.
 func _detect_archive_for_runtime() -> String:
-	return _detect_archive_for_build(OS.get_name())
+	return _detect_archive_for_build(get_host_os_name())
 
 ## Detect the Python archive based on the input platform and the status in
 ## platform_status.json.
@@ -49,7 +49,7 @@ func _remove_archive_extensions(s : String) -> String:
 ##   "_python_dist"
 func _get_cache_path_relative():
 	var platform_status : Dictionary = _get_platform_status()
-	var platform_status_this_platform : Dictionary = platform_status["platforms"][OS.get_name()]
+	var platform_status_this_platform : Dictionary = platform_status["platforms"][get_host_os_name()]
 	var filename : String = platform_status_this_platform["complete_filename"]
 	#var ret : String = "_python_dist".path_join(_remove_archive_extensions(filename))
 	var ret : String = "_python_dist"
@@ -84,18 +84,9 @@ func _get_cache_path_godot() -> String:
 ## Example return:
 ##   "user://_python_dist/20240415/3.12.3/python/install/bin/python3"
 func get_runtime_python_executable_godot_path() -> String:
-	#var base_dir = _get_cache_path_godot().path_join("python/install")
-	#if OS.get_name() == "Windows":
-		#return base_dir.path_join("python.exe")
-	#else:
-		#return base_dir.path_join("bin/python3")
-		
 	var cache_status : Dictionary = get_cache_status()
 	var ret = _get_cache_path_godot().path_join(cache_status["executable_path"])
-	print(ret)
 	return ret
-	
-	# TODO: Other platforms (macos).
 
 # Get system path for the Python executable, which is what we actually need to
 # use to execute it in most cases.
@@ -117,7 +108,7 @@ func get_cache_status() -> Dictionary:
 func write_cache_status(cache_status : Dictionary):
 	var cache_path_godot : String = _get_cache_path_godot()
 	var cache_status_filename : String = cache_path_godot.path_join("cache_status.json")
-	var cache_status_json = JSON.stringify(cache_status)
+	var cache_status_json = JSON.stringify(cache_status, "  ")
 	var cache_status_file : FileAccess = FileAccess.open(cache_status_filename, FileAccess.WRITE)
 	cache_status_file.store_string(cache_status_json)
 	cache_status_file.close()
@@ -166,7 +157,6 @@ func _delete_recursive(path : String):
 
 ## Delete the entire cached Python install.
 func purge_cached_python():
-	print("PURGING OLD PYTHON")
 	var cache_path : String = _get_cache_path_godot()
 	if DirAccess.dir_exists_absolute(cache_path):
 		_delete_recursive(cache_path)
@@ -215,7 +205,7 @@ func unpack_python():
 	# Mark this as completely unpacked and write out some metadata.
 	print("Writing unpacked marker.")
 	var platform_status : Dictionary = _get_platform_status()
-	var platform_status_this_platform : Dictionary = platform_status["platforms"][OS.get_name()]
+	var platform_status_this_platform : Dictionary = platform_status["platforms"][get_host_os_name()]
 	var python_archive_filename : String = platform_status_this_platform["complete_filename"]
 	cache_status["completed_install_hash"] = tar_hash
 	cache_status["python_archive_filename"] = python_archive_filename
@@ -223,17 +213,39 @@ func unpack_python():
 
 	return true
 
-func get_extra_scripts_list(platform_list : Array = []) -> Array:
-
+func _get_wrapper_data():
 	var script_path : String = get_script().resource_path
 	var script_dir : String = script_path.get_base_dir()
 	var python_wrapper_manifset_path = script_dir.path_join(
 		"KiriPythonWrapperPythonFiles.json")
 	
-	# If this is running an actual build, we'll just return the manifest here.
-	# This file will not exist when running in-editor.
 	if FileAccess.file_exists(python_wrapper_manifset_path):
 		return load(python_wrapper_manifset_path).data
+	
+	return {}
+
+## Get the hash of extra scripts for the current host platform.
+func get_extra_scripts_hash():
+	
+	var wrapper_data : Dictionary = _get_wrapper_data()
+	
+	if wrapper_data.has("hash"):
+		return wrapper_data["hash"]
+	
+	# We must be running in-editor. That's fine.
+	return null
+
+## Get extra files to unpack.
+##
+## If platform_list is left as the default, it will use the current platform's
+## file list.
+func get_extra_scripts_list(platform_list : Array = []) -> Array:
+
+	# If this is running an actual build, we'll just return the manifest here.
+	# This data will not exist when running in-editor.
+	var wrapper_data : Dictionary = _get_wrapper_data()
+	if wrapper_data.has("files"):
+		return wrapper_data["files"]
 
 	# If it's not running an actual build, we need to scan for extra Python
 	# files.
@@ -280,11 +292,9 @@ func get_extra_scripts_list(platform_list : Array = []) -> Array:
 			var full_file = current_dir.path_join(file)
 			extra_python_files.append(full_file)
 
-	# FIXME: This is silly. When running out of the editor we just unpack every
-	# platform's wheel files and platform-specific files because we normally
-	# just determine the platform based on the export options.
+	# Default platform list to just the host OS.
 	if platform_list == []:
-		platform_list = _get_platform_status()["platforms"].keys()
+		platform_list = [get_host_os_name()]
 
 	# Add platform-specific wheel files for this platform. (Or all platforms if
 	# running in-editor.)
@@ -299,5 +309,12 @@ func get_extra_scripts_list(platform_list : Array = []) -> Array:
 				extra_python_files.append(wheel_full)
 
 	return extra_python_files
+
+## Get the OS name for the instance we're running.
+##
+## FIXME: Include architecture, later. Right now we're just wrapping the
+## OS.get_name() function.
+static func get_host_os_name():
+	return OS.get_name()
 
 #endregion

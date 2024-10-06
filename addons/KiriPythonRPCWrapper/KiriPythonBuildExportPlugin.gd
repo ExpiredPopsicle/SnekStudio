@@ -23,10 +23,7 @@ func _export_begin(
 		platform_list.append("Linux")
 	if "windows" in features:
 		platform_list.append("Windows")
-	# FIXME: MacOS stuff
-
-	
-	# TODO: Other platforms (macos)
+	# FIXME: MacOS stuff?
 	
 	for platform in platform_list:
 		var archive_to_export = build_wrangler._detect_archive_for_build(platform)
@@ -37,15 +34,32 @@ func _export_begin(
 	var script_path : String = get_script().resource_path
 	var script_dir : String = script_path.get_base_dir()
 
+	# Make a running hash of all the data so we know when we need to nuke
+	# everything and re-install. Note: The way we do it is obviously insecure.
+	# It's just to make sure that when a script changes we get the new version
+	# of the script to the user.
+	var hashing : HashingContext = HashingContext.new()
+	hashing.start(HashingContext.HASH_SHA256)
+
 	# Actually add all the files.
 	var extra_python_files = build_wrangler.get_extra_scripts_list(platform_list)
+	extra_python_files.sort() # For the hash. c:
 	for extra_python_file : String in extra_python_files:
 		var file_bytes : PackedByteArray = FileAccess.get_file_as_bytes(extra_python_file)
+		hashing.update(extra_python_file.to_utf8_buffer())
+		hashing.update(file_bytes)
 		add_file(extra_python_file, file_bytes, false)
+
+	# Finish the hash. Get the result.
+	var hash_result : PackedByteArray = hashing.finish()
 
 	# Add the list of Python files as its own file so we know what to extract so
 	# it's visible to Python.
-	var python_wrapper_manifest_str : String = JSON.stringify(extra_python_files, "    ")
+	var output_dict : Dictionary = {
+		"files" : extra_python_files,
+		"hash" : hash_result.hex_encode()
+	}
+	var python_wrapper_manifest_str : String = JSON.stringify(output_dict, "    ")
 	var python_wrapper_manifest_bytes : PackedByteArray = \
 		python_wrapper_manifest_str.to_utf8_buffer()
 	var python_wrapper_manifset_path = script_dir.path_join(

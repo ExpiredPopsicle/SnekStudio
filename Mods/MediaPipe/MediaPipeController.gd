@@ -72,29 +72,10 @@ func _ready():
 
 	tracker_python_process = KiriPythonWrapperInstance.new( \
 		script_dirname.path_join("/_tracker/Project/new_tracker.py"))
-	tracker_python_process.setup_python(true)
-	
-	print("Installing dependencies...")
-	# FIXME: Find a way to determine whether or not we've installed
-	# dependencies. Also figure out a way to ship with those dependencies
-	# instead of relying on PyPi.
-	#
-	# Use "pip3 download -r requirements.txt" but feed it something from our RPC
-	# wrapper config, to download the whl files, and then just do "pip install"
-	# with those whl files.
-	#
-	# Hard part: Figure out platform (--platform on pip) stuff.
-	# (eg: pip3 download --platform=win_amd64 --only-binary=:all: -r requirements.txt")
-	#
-	# FIXME: Don't run pip every damn time we start up.
-	var requirements_file_path : String = \
-		tracker_python_process.convert_cache_item_to_real_path("res://Mods/MediaPipe/_tracker/Project/requirements.txt")
-		
-	var pip_args = ["-m", "pip", "install", "-r", requirements_file_path]
-	print("Running pip: ", pip_args)
-	var pip_install_return : int = tracker_python_process.execute_python(pip_args)
-	
-	print("Pip return: ", pip_install_return)
+
+	print("Setting up Python...")
+	if not tracker_python_process.setup_python(false):
+		OS.alert("Something went wrong when setting up tracker dependencies!")
 
 	print("Starting tracker process...")
 	tracker_python_process.start_process(false)

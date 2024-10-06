@@ -57,31 +57,115 @@ func _get_wrapper_cache_path() -> String:
 func _get_wrapper_script_cache_path() -> String:
 	return _get_wrapper_cache_path().path_join("addons/KiriPythonRPCWrapper/KiriPythonRPCWrapper/__init__.py")
 
-func setup_python(force_overwrite : bool = false):
+## Unpack and setup Python, if necessary.
+##
+## FIXME: For now, use force_unpack_extras in development and after an update to
+## get updates to the wrapper script and Project-specific Python code.
+func setup_python(force_unpack_extras : bool = false):
+
+	# Determine if we need to purge the cache based on what we're expecting to
+	# see version-wise vs what's actually represented there.
+	var needs_purge : bool = false
+	var platform_status = _build_wrangler._get_platform_status()
+	var cache_status = _build_wrangler.get_cache_status()
+	if cache_status.has("requirements_installed"):
+		if cache_status["requirements_installed"] != platform_status["requirements"]:
+			# Has the requirements field, and it's changed since we installed
+			# last.
+			needs_purge = true
+		else:
+			pass # No purge. Everything matches.
+	else:
+		# Doesn't have the requirements field. Possible indicator of a partial
+		# install.
+		needs_purge = true
+
+	# If we're running a build, let's see if the build's packaged version
+	# matches what we see in the cache.
+	var data_hash = _build_wrangler.get_extra_scripts_hash()
+	if data_hash != null: # If it's null then we're just running in the editor.
+		if cache_status.has("extra_data_hash"):
+			if cache_status["extra_data_hash"] != data_hash:
+				# Stale data detected. Purge it.
+				needs_purge = true
+			else:
+				pass # Hashes match. Do nothing.
+		else:
+			# No hash marker at all? Purge it just to be safe.
+			needs_purge = true
+
+	# Purge it if needed.
+	if needs_purge:
+		_build_wrangler.purge_cached_python()
 
 	# Unpack base Python build.
-	if _build_wrangler.unpack_python(force_overwrite) == false:
+	if _build_wrangler.unpack_python() == false:
+		OS.alert("Unpacking Python failed!")
 		return false
 
-	# Unpack Python wrapper.
-	var extra_scripts = _build_wrangler.get_extra_scripts_list()
+	# Determine if we need to install whl files and unpack wrapper scripts.
+	var needs_setup = true
+	platform_status = _build_wrangler._get_platform_status()
+	cache_status = _build_wrangler.get_cache_status()
+	if cache_status.has("requirements_installed"):
+		if cache_status["requirements_installed"] == platform_status["requirements"]:
+			needs_setup = false
 
-	for extra_script : String in extra_scripts:
-		
-		# Chop off the "res://".
-		var extra_script_relative : String = extra_script.substr(len("res://"))
+	# Unpack Python wrapper, whl files, and project-specific scripts.
+	if needs_setup or force_unpack_extras or data_hash == null:
 
-		# Some other path wrangling.
-		var extraction_path : String = _get_wrapper_cache_path().path_join(extra_script_relative)
-		var extraction_path_dir : String = extraction_path.get_base_dir()
-		
-		# Make the dir.
-		DirAccess.make_dir_recursive_absolute(extraction_path_dir)
-		
-		# Extract the file.
-		var bytes : PackedByteArray = FileAccess.get_file_as_bytes(extra_script)
-		FileAccess.open(extraction_path, FileAccess.WRITE).store_buffer(bytes)
+		var extra_scripts = _build_wrangler.get_extra_scripts_list()
 
+		for extra_script : String in extra_scripts:
+			
+			# Chop off the "res://".
+			var extra_script_relative : String = extra_script.substr(len("res://"))
+
+			# Some other path wrangling.
+			var extraction_path : String = _get_wrapper_cache_path().path_join(extra_script_relative)
+			var extraction_path_dir : String = extraction_path.get_base_dir()
+			
+			# Make the dir.
+			DirAccess.make_dir_recursive_absolute(extraction_path_dir)
+			
+			# Extract the file.
+			var bytes : PackedByteArray = FileAccess.get_file_as_bytes(extra_script)
+			FileAccess.open(extraction_path, FileAccess.WRITE).store_buffer(bytes)
+
+	# Run pip to install packages from .whl files.
+	if needs_setup:
+		
+		# Get a list of all the wheel files.
+		var wheels_path : String = _build_wrangler._get_cache_path_godot().path_join("packaged_scripts/addons/KiriPythonRPCWrapper/Wheels")
+		var platform_wheels_path = wheels_path.path_join(KiriPythonBuildWrangler.get_host_os_name())
+		var wheel_list : PackedStringArray = DirAccess.get_files_at(platform_wheels_path)
+
+		var pip_args : PackedStringArray = [
+			"-m", "pip", "install",
+		]
+
+		# Add every wheel file in the directory as an argument.
+		for wheel in wheel_list:
+			if wheel.ends_with(".whl"):
+				pip_args.append(ProjectSettings.globalize_path(platform_wheels_path.path_join(wheel)))
+
+		# Run pip.
+		var output : Array = []
+		var pip_result = execute_python(pip_args, output, true, false)
+		if pip_result != 0:
+			OS.alert("Pip installation failed!\n" + "\n".join(output))
+			return false
+
+	# FIXME: Delete wheel files? I don't think we need them anymore. If we made
+	# it this far, then we know we succeeded at the install.
+	
+	# Write success marker.
+	cache_status = _build_wrangler.get_cache_status()
+	cache_status["requirements_installed"] = platform_status["requirements"]
+	if data_hash != null:
+		cache_status["extra_data_hash"] = data_hash
+	_build_wrangler.write_cache_status(cache_status)
+	
 	return true
 
 func get_status():
@@ -103,6 +187,7 @@ func run_python_command(
 	var python_exe_path : String = _get_python_executable()
 	
 	# Do a little switcheroo on Linux to open a console.
+	# FIXME: Remove this?
 	if open_console:
 		if OS.get_name() == "Linux":
 			args = PackedStringArray(["-e", python_exe_path]) + args
@@ -183,6 +268,7 @@ func start_process(open_terminal : bool = false):
 		"--script", real_python_script_path,
 		"--port", open_port]
 
+	# FIXME: Remove this?
 	if open_terminal:
 		if OS.get_name() == "Linux":
 			startup_command = ["xterm", "-e"] + startup_command

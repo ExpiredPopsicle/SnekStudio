@@ -303,7 +303,7 @@ func _convert_permissions(tar_mode_str : String) -> FileAccess.UnixPermissionFla
 # Example:
 #   dest_path: "foo/bar", filename: "butts/whatever/thingy.txt"
 #   extracts to: "foo/bar/butts/whatever/thingy.txt"
-func unpack_file(dest_path : String, filename : String, force_overwrite : bool = false):
+func unpack_file(dest_path : String, filename : String, force_overwrite : bool = false) -> bool:
 	var full_dest_path : String = dest_path.path_join(filename)
 	DirAccess.make_dir_recursive_absolute(full_dest_path.get_base_dir())
 	
@@ -314,10 +314,10 @@ func unpack_file(dest_path : String, filename : String, force_overwrite : bool =
 	#        traversal attacks than just what we've checked for here.
 	if record.filename.is_absolute_path():
 		assert(false)
-		return
+		return false
 	if record.filename.simplify_path().begins_with(".."):
 		assert(false)
-		return
+		return false
 
 	var need_file_made : bool = true
 	var need_permission_update : bool = true
@@ -387,7 +387,9 @@ func unpack_file(dest_path : String, filename : String, force_overwrite : bool =
 			out_file.store_buffer(file_data)
 			out_file.close()
 		else:
+			OS.alert("Can't write file: " + full_dest_path)
 			push_error("Can't write file: ", full_dest_path)
+			return false
 
 	# Set permissions (on normal OSes, not Windows). I don't think this
 	# applies to symlinks, though.
@@ -397,5 +399,7 @@ func unpack_file(dest_path : String, filename : String, force_overwrite : bool =
 				var err : Error = FileAccess.set_unix_permissions(
 					full_dest_path, _convert_permissions(record.mode))
 				assert(err != -1)
+
+	return true
 
 #endregion
