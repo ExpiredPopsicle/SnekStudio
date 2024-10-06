@@ -457,6 +457,7 @@ func _on_button_download_requirements_pressed(platform_name) -> void:
 		push_error("You need to download a Python build for your host platform first!")
 
 	print("Writing requirements file...")
+	DirAccess.make_dir_recursive_absolute(download_path)
 	var requirements_path : String = download_path.path_join("requirements.txt")
 	var requirements_file : FileAccess = FileAccess.open(requirements_path, FileAccess.WRITE)
 	requirements_file.store_string(_platform_status["requirements"])
