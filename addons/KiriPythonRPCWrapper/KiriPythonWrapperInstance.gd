@@ -60,7 +60,8 @@ func _get_wrapper_script_cache_path() -> String:
 func setup_python(force_overwrite : bool = false):
 
 	# Unpack base Python build.
-	_build_wrangler.unpack_python(force_overwrite)
+	if _build_wrangler.unpack_python(force_overwrite) == false:
+		return false
 
 	# Unpack Python wrapper.
 	var extra_scripts = _build_wrangler.get_extra_scripts_list()
@@ -81,6 +82,7 @@ func setup_python(force_overwrite : bool = false):
 		var bytes : PackedByteArray = FileAccess.get_file_as_bytes(extra_script)
 		FileAccess.open(extraction_path, FileAccess.WRITE).store_buffer(bytes)
 
+	return true
 
 func get_status():
 

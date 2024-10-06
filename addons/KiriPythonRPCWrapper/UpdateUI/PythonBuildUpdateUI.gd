@@ -19,6 +19,7 @@ var _current_downloads : Dictionary = {}
 
 var _platform_dropdowns : Dictionary = {}
 var _platform_buttons : Dictionary = {}
+var _platform_deps_buttons : Dictionary = {}
 
 # Current platform status. Loaded from/saved to platform_status.json.
 var _platform_status = {}
@@ -29,23 +30,21 @@ func _get_platform_status_filename() -> String:
 			"../platform_status.json")
 
 func _load_platform_status():
-	var platform_status_in : FileAccess = \
-		FileAccess.open(
-			_get_platform_status_filename(),
-			FileAccess.READ)
 	
-	if platform_status_in:
-		var json_string : String = \
-			platform_status_in.get_buffer(1024*1024*1024).get_string_from_utf8()
+	if FileAccess.file_exists(_get_platform_status_filename()):
+		var json_string : String = FileAccess.get_file_as_string(_get_platform_status_filename())
 		_platform_status = JSON.parse_string(json_string)
 
 	else:
-		_platform_status = {}
+		_platform_status = {
+			"platforms" : {},
+			"requirements" : ""
+		}
 		for platform in _platform_list:
-			_platform_status[platform] = {}
-			_platform_status[platform]["complete_filename"] = ""
-			_platform_status[platform]["download_url"] = ""
-			_platform_status[platform]["file_size"] = 0
+			_platform_status["platforms"][platform] = {}
+			_platform_status["platforms"][platform]["complete_filename"] = ""
+			_platform_status["platforms"][platform]["download_url"] = ""
+			_platform_status["platforms"][platform]["file_size"] = 0
 
 func _save_platform_status() -> void:
 	var platform_status_out : FileAccess = \
@@ -53,7 +52,7 @@ func _save_platform_status() -> void:
 			_get_platform_status_filename(),
 			FileAccess.WRITE)
 	platform_status_out.store_buffer(
-		JSON.stringify(_platform_status).to_utf8_buffer())
+		JSON.stringify(_platform_status, "  ").to_utf8_buffer())
 
 func _dropdown_selected(item_index : int, platform_name):
 	
@@ -62,11 +61,21 @@ func _dropdown_selected(item_index : int, platform_name):
 	
 	for asset in _asset_list:
 		if asset["complete_filename"] == complete_filename:
-			_platform_status[platform_name] = asset
+			_platform_status["platforms"][platform_name] = asset
 			break
 	
 	_save_platform_status()
 	_update_platform_ui()
+
+func _on_code_edit_requirements_text_changed() -> void:
+
+	_platform_status["requirements"] = %CodeEdit_Requirements.text
+
+	# FIXME: Put this on a timer so we aren't spamming it super hard.
+	_save_platform_status()
+
+	_update_platform_ui()
+
 
 func _ready() -> void:
 	
@@ -89,11 +98,15 @@ func _ready() -> void:
 		platform_download.pressed.connect(
 			self._start_github_download.bind(platform_name))
 
-		var platform_exe_path : Label = Label.new()
+		var platform_deps_download : Button = Button.new()
+		_platform_deps_buttons[platform_name] = platform_deps_download
+		platform_deps_download.pressed.connect(
+			self._on_button_download_requirements_pressed.bind(platform_name))
 
 		%PlatformGridContainer.add_child(platform_label)
 		%PlatformGridContainer.add_child(platform_dropdown)
 		%PlatformGridContainer.add_child(platform_download)
+		%PlatformGridContainer.add_child(platform_deps_download)
 
 	# Load platform status.
 	_load_platform_status()
@@ -107,14 +120,14 @@ func _ready() -> void:
 	_update_platform_ui()
 
 func _get_platform_filename_from_current_status(platform_name : String) -> String:
-	var this_platform_status : Dictionary = _platform_status[platform_name]
+	var this_platform_status : Dictionary = _platform_status["platforms"][platform_name]
 	var file_path : String = get_script().resource_path.get_base_dir().path_join(
 		"../StandalonePythonBuilds").path_join(
 		this_platform_status["complete_filename"])
 	return file_path
 
 func _check_platform_file_ready(platform_name : String) -> bool:
-	var this_platform_status : Dictionary = _platform_status[platform_name]
+	var this_platform_status : Dictionary = _platform_status["platforms"][platform_name]
 	var file_path : String = _get_platform_filename_from_current_status(platform_name)
 
 	# Does the file even exist?
@@ -145,7 +158,7 @@ func _update_platform_dropdowns():
 				_platform_dropdowns[platform].add_item(item["complete_filename"])
 
 			# Re-select the currently selected thing.
-			var current_fname = _platform_status[platform]["complete_filename"]
+			var current_fname = _platform_status["platforms"][platform]["complete_filename"]
 			var found_file : bool = false
 			for i in range(0, len(_asset_list)):
 				var asset = _asset_list[i]
@@ -161,7 +174,7 @@ func _update_platform_dropdowns():
 			# (newer release) asset list.
 			if not found_file:
 				do_it_again = true
-				_asset_list.append(_platform_status[platform])
+				_asset_list.append(_platform_status["platforms"][platform])
 				_platform_dropdowns[platform].add_item(current_fname)
 				_platform_dropdowns[platform].select(len(_asset_list) - 1)
 
@@ -189,7 +202,8 @@ func _update_platform_ui():
 		# FIXME: Remove this.
 		_check_platform_file_ready(platform_name)
 		
-		var this_platform_status : Dictionary = _platform_status[platform_name]
+		# Main build downloads.
+		var this_platform_status : Dictionary = _platform_status["platforms"][platform_name]
 		if this_platform_status["file_size"] == 0 or \
 			len(this_platform_status["complete_filename"]) == 0:
 			# No file is even selected yet.
@@ -207,7 +221,32 @@ func _update_platform_ui():
 			_platform_buttons[platform_name].disabled = false
 			_platform_buttons[platform_name].text = "Download"
 
+		# Dependencies downloads.
+		#
+		# Each "Wheels" platform directory will have the requirements.txt file
+		# of the last successfully downloaded pip requirements. We'll compare
+		# that to what our current requirements.txt file looks like to see if we
+		# need to update the packages.
+		var wheel_download_path : String = get_script().resource_path.get_base_dir().path_join("../Wheels").path_join(platform_name)
+		var requirements_path : String = wheel_download_path.path_join("requirements.txt")
+		if FileAccess.file_exists(requirements_path):
+			var last_written_requirements : String = FileAccess.get_file_as_string(requirements_path)
+			if last_written_requirements != _platform_status["requirements"]:
+				_platform_deps_buttons[platform_name].disabled = false
+				_platform_deps_buttons[platform_name].text = "Update"
+			else:
+				_platform_deps_buttons[platform_name].disabled = true
+				_platform_deps_buttons[platform_name].text = "Downloaded"
+		else:
+			_platform_deps_buttons[platform_name].disabled = false
+			_platform_deps_buttons[platform_name].text = "Download"
+
 	_update_download_button_progress()
+
+	if "requirements" in _platform_status:
+		if %CodeEdit_Requirements.text != _platform_status["requirements"]:
+			%CodeEdit_Requirements.text = _platform_status["requirements"]
+
 
 # Split up a string based on multiple delimeters.
 #
@@ -289,7 +328,7 @@ func _start_github_download(platform : String):
 	_current_request.request_completed.connect(
 		self._handle_download_finished.bind(platform))
 	_current_request.request(
-		_platform_status[platform]["download_url"], [],
+		_platform_status["platforms"][platform]["download_url"], [],
 		HTTPClient.METHOD_GET)
 	_update_platform_ui()
 	return _current_request
@@ -405,3 +444,66 @@ func _get_latest_version_releaseinfo_completed(
 
 	%Button_UpdateReleaseAssets.disabled = false
 	_cleanup_request()
+
+func _on_button_download_requirements_pressed(platform_name) -> void:
+
+	var download_path : String = get_script().resource_path.get_base_dir().path_join("../Wheels")
+
+	print("Unpacking Python...")
+	var python_instance : KiriPythonWrapperInstance = KiriPythonWrapperInstance.new("")
+	if python_instance.setup_python(true) == false:
+		OS.alert("You need to download a Python build for your host platform first!")
+		push_error("You need to download a Python build for your host platform first!")
+
+	print("Writing requirements file...")
+	var requirements_path : String = download_path.path_join("requirements.txt")
+	var requirements_file : FileAccess = FileAccess.open(requirements_path, FileAccess.WRITE)
+	requirements_file.store_string(_platform_status["requirements"])
+
+	print("Downloading requirements...")
+	
+	# See here for platform mappings?
+	#   https://pip.pypa.io/en/stable/cli/pip_download/
+	var platform_to_pip_mapping : Dictionary = {
+		"Windows" : "win_amd64",
+		"Linux" : "manylinux2014_x86_64",
+		"macOS" : "macosx_11_0_universal2" # FIXME: Find something that works here. (macOS)
+	}
+
+	var this_platform_download_path : String = \
+		download_path.path_join(platform_name)
+	
+	# Make sure the directory exists.
+	DirAccess.make_dir_recursive_absolute(this_platform_download_path)
+	
+	# Clear out the whole directory, so we don't end up with stuff lingering
+	# from a previous fetch.
+	var files_to_delete : PackedStringArray = \
+		DirAccess.get_files_at(this_platform_download_path)
+	for file in files_to_delete:
+		print("Removing old whl file: ", file)
+		DirAccess.remove_absolute(this_platform_download_path.path_join(file))
+
+	# Actually run pip.
+	var pip_args = ["-m", "pip", "download",
+		"--platform=" + platform_to_pip_mapping[platform_name],
+		"--only-binary=:all:",
+		"-d", ProjectSettings.globalize_path(this_platform_download_path),
+		# FIXME: Maybe specify Python version.
+		"-r", ProjectSettings.globalize_path(requirements_path)]
+	var output : Array = []
+	var pip_download_return : int = python_instance.execute_python(
+		pip_args, output, true, true)
+
+	# Handle errors or write a success indicator.
+	if pip_download_return != 0:
+		OS.alert("Pip failed (platform: " + platform_name + "): " + str(output))
+		push_error("Pip failed (platform: ", platform_name, "): ", output)
+	else:
+		var last_requirements_file : FileAccess = \
+			FileAccess.open(
+				this_platform_download_path.path_join("requirements.txt"),
+				FileAccess.WRITE)
+		last_requirements_file.store_string(_platform_status["requirements"])
+
+	_update_platform_ui()

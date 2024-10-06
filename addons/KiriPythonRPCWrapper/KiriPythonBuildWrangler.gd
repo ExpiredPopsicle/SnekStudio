@@ -19,7 +19,7 @@ func _detect_archive_for_runtime() -> String:
 ## platform_status.json.
 func _detect_archive_for_build(os_name : String) -> String:
 	var platform_status_json : Dictionary = _get_platform_status()
-	var platform_status_this_os : Dictionary = platform_status_json[os_name]
+	var platform_status_this_os : Dictionary = platform_status_json["platforms"][os_name]
 	return get_script().resource_path.get_base_dir().path_join(
 		"StandalonePythonBuilds").path_join(platform_status_this_os["complete_filename"])
 
@@ -45,12 +45,14 @@ func _remove_archive_extensions(s : String) -> String:
 ## Returns based on settings for the current runtime OS.
 ##
 ## Example return value:
-##   "_python_dist/cpython-3.12.5+20240814-x86_64-unknown-linux-gnu-install_only_stripped"
+##   (Old) ~~"_python_dist/cpython-3.12.5+20240814-x86_64-unknown-linux-gnu-install_only_stripped"~~
+##   "_python_dist"
 func _get_cache_path_relative():
 	var platform_status : Dictionary = _get_platform_status()
-	var platform_status_this_platform : Dictionary = platform_status[OS.get_name()]
+	var platform_status_this_platform : Dictionary = platform_status["platforms"][OS.get_name()]
 	var filename : String = platform_status_this_platform["complete_filename"]
-	var ret : String = "_python_dist".path_join(_remove_archive_extensions(filename))
+	#var ret : String = "_python_dist".path_join(_remove_archive_extensions(filename))
+	var ret : String = "_python_dist"
 	return ret
 
 ## Get the full cache path, as understood by the OS.
@@ -71,16 +73,16 @@ func _get_cache_path_godot() -> String:
 
 #region Public API
 
-# Get the expected path to the Python executable. This is where we think it'll
-# end up, not where it actually did end up. This can be called without actually
-# extracting the archive. In fact, we need it to act that way because we use it
-# to determine if there's already a Python install in-place.
-#
-# Path is a Godot path. Use ProjectSettings.globalize_path() to conver to a
-# system path.
-#
-# Example return:
-#   "user://_python_dist/20240415/3.12.3/python/install/bin/python3"
+## Get the expected path to the Python executable. This is where we think it'll
+## end up, not where it actually did end up. This can be called without actually
+## extracting the archive. In fact, we need it to act that way because we use it
+## to determine if there's already a Python install in-place.
+##
+## Path is a Godot path. Use ProjectSettings.globalize_path() to conver to a
+## system path.
+##
+## Example return:
+##   "user://_python_dist/20240415/3.12.3/python/install/bin/python3"
 func get_runtime_python_executable_godot_path() -> String:
 	#var base_dir = _get_cache_path_godot().path_join("python/install")
 	#if OS.get_name() == "Windows":
@@ -106,7 +108,7 @@ func get_runtime_python_executable_system_path() -> String:
 func get_cache_status() -> Dictionary:
 	var cache_status = {}
 	var cache_path_godot : String = _get_cache_path_godot()
-	var cache_status_filename : String = cache_path_godot.path_join(".completed_unpack")
+	var cache_status_filename : String = cache_path_godot.path_join("cache_status.json")
 	if FileAccess.file_exists(cache_status_filename):
 		var cache_status_json : String = FileAccess.get_file_as_string(cache_status_filename)
 		cache_status = JSON.parse_string(cache_status_json)
@@ -114,14 +116,16 @@ func get_cache_status() -> Dictionary:
 
 func write_cache_status(cache_status : Dictionary):
 	var cache_path_godot : String = _get_cache_path_godot()
-	var cache_status_filename : String = cache_path_godot.path_join(".completed_unpack")
+	var cache_status_filename : String = cache_path_godot.path_join("cache_status.json")
 	var cache_status_json = JSON.stringify(cache_status)
 	var cache_status_file : FileAccess = FileAccess.open(cache_status_filename, FileAccess.WRITE)
 	cache_status_file.store_string(cache_status_json)
 	cache_status_file.close()
 
-func unpack_python(overwrite : bool = false):
-
+## This returns true if the system hasn't had Python unpacked into the cache
+## yet, or if the current version there does not match the expected version.
+func needs_to_unpack_python() -> bool:
+	
 	var cache_path_godot : String = _get_cache_path_godot()
 
 	# Open archive.
@@ -133,16 +137,58 @@ func unpack_python(overwrite : bool = false):
 	# build using the Python Builds tab down at the bottom.
 	assert(err == OK)
 
-	var cache_status_filename : String = cache_path_godot.path_join(".completed_unpack")
+	var cache_status_filename : String = cache_path_godot.path_join("cache_status.json")
 
 	# Check to see if we've marked this as completely unpacked.
 	var tar_hash : String = reader.get_tar_hash()
 	var cache_status : Dictionary = get_cache_status()
-	if not overwrite:
-		if cache_status.has("completed_install_hash"):
-			if cache_status["completed_install_hash"] == tar_hash:
-				# This appears to already be completely unpacked.
-				return
+	if cache_status.has("completed_install_hash"):
+		if cache_status["completed_install_hash"] == tar_hash:
+			# This appears to already be completely unpacked.
+			return false
+
+	return true
+
+func _delete_recursive(path : String):
+	if DirAccess.dir_exists_absolute(path):
+		
+		# Delete subdirs.
+		var subdirs : PackedStringArray = DirAccess.get_directories_at(path)
+		for subdir in subdirs:
+			_delete_recursive(path.path_join(subdir))
+
+		# Delete files.
+		var files : PackedStringArray = DirAccess.get_files_at(path)
+		for file in files:
+			DirAccess.remove_absolute(path.path_join(file))
+
+		DirAccess.remove_absolute(path)
+
+## Delete the entire cached Python install.
+func purge_cached_python():
+	print("PURGING OLD PYTHON")
+	var cache_path : String = _get_cache_path_godot()
+	if DirAccess.dir_exists_absolute(cache_path):
+		_delete_recursive(cache_path)
+
+## Unpack a Python install.
+func unpack_python():
+
+	if not needs_to_unpack_python():
+		return true
+
+	# Purge old copy of Python.
+	var cache_path_godot : String = _get_cache_path_godot()
+	_delete_recursive(cache_path_godot)
+
+	# Realistically, this will be empty after that purge.
+	var cache_status : Dictionary = get_cache_status()
+
+	# Open archive.
+	var python_archive_path : String = _detect_archive_for_runtime()
+	var reader : KiriTARReader = KiriTARReader.new()
+	var err : Error = reader.open(python_archive_path)
+	var tar_hash : String = reader.get_tar_hash()
 
 	# Get files.
 	var file_list : PackedStringArray = reader.get_files()
@@ -168,12 +214,16 @@ func unpack_python(overwrite : bool = false):
 
 	# Mark this as completely unpacked and write out some metadata.
 	print("Writing unpacked marker.")
+	var platform_status : Dictionary = _get_platform_status()
+	var platform_status_this_platform : Dictionary = platform_status["platforms"][OS.get_name()]
+	var python_archive_filename : String = platform_status_this_platform["complete_filename"]
 	cache_status["completed_install_hash"] = tar_hash
+	cache_status["python_archive_filename"] = python_archive_filename
 	write_cache_status(cache_status)
 
-# TODO: Clear cache function. Uninstall Python, etc.
+	return true
 
-func get_extra_scripts_list() -> Array:
+func get_extra_scripts_list(platform_list : Array = []) -> Array:
 
 	var script_path : String = get_script().resource_path
 	var script_dir : String = script_path.get_base_dir()
@@ -181,6 +231,7 @@ func get_extra_scripts_list() -> Array:
 		"KiriPythonWrapperPythonFiles.json")
 	
 	# If this is running an actual build, we'll just return the manifest here.
+	# This file will not exist when running in-editor.
 	if FileAccess.file_exists(python_wrapper_manifset_path):
 		return load(python_wrapper_manifset_path).data
 
@@ -229,9 +280,23 @@ func get_extra_scripts_list() -> Array:
 			var full_file = current_dir.path_join(file)
 			extra_python_files.append(full_file)
 
-	## FIXME: Remove this.
-	#for f in extra_python_files:
-		#print("Extra file: ", f)
+	# FIXME: This is silly. When running out of the editor we just unpack every
+	# platform's wheel files and platform-specific files because we normally
+	# just determine the platform based on the export options.
+	if platform_list == []:
+		platform_list = _get_platform_status()["platforms"].keys()
+
+	# Add platform-specific wheel files for this platform. (Or all platforms if
+	# running in-editor.)
+	for platform in platform_list:
+		var wheels_path : String = \
+			get_script().resource_path.get_base_dir().path_join("Wheels").path_join(platform)
+		if DirAccess.dir_exists_absolute(wheels_path):
+			var wheels_list : PackedStringArray = DirAccess.get_files_at(wheels_path)
+			for wheel in wheels_list:
+				print("Adding wheel: ", wheel)
+				var wheel_full : String = wheels_path.path_join(wheel)
+				extra_python_files.append(wheel_full)
 
 	return extra_python_files
 

@@ -10,9 +10,10 @@ config_version=5
 
 [application]
 
-config/name="SnekStudio"
+config/name="SnekStudio_dev2"
 config/version="0.1.1"
 run/main_scene="res://Core/Main.tscn"
+config/use_custom_user_dir=true
 config/features=PackedStringArray("4.3", "Forward Plus")
 run/max_fps=60
 boot_splash/bg_color=Color(1, 1, 1, 1)

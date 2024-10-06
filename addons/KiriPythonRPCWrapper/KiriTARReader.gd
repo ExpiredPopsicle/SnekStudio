@@ -383,6 +383,7 @@ func unpack_file(dest_path : String, filename : String, force_overwrite : bool =
 		var file_data : PackedByteArray = read_file(record.filename)
 		var out_file = FileAccess.open(full_dest_path, FileAccess.WRITE)
 		if out_file:
+			need_permission_update = true
 			out_file.store_buffer(file_data)
 			out_file.close()
 		else:

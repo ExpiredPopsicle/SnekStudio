@@ -38,7 +38,7 @@ func _export_begin(
 	var script_dir : String = script_path.get_base_dir()
 
 	# Actually add all the files.
-	var extra_python_files = build_wrangler.get_extra_scripts_list()
+	var extra_python_files = build_wrangler.get_extra_scripts_list(platform_list)
 	for extra_python_file : String in extra_python_files:
 		var file_bytes : PackedByteArray = FileAccess.get_file_as_bytes(extra_python_file)
 		add_file(extra_python_file, file_bytes, false)

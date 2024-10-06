@@ -40,7 +40,7 @@ layout_mode = 2
 size_flags_vertical = 0
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
-columns = 3
+columns = 4
 
 [node name="Label3" type="Label" parent="ScrollContainer/MarginContainer/VBoxContainer/PlatformGridContainer"]
 layout_mode = 2
@@ -55,9 +55,36 @@ text = "Build"
 layout_mode = 2
 text = "Download"
 
+[node name="Label9" type="Label" parent="ScrollContainer/MarginContainer/VBoxContainer/PlatformGridContainer"]
+layout_mode = 2
+text = "Dependencies"
+
 [node name="Button_UpdateReleaseAssets" type="Button" parent="ScrollContainer/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Update Release Assets"
 
+[node name="Label" type="Label" parent="ScrollContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Requirements"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ScrollContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="CodeEdit_Requirements" type="CodeEdit" parent="ScrollContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 256)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "mediapipe==0.10.14
+psutil==5.9.7
+cv2-enumerate-cameras==1.1.10
+numpy==1.26.0
+"
+gutters_draw_line_numbers = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+
 [connection signal="pressed" from="ScrollContainer/MarginContainer/VBoxContainer/Button_UpdateReleaseAssets" to="." method="_on_update_button_pressed"]
+[connection signal="text_changed" from="ScrollContainer/MarginContainer/VBoxContainer/HBoxContainer/CodeEdit_Requirements" to="." method="_on_code_edit_requirements_text_changed"]
