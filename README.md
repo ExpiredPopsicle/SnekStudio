@@ -14,6 +14,9 @@ you look too closely into my code crimes.
 
 ## Getting started (Linux + Windows)
 
+Builds are coming very soon, but for now here are the steps to get it running
+using a copy of the Godot editor.
+
 1. Clone the repo.
 
    ```
@@ -32,6 +35,10 @@ you look too closely into my code crimes.
 
 	2. Click the "Download" button next to the platform(s) you want to build
 	   for.
+
+	3. Click the other "Download" button in the column for the dependencies.
+	   Wait a bit because it'll look like it's frozen, but it's just downloading
+	   files.
 
 4. Run it from the editor.
 
