@@ -742,10 +742,7 @@ def enumerate_camera_devices():
 
     from cv2_enumerate_cameras import enumerate_cameras
 
-    # Limit to DSHOW on Windows because that at least works on WINE.
     capture_api_preference=cv2.CAP_ANY
-    if sys.platform == "win32":
-        capture_api_preference = cv2.CAP_DSHOW
 
     # Having issues with GSTREAMER sources, so let's just use V4L only.
     if sys.platform == "linux":
