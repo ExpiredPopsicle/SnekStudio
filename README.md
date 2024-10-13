@@ -1,6 +1,8 @@
+![Docs/logo_tr.png](Docs/logo_tr.png)
+
 # SnekStudio Super ~~Secret~~ Public Alpha Edition
 
-![thumbsup.png](thumbsup.png)
+![Docs/thumbsup.png](Docs/thumbsup.png)
 
 Hello! Welcome to the alpha version of SnekStudio. This is the software I've
 been using in production for streams since around 2022. It's "organically
