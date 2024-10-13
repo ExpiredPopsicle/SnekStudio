@@ -463,7 +463,10 @@ func process_new_packets(model, delta):
 			break
 	
 	if dropped_packets > 0:
-		print_log(["Dropped packets: ", dropped_packets])
+		if dropped_packets <= 2:
+			print_log(["Dropped packets (within tolerance): ", dropped_packets])
+		else:
+			print_log(["Dropped packets (WARNING): ", dropped_packets])
 
 # -----------------------------------------------------------------------------
 # Actual update code.

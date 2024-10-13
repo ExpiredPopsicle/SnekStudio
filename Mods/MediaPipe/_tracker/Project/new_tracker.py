@@ -493,7 +493,6 @@ class MediaPipeTracker:
                 # If the video device got disconnected, reconnect it.
                 self._open_video_device()
 
-                self._write_log("locking mutex before main loop iteration")
                 with self.the_big_ugly_mutex:
 
                     last_frame_time = time.time()
