@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dyk6y7maq82aj"
-path="res://.godot/imported/bone_node_constraint_applier.svg-00cf8625100cc187a6acad8190383127.ctex"
+path="res://.godot/imported/bone_node_constraint_applier.svg-9a45e46add6d3d870d9f77d5fa74a385.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/vrm/node_constraint/icons/bone_node_constraint_applier.svg"
-dest_files=["res://.godot/imported/bone_node_constraint_applier.svg-00cf8625100cc187a6acad8190383127.ctex"]
+source_file="res://addons/godot-vrm/node_constraint/icons/bone_node_constraint_applier.svg"
+dest_files=["res://.godot/imported/bone_node_constraint_applier.svg-9a45e46add6d3d870d9f77d5fa74a385.ctex"]
 
 [params]
 
