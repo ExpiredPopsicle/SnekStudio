@@ -70,44 +70,58 @@ class SnekStudioExporter extends EditorExportPlugin:
 		
 		_export_path = path.get_base_dir()
 
+		# Export all mods as .zip files.
 		DirAccess.make_dir_recursive_absolute(_export_path.path_join("Mods"))
-
 		var mods_list : PackedStringArray = DirAccess.get_directories_at("res://Mods")
 		for mod_to_export in mods_list:
 			var zp : ZIPPacker = ZIPPacker.new()
 			zp.open(_export_path.path_join("Mods").path_join(mod_to_export + ".zip"))
 			_zip_directory(zp, "res://Mods".path_join(mod_to_export))
 			zp.close()
-		
-		#copy_recursive(_export_path.path_join("Mods"), "res://Mods")
 
-	#func copy_recursive(dest : String, src : String):
-		#
-		## Make the directory to put the thing in.
-		#DirAccess.make_dir_recursive_absolute(dest.get_base_dir())
-		#
-		#if DirAccess.dir_exists_absolute(src):
-			#
-			## Make the directory.
-			#print("make_dir_recursive_absolute: ", dest)
-			#DirAccess.make_dir_recursive_absolute(dest)
-			#
-			## Copy contents over
-			#var directory_contents = PackedStringArray()
-			#directory_contents.append_array(DirAccess.get_directories_at(src))
-			#directory_contents.append_array(DirAccess.get_files_at(src))
-			#print("directory contents... ", directory_contents)
-			#for thing_in_directory in directory_contents:
-				#copy_recursive(
-					#dest.path_join(thing_in_directory),
-					#src.path_join(thing_in_directory))
-			#
-		#else:
-#
-			## Copy the thing.
-			#print("copy_absolute: ", dest, " - ", src)
-			#DirAccess.copy_absolute(src, dest)
-		#
+		# Export all sample models.
+		DirAccess.make_dir_recursive_absolute(_export_path.path_join("SampleModels"))
+		copy_recursive(
+			_export_path.path_join("SampleModels"),
+			"res://SampleModels",
+			"*.vrm")
+
+		# Export all LICENSE files.
+		DirAccess.make_dir_recursive_absolute(_export_path.path_join("Licenses"))
+		copy_recursive(_export_path.path_join("Licenses"), "res://Licenses")
+
+		# Copy our own LICENSE file.
+		DirAccess.copy_absolute("res://LICENSE", _export_path.path_join("LICENSE.txt"))
+
+	func copy_recursive(dest : String, src : String, match_string : String = ""):
+		
+		# Make the directory to put the thing in.
+		DirAccess.make_dir_recursive_absolute(dest.get_base_dir())
+		
+		if DirAccess.dir_exists_absolute(src):
+			
+			# Make the directory.
+			print("make_dir_recursive_absolute: ", dest)
+			DirAccess.make_dir_recursive_absolute(dest)
+			
+			# Copy contents over
+			var directory_contents = PackedStringArray()
+			directory_contents.append_array(DirAccess.get_directories_at(src))
+			directory_contents.append_array(DirAccess.get_files_at(src))
+			print("directory contents... ", directory_contents)
+			for thing_in_directory in directory_contents:
+				copy_recursive(
+					dest.path_join(thing_in_directory),
+					src.path_join(thing_in_directory),
+					match_string)
+			
+		else:
+
+			# Copy the thing.
+			if dest.match(match_string) or match_string == "":
+				print("Copy file: ", dest, " - ", src)
+				DirAccess.copy_absolute(src, dest)
+		
 		
 
 	func _export_file(path : String, type : String, features : PackedStringArray):
@@ -116,16 +130,9 @@ class SnekStudioExporter extends EditorExportPlugin:
 		var mods_path = "res://Mods/"
 		if path.begins_with(mods_path):
 			skip()
-			
-			#var path_relative = path.substr(len(mods_path))
-			#var dest_path = _export_path.path_join("Mods/".path_join(path_relative))
-			#
-			#DirAccess.make_dir_recursive_absolute(dest_path.get_base_dir())
-			#
-			#DirAccess.copy_absolute(path, dest_path)
-		#
-			#print("_export_file: ", path)
-			#print("  dest_path: ", dest_path)
+
+		if path.begins_with("res://SampleModels/"):
+			skip()
 
 	func _get_name():
 		return "SnekStudioExporter"

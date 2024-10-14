@@ -1,0 +1,23 @@
+#!/bin/bash
+
+GODOT=/storage/Programs/Godot/Godot_v4.3-stable_linux.x86_64
+
+set -e
+cd "$(dirname "$0")/.."
+
+# Fetch all Python dependencies.
+
+# "${GODOT}" --headless --script Build/DownloadPythonRequirements.gd
+
+
+# Actually do the builds.
+
+# "${GODOT}" --headless --path . \
+#            --export-release "Linux/X11" Build/Builds/SnekStudio_Linux/snekstudio
+
+"${GODOT}" --headless --path . \
+           --export-debug "Windows Desktop" Build/Builds/SnekStudio_Windows/snekstudio.exe
+
+# cd Build/Builds
+
+# tar czvf SnekStudio_Linux_VERSIONNUMBERGOESHEREFIXME.tar.gz SnekStudio_Linux
