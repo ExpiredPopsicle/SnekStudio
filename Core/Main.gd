@@ -129,6 +129,7 @@ func _input(event):
 		if event.pressed:
 			if event.keycode == KEY_ESCAPE:
 				%UI_Root.set_visible(not %UI_Root.visible)
+				get_viewport().borderless = not %UI_Root.visible
 
 func is_dev_mode():
 	return ("--dev" in OS.get_cmdline_args())
