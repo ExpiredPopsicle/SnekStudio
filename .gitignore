@@ -18,3 +18,7 @@ addons/KiriPythonRPCWrapper/Wheels
 
 # Stuff we removed right before release
 StuffToRemove
+
+# Extra junk from the build.
+Build/build_vars.sh
+Build/Builds
