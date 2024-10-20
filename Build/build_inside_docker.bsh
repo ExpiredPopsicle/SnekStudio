@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# This is NOT a script to be run inside a container. It is a script that runs something inside a container
+
+cd "$(dirname "$0")/.."
+
+#echo "docker run -v /build:. debian"
+docker run --rm \
+    -v "$(realpath .)":/build \
+    debian \
+    "/build/Build/run_this_inside_debian_container_to_build.bsh"
