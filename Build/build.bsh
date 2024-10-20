@@ -57,7 +57,8 @@ source Build/build_vars.sh
 
 # Fetch all Python dependencies.
 
-"${GODOT}" --headless --script Build/DownloadPythonRequirements.gd
+"${GODOT}" --headless --path . \
+           --script Build/DownloadPythonRequirements.gd
 
 
 # Actually do the builds.
