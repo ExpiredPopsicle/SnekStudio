@@ -4,7 +4,7 @@ Kiri Jolly - https://expiredpopsicle.com
 
 # Contributors
 
-Drikanis
+Drikanis - https://drikanis.org
 
 exodrifter - https://www.exodrifter.space
 
