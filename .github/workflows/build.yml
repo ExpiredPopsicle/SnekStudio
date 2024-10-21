@@ -1,11 +1,16 @@
 name: Build
 
+# on:
+#   push:
+#   pull_request:
+#   release:
+#     types: [published]
+
 on:
   push:
-  pull_request:
-  release:
-    types: [published]
-
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 jobs:
   build:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
@@ -13,6 +18,19 @@ jobs:
     container: debian:bookworm
 
     steps:
+
+      # Create the release, I guess?
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: Auto generated release
+        draft: true
+        prerelease: false
 
       # Install git.
     - name: Git
