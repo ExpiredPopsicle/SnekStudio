@@ -3,7 +3,7 @@
 
 extends SceneTree
 
-var updater : KiriPythonBuildUpdater = null
+var updater = null
 var frame_count = 0
 
 func _initialize():
