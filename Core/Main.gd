@@ -3,6 +3,8 @@ extends Node3D
 var _mods_running = false
 var colliders_by_model_name = {}
 
+var hide_window_decorations_with_ui : bool = false
+
 func _process(_delta):
 	_set_process_order()
 
@@ -129,7 +131,7 @@ func _input(event):
 		if event.pressed:
 			if event.keycode == KEY_ESCAPE:
 				%UI_Root.set_visible(not %UI_Root.visible)
-				get_viewport().borderless = not %UI_Root.visible
+				_update_window_decorations()
 
 func is_dev_mode():
 	return ("--dev" in OS.get_cmdline_args())
@@ -274,9 +276,6 @@ func serialize_settings(do_settings=true, do_mods=true):
 		# Save camera.
 		settings_to_save["camera"] = $CameraBoom.save_settings()
 
-		# Save transparency.
-		settings_to_save["transparent_window"] = get_background_transparency()
-
 		# Save UI visibility.
 		settings_to_save["ui_visible"] = %UI_Root.visible
 
@@ -284,8 +283,10 @@ func serialize_settings(do_settings=true, do_mods=true):
 		var last_vrm_path = $ModelController.get_last_loaded_vrm()
 		settings_to_save["last_vrm_path"] = last_vrm_path
 
-		# Save background color.
+		# Save window settings
+		settings_to_save["transparent_window"] = get_background_transparency()
 		settings_to_save["background_color"] = get_background_color().to_html()
+		settings_to_save["hide_window_decorations"] = hide_window_decorations_with_ui
 
 		# Save sound stuff.
 		settings_to_save["volume_output"] = AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Master"))
@@ -370,6 +371,11 @@ func _setting_changed(key, old, new):
 	# No new key.
 	return false
 
+func _update_window_decorations():
+	if hide_window_decorations_with_ui:
+		get_viewport().borderless = not %UI_Root.visible
+	else:
+		get_viewport().borderless = false
 
 func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 	
@@ -396,6 +402,9 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 		# Load transparency.
 		if "transparent_window" in settings_dict:
 			set_background_transparency(settings_dict["transparent_window"])
+
+		if "hide_window_decorations" in settings_dict:
+			hide_window_decorations_with_ui = settings_dict["hide_window_decorations"]
 
 		# Load UI visibility.
 		if "ui_visible" in settings_dict:
@@ -447,6 +456,8 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 				get_viewport().mode |= Window.MODE_MAXIMIZED
 			else:
 				get_viewport().mode &= ~Window.MODE_MAXIMIZED
+
+	_update_window_decorations()
 
 	# Load mods list.
 	if do_mods:

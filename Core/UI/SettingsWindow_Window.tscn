@@ -4,6 +4,8 @@
 [ext_resource type="Script" path="res://Core/UI/SettingsWindow_Window.gd" id="2_v2kbv"]
 
 [node name="SettingsWindow_Window" instance=ExtResource("1_g1tow")]
+offset_right = 338.0
+offset_bottom = 158.0
 script = ExtResource("2_v2kbv")
 label_text = "Window Settings"
 
@@ -30,13 +32,22 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Label6" type="Label" parent="GridContainer" index="2"]
+[node name="Label" type="Label" parent="GridContainer" index="2"]
+layout_mode = 2
+text = "Hide window decorations with UI"
+
+[node name="CheckBox_HideWindowDecorations" type="CheckBox" parent="GridContainer" index="3"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Label6" type="Label" parent="GridContainer" index="4"]
 layout_mode = 2
 text = "Background color"
 
-[node name="ColorPickerButton_BackgroundColor" type="ColorPickerButton" parent="GridContainer" index="3"]
+[node name="ColorPickerButton_BackgroundColor" type="ColorPickerButton" parent="GridContainer" index="5"]
 unique_name_in_owner = true
 layout_mode = 2
 
 [connection signal="toggled" from="GridContainer/CheckBox_TransparentBackground" to="." method="_any_value_changed"]
+[connection signal="toggled" from="GridContainer/CheckBox_HideWindowDecorations" to="." method="_any_value_changed"]
 [connection signal="color_changed" from="GridContainer/ColorPickerButton_BackgroundColor" to="." method="_any_value_changed"]

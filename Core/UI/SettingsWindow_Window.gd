@@ -8,6 +8,8 @@ func settings_changed_from_app():
 		%CheckBox_TransparentBackground.button_pressed = settings_dict["transparent_window"]	
 	if "background_color" in settings_dict:
 		%ColorPickerButton_BackgroundColor.color = Color.html(settings_dict["background_color"])
+	if "hide_window_decorations" in settings_dict:
+		%CheckBox_HideWindowDecorations.button_pressed = settings_dict["hide_window_decorations"]
 
 func show_window():
 	super.show_window()
@@ -21,9 +23,9 @@ func update_to_app():
 
 	settings_dict["transparent_window"] = %CheckBox_TransparentBackground.button_pressed
 	settings_dict["background_color"] = %ColorPickerButton_BackgroundColor.color.to_html()
+	settings_dict["hide_window_decorations"] = %CheckBox_HideWindowDecorations.button_pressed
 	
 	app.deserialize_settings(settings_dict)
 
 func _any_value_changed(_value):
 	update_to_app()
-
