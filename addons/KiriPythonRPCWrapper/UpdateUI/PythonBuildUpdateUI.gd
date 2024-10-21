@@ -1,5 +1,6 @@
 @tool
 extends Control
+class_name KiriPythonBuildUpdater
 
 # These names must match the output from
 # KiriPythonBuildWrangler.get_host_os_name().
@@ -181,6 +182,11 @@ func _update_platform_dropdowns():
 
 func _update_download_button_progress():
 	for platform_name in _current_downloads.keys():
+
+		var download_percent : float = 100.0 * \
+			_current_downloads[platform_name].get_downloaded_bytes() / \
+			_current_downloads[platform_name].get_body_size()
+
 		_platform_buttons[platform_name].disabled = true
 
 		if _current_downloads[platform_name].get_body_size() == -1:
@@ -188,9 +194,6 @@ func _update_download_button_progress():
 			_platform_buttons[platform_name].text = "Starting..."
 		else:
 			# Change the button text to show a download percentage.
-			var download_percent : float = 100.0 * \
-				_current_downloads[platform_name].get_downloaded_bytes() / \
-				_current_downloads[platform_name].get_body_size()
 			_platform_buttons[platform_name].text = "Downloading: " + \
 				str(int(download_percent)) + "%"
 
@@ -446,15 +449,23 @@ func _get_latest_version_releaseinfo_completed(
 	%Button_UpdateReleaseAssets.disabled = false
 	_cleanup_request()
 
-func _on_button_download_requirements_pressed(platform_name) -> void:
+func _on_button_download_requirements_pressed(platform_name : String) -> void:
+	download_platform_requirements(platform_name)
+	_update_platform_ui()
+
+func download_platform_requirements(platform_name : String, automated : bool = false) -> bool:
+	
+	_load_platform_status()
 
 	var download_path : String = get_script().resource_path.get_base_dir().path_join("../Wheels")
 
 	print("Unpacking Python...")
 	var python_instance : KiriPythonWrapperInstance = KiriPythonWrapperInstance.new("")
 	if python_instance.setup_python(true) == false:
-		OS.alert("You need to download a Python build for your host platform first!")
+		if not automated:
+			OS.alert("You need to download a Python build for your host platform first!")
 		push_error("You need to download a Python build for your host platform first!")
+		return false
 
 	print("Writing requirements file...")
 	DirAccess.make_dir_recursive_absolute(download_path)
@@ -500,8 +511,10 @@ func _on_button_download_requirements_pressed(platform_name) -> void:
 
 	# Handle errors or write a success indicator.
 	if pip_download_return != 0:
-		OS.alert("Pip failed (platform: " + platform_name + "): " + str(output))
+		if not automated:
+			OS.alert("Pip failed (platform: " + platform_name + "): " + str(output))
 		push_error("Pip failed (platform: ", platform_name, "): ", output)
+		return false
 	else:
 		var last_requirements_file : FileAccess = \
 			FileAccess.open(
@@ -509,4 +522,4 @@ func _on_button_download_requirements_pressed(platform_name) -> void:
 				FileAccess.WRITE)
 		last_requirements_file.store_string(_platform_status["requirements"])
 
-	_update_platform_ui()
+	return true

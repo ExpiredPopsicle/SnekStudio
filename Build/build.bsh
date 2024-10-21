@@ -1,0 +1,93 @@
+#!/bin/bash
+
+GODOT_RELEASE_URL="https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip"
+GODOT_EXPORT_TEMPLATE_URL="https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_export_templates.tpz"
+GODOT_EXPORT_TEMPLATE_VERSION="4.3.stable"
+
+set -e
+
+cd "$(dirname "$0")/.."
+pushd .
+
+# Download Godot.
+cd Build
+echo "Downloading Godot..."
+if [ \! -e godot.zip ]; then
+    curl -sfL -o godot.zip "${GODOT_RELEASE_URL}"
+fi
+
+# Download templates.
+echo "Downloading export templates..."
+if [ \! -e godot_templates.tpz ]; then
+    curl -sfL -o godot_templates.tpz "${GODOT_EXPORT_TEMPLATE_URL}"
+fi
+
+# Extract Godot.
+echo "Extracting Godot..."
+if [ \! -e GodotBinary ]; then
+    mkdir GodotBinary
+fi
+cd GodotBinary
+unzip -o ../godot.zip
+cd ..
+
+# Extract export templates.
+echo "Extracting export templates..."
+mkdir -p "$HOME/.local/share/godot/export_templates/${GODOT_EXPORT_TEMPLATE_VERSION}"
+unzip -j godot_templates.tpz -d "$HOME/.local/share/godot/export_templates/${GODOT_EXPORT_TEMPLATE_VERSION}"
+
+
+GODOT="$(realpath "$(ls GodotBinary/*.x86_64)")"
+echo "Godot binary path: ${GODOT}"
+
+popd
+
+
+
+
+# Write out build variables and read them in.
+"${GODOT}" \
+    --disable-render-loop \
+    --no-header \
+    --headless --script \
+    Build/WriteBuildVars.gd
+source Build/build_vars.sh
+
+
+
+# We have to do this or it can't see a bunch of the classes.
+
+"${GODOT}" --headless --path . \
+           --import
+
+# Fetch all Python dependencies.
+
+"${GODOT}" --headless --path . \
+           --script Build/DownloadPythonRequirements.gd
+
+
+# Actually do the builds.
+
+"${GODOT}" --headless --path . \
+           --export-release "Linux/X11" Build/Builds/SnekStudio_Linux/snekstudio
+
+"${GODOT}" --headless --path . \
+           --export-debug "Windows Desktop" Build/Builds/SnekStudio_Windows/snekstudio.exe
+
+# Package them.
+
+pushd .
+cd Build/Builds
+tar czvf "SnekStudio_Linux_${VERSION}.tar.gz" SnekStudio_Linux
+zip -r "SnekStudio_Windows_${VERSION}.zip" SnekStudio_Windows
+
+# Make the output directory
+
+if [ \! -e Dist ]; then
+    mkdir Dist
+fi
+
+# Move stuff into it.
+
+mv -f *.tar.gz *.zip Dist/
+

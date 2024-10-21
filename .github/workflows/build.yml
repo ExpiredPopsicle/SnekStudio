@@ -1,0 +1,57 @@
+name: Build
+
+# on:
+#   push:
+#   pull_request:
+#   release:
+#     types: [published]
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+jobs:
+  build:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    container: debian:bookworm
+
+    steps:
+
+      # Create the release, I guess?
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: Auto generated release
+        draft: false
+        prerelease: false
+
+      # Install git.
+    - name: Git
+      run: |
+        apt-get update
+        apt-get install -y git
+
+      # check out git repository.
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+
+      # Do the build.
+    - name: Build
+      run: |
+        Build/run_this_inside_debian_container_to_build.bsh
+
+    - name: Upload Assets to Release with a wildcard
+      uses: csexton/release-asset-action@v3
+      with:
+        pattern: "Build/Builds/Dist/SnekStudio_*"
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        release-url: ${{ steps.create_release.outputs.upload_url }}
