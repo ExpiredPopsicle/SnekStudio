@@ -55,6 +55,11 @@ source Build/build_vars.sh
 
 
 
+# We have to do this or it can't see a bunch of the classes.
+
+"${GODOT}" --headless --path . \
+           --import
+
 # Fetch all Python dependencies.
 
 "${GODOT}" --headless --path . \
