@@ -59,6 +59,8 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         tag: nightly
+        fail-if-no-assets: false
+        fail-if-no-release: false
         assets: |
           *
 
