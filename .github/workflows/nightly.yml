@@ -54,6 +54,14 @@ jobs:
             });
           })
 
+    - name: Delete old release assets
+      uses: mknejp/delete-release-assets@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        tag: nightly
+        assets: |
+          *
+
     - name: Release to nightly tag
       uses: softprops/action-gh-release@v2
       with:
