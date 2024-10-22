@@ -60,4 +60,5 @@ jobs:
         name: Nightly build
         body: Auto generated release
         tag_name: nightly
+        prerelease: true
         files: "Build/Builds/Dist/SnekStudio_*"
