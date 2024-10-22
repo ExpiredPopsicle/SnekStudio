@@ -1,0 +1,30 @@
+name: Check for updates
+
+on:
+  schedule:
+  - cron: "0 0 * * *"
+  workflow_dispatch: 
+
+jobs:
+  release-check:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      run_nightly_build: ${{ steps.check.outputs.different_hash }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
+
+      - name: Check if there was a nightly build for the latest commit
+        id: check
+        run: |
+          set -e
+          [ "$(git rev-parse nightly)" == "$(git rev-parse HEAD~0)" ] || echo "different_hash=true" >> $GITHUB_OUTPUT
+
+  run-nightly-build:
+    needs: release-check
+    if: needs.release-check.outputs.run_nightly_build
+    uses: ./.github/workflows/nightly.yml
+    secrets: inherit
