@@ -28,7 +28,7 @@ jobs:
       run: |
         git config --global --add safe.directory /__w/SnekStudio/SnekStudio
         sed -i "s/config\/name=.*/config\/name=\"SnekStudioNightly\"/" project.godot
-        sed -i "s/config\/version=.*/config\/version=\"$(git describe --tags --exclude nightly)\"/" project.godot
+        sed -i "s/config\/version=.*/config\/version=\"$(git describe --tags --exclude nightly | cut -c2-)\"/" project.godot
 
       # Do the build.
     - name: Build
