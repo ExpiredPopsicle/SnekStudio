@@ -6,6 +6,7 @@ class_name KiriPythonBuildUpdater
 # KiriPythonBuildWrangler.get_host_os_name().
 var _platform_list : Array = [
 	"Linux-x86_64",
+	"Linux-arm64",
 	"Windows-x86_64",
 	"macOS-x86_64"
 ]
@@ -481,6 +482,7 @@ func download_platform_requirements(platform_name : String, automated : bool = f
 	var platform_to_pip_mapping : Dictionary = {
 		"Windows-x86_64" : "win_amd64",
 		"Linux-x86_64" : "manylinux2014_x86_64",
+		"Linux-arm64" : "manylinux2014_aarch64",
 		"macOS-x86_64" : "macosx_11_0_universal2" # FIXME: Find something that works here. (macOS)
 	}
 
