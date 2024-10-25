@@ -311,10 +311,7 @@ func get_extra_scripts_list(platform_list : Array = []) -> Array:
 	return extra_python_files
 
 ## Get the OS name for the instance we're running.
-##
-## FIXME: Include architecture, later. Right now we're just wrapping the
-## OS.get_name() function.
 static func get_host_os_name():
-	return OS.get_name()
+	return OS.get_name() + "-" + Engine.get_architecture_name()
 
 #endregion
