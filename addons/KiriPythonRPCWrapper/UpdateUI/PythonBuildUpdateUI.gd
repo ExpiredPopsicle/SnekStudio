@@ -356,7 +356,7 @@ func _cleanup_request():
 		_current_request = null
 
 func _on_update_button_pressed():
-	$Button_UpdateReleaseAssets.disabled = true
+	%Button_UpdateReleaseAssets.disabled = true
 	_send_github_request(
 		"https://api.github.com/repos/indygreg/python-build-standalone/releases/latest",
 		self._get_latest_version_releaseinfo_completed)
