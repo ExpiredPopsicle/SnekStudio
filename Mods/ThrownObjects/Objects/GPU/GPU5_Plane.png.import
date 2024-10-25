@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://thxk82mw5qq"
 path.s3tc="res://.godot/imported/GPU5_Plane.png-fef6496c09db2233a5135cf7aad06159.s3tc.ctex"
+path.etc2="res://.godot/imported/GPU5_Plane.png-fef6496c09db2233a5135cf7aad06159.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={}
@@ -13,7 +14,7 @@ generator_parameters={}
 [deps]
 
 source_file="res://Mods/ThrownObjects/Objects/GPU/GPU5_Plane.png"
-dest_files=["res://.godot/imported/GPU5_Plane.png-fef6496c09db2233a5135cf7aad06159.s3tc.ctex"]
+dest_files=["res://.godot/imported/GPU5_Plane.png-fef6496c09db2233a5135cf7aad06159.s3tc.ctex", "res://.godot/imported/GPU5_Plane.png-fef6496c09db2233a5135cf7aad06159.etc2.ctex"]
 
 [params]
 

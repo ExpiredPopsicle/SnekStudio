@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bu8xw02bib7gt"
 path.s3tc="res://.godot/imported/bastard42_baking3_Stock_Bake1_PBR_Metalness-Stock_Bake1_PBR_Roughness.png-5057666a94cf0cbac21bde917b8396f1.s3tc.ctex"
+path.etc2="res://.godot/imported/bastard42_baking3_Stock_Bake1_PBR_Metalness-Stock_Bake1_PBR_Roughness.png-5057666a94cf0cbac21bde917b8396f1.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={}
@@ -13,7 +14,7 @@ generator_parameters={}
 [deps]
 
 source_file="res://Mods/ThrownObjects/Objects/Bastard/bastard42_baking3_Stock_Bake1_PBR_Metalness-Stock_Bake1_PBR_Roughness.png"
-dest_files=["res://.godot/imported/bastard42_baking3_Stock_Bake1_PBR_Metalness-Stock_Bake1_PBR_Roughness.png-5057666a94cf0cbac21bde917b8396f1.s3tc.ctex"]
+dest_files=["res://.godot/imported/bastard42_baking3_Stock_Bake1_PBR_Metalness-Stock_Bake1_PBR_Roughness.png-5057666a94cf0cbac21bde917b8396f1.s3tc.ctex", "res://.godot/imported/bastard42_baking3_Stock_Bake1_PBR_Metalness-Stock_Bake1_PBR_Roughness.png-5057666a94cf0cbac21bde917b8396f1.etc2.ctex"]
 
 [params]
 
