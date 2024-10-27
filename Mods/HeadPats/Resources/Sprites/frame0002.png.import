@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dr6mq1v8fc2g5"
 path.s3tc="res://.godot/imported/frame0002.png-ddcf5f52c8d0a190ac0d50e95a8a08ab.s3tc.ctex"
+path.etc2="res://.godot/imported/frame0002.png-ddcf5f52c8d0a190ac0d50e95a8a08ab.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://Mods/HeadPats/Resources/Sprites/frame0002.png"
-dest_files=["res://.godot/imported/frame0002.png-ddcf5f52c8d0a190ac0d50e95a8a08ab.s3tc.ctex"]
+dest_files=["res://.godot/imported/frame0002.png-ddcf5f52c8d0a190ac0d50e95a8a08ab.s3tc.ctex", "res://.godot/imported/frame0002.png-ddcf5f52c8d0a190ac0d50e95a8a08ab.etc2.ctex"]
 
 [params]
 

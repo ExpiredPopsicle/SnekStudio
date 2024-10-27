@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cfwkhvhltarbp"
 path.s3tc="res://.godot/imported/ThrownObject_Bit_Splat.png-0d39018e64711b7a1398bdb77c1a1e78.s3tc.ctex"
+path.etc2="res://.godot/imported/ThrownObject_Bit_Splat.png-0d39018e64711b7a1398bdb77c1a1e78.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://Mods/ThrownObjects/Objects/Bit/ThrownObject_Bit_Splat.png"
-dest_files=["res://.godot/imported/ThrownObject_Bit_Splat.png-0d39018e64711b7a1398bdb77c1a1e78.s3tc.ctex"]
+dest_files=["res://.godot/imported/ThrownObject_Bit_Splat.png-0d39018e64711b7a1398bdb77c1a1e78.s3tc.ctex", "res://.godot/imported/ThrownObject_Bit_Splat.png-0d39018e64711b7a1398bdb77c1a1e78.etc2.ctex"]
 
 [params]
 

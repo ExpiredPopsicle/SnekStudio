@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://bvbu4f04riilb"
 path.s3tc="res://.godot/imported/bastard42_baking3_Stock_Bake1_PBR_Normal.png-a5d7fa852afebf934773b5f022625ec0.s3tc.ctex"
+path.etc2="res://.godot/imported/bastard42_baking3_Stock_Bake1_PBR_Normal.png-a5d7fa852afebf934773b5f022625ec0.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={}
@@ -13,7 +14,7 @@ generator_parameters={}
 [deps]
 
 source_file="res://Mods/ThrownObjects/Objects/Bastard/bastard42_baking3_Stock_Bake1_PBR_Normal.png"
-dest_files=["res://.godot/imported/bastard42_baking3_Stock_Bake1_PBR_Normal.png-a5d7fa852afebf934773b5f022625ec0.s3tc.ctex"]
+dest_files=["res://.godot/imported/bastard42_baking3_Stock_Bake1_PBR_Normal.png-a5d7fa852afebf934773b5f022625ec0.s3tc.ctex", "res://.godot/imported/bastard42_baking3_Stock_Bake1_PBR_Normal.png-a5d7fa852afebf934773b5f022625ec0.etc2.ctex"]
 
 [params]
 
