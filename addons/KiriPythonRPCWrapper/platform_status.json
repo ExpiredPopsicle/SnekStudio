@@ -1,16 +1,16 @@
 {
   "platforms": {
-    "Linux-x86_64": {
-      "complete_filename": "cpython-3.12.5+20240814-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
-      "download_url": "https://github.com/indygreg/python-build-standalone/releases/download/20240814/cpython-3.12.5%2B20240814-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
-      "file_size": 21984711,
-      "sort": "cpython-00000003-00000012-00000005-20240814-x86_64-unknown-linux-gnu-install_only_stripped-tar-gz"
-    },
     "Linux-arm64": {
       "complete_filename": "cpython-3.12.7+20241016-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz",
       "download_url": "https://github.com/indygreg/python-build-standalone/releases/download/20241016/cpython-3.12.7%2B20241016-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz",
       "file_size": 17865102,
       "sort": "cpython-00000003-00000012-00000007-20241016-aarch64-unknown-linux-gnu-install_only_stripped-tar-gz"
+    },
+    "Linux-x86_64": {
+      "complete_filename": "cpython-3.12.5+20240814-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+      "download_url": "https://github.com/indygreg/python-build-standalone/releases/download/20240814/cpython-3.12.5%2B20240814-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
+      "file_size": 21984711,
+      "sort": "cpython-00000003-00000012-00000005-20240814-x86_64-unknown-linux-gnu-install_only_stripped-tar-gz"
     },
     "Windows-x86_64": {
       "complete_filename": "cpython-3.12.5+20240814-x86_64-pc-windows-msvc-shared-install_only_stripped.tar.gz",

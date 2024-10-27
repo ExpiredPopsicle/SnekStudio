@@ -19,10 +19,16 @@ func _export_begin(
 
 	var platform_list = []
 
+	print("Export features: ", features)
+
 	if "linux" in features:
-		platform_list.append("Linux")
+		if "x86_64" in features:
+			platform_list.append("Linux-x86_64")
+		if "arm64" in features:
+			platform_list.append("Linux-arm64")
 	if "windows" in features:
-		platform_list.append("Windows")
+		if "x86_64" in features:
+			platform_list.append("Windows-x86_64")
 	# FIXME: MacOS stuff?
 	
 	for platform in platform_list:

@@ -69,17 +69,21 @@ source Build/build_vars.sh
 # Actually do the builds.
 
 "${GODOT}" --headless --path . \
-           --export-release "Linux/X11" Build/Builds/SnekStudio_Linux/snekstudio
+           --export-release "Linux-x86_64" Build/Builds/SnekStudio_Linux-x86_64/snekstudio
 
 "${GODOT}" --headless --path . \
-           --export-debug "Windows Desktop" Build/Builds/SnekStudio_Windows/snekstudio.exe
+           --export-release "Linux-arm64" Build/Builds/SnekStudio_Linux-arm64/snekstudio
+
+"${GODOT}" --headless --path . \
+           --export-debug "Windows-x86_64" Build/Builds/SnekStudio_Windows-x86_64/snekstudio.exe
 
 # Package them.
 
 pushd .
 cd Build/Builds
-tar czvf "SnekStudio_Linux_${VERSION}.tar.gz" SnekStudio_Linux
-zip -r "SnekStudio_Windows_${VERSION}.zip" SnekStudio_Windows
+tar czvf "SnekStudio_Linux-x86_64_${VERSION}.tar.gz" SnekStudio_Linux-x86_64
+tar czvf "SnekStudio_Linux-arm64_${VERSION}.tar.gz"  SnekStudio_Linux-arm64
+zip -r   "SnekStudio_Windows-x86_64_${VERSION}.zip"  SnekStudio_Windows-x86_64
 
 # Make the output directory
 
