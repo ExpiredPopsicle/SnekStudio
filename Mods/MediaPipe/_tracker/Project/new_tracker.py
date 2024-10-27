@@ -752,11 +752,14 @@ def enumerate_camera_devices():
     # /dev/v4l/by-id .
     path_to_name_mappings = {}
     if sys.platform == "linux":
-        device_id_list = os.listdir("/dev/v4l/by-id")
-        for device_id in device_id_list:
-            full_link_path = os.path.join("/dev/v4l/by-id", device_id)
-            actual_dev_file = os.path.abspath(os.path.join("/dev/v4l/by-id", os.readlink(full_link_path)))
-            path_to_name_mappings[actual_dev_file] = device_id
+        try:
+            device_id_list = os.listdir("/dev/v4l/by-id")
+            for device_id in device_id_list:
+                full_link_path = os.path.join("/dev/v4l/by-id", device_id)
+                actual_dev_file = os.path.abspath(os.path.join("/dev/v4l/by-id", os.readlink(full_link_path)))
+                path_to_name_mappings[actual_dev_file] = device_id
+        except IOError:
+            pass
 
     all_camera_data = []
 
