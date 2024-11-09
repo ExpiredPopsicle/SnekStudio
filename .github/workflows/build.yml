@@ -50,8 +50,7 @@ jobs:
         Build/run_this_inside_debian_container_to_build.bsh
 
     - name: Upload Assets to Release with a wildcard
-      uses: csexton/release-asset-action@v3
+      uses: shogo82148/actions-upload-release-asset@v1
       with:
-        pattern: "Build/Builds/Dist/SnekStudio_*"
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        release-url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: "Build/Builds/Dist/SnekStudio_*"
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
