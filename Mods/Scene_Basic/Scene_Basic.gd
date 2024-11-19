@@ -80,7 +80,7 @@ func _ready():
 	add_tracked_setting("exposure", "Tonemap Exposure", {"min": 0.1, "max": 10.0})
 	add_tracked_setting("light_reflection_source", "Reflection Source", {"values" : reflection_sources.keys(), "combobox" : true})
 	add_tracked_setting("light_ambient_source", "Ambient Light Source", {"values" : ambient_sources.keys(), "combobox" : true})
-	add_tracked_setting("light_ambient_color", "Directional Light Color")
+	add_tracked_setting("light_ambient_color", "Ambient Light Color")
 	add_tracked_setting("light_ambient_multiplier", "Ambient Light Energy", {"min": 0.0, "max": 2.0})
 	add_tracked_setting("light_directional_color", "Directional Light Color")
 	add_tracked_setting("light_directional_multiplier", "Directional Light Energy", {"min": 0.0, "max": 2.0})
