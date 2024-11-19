@@ -39,6 +39,7 @@ var _ikchains = []
 @export var hand_tracking_enabed : bool = true
 var use_vrm_basic_shapes = false
 var use_mediapipe_shapes = true
+var use_smoothing = true
 var frame_rate_limit = 60
 var video_device = Array() # It's an array that we only ever put one thing in.
 
@@ -91,6 +92,7 @@ func _ready():
 	add_tracked_setting("hand_tracking_enabed", "Hand tracking enabled")
 	add_tracked_setting("use_vrm_basic_shapes", "Use basic VRM shapes")
 	add_tracked_setting("use_mediapipe_shapes", "Use MediaPipe shapes")
+	add_tracked_setting("use_smoothing", "Enable smoothing")
 	add_tracked_setting("mirror_mode", "Mirror mode")
 	add_tracked_setting("frame_rate_limit", "Frame rate limit", { "min" : 1.0, "max" : 240.0 })
 	add_tracked_setting("arm_rest_angle", "Arm rest angle", { "min" : 0.0, "max" : 180.0 })
@@ -181,6 +183,9 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 		
 	tracker_python_process.call_rpc_async(
 		"set_hand_count_change_time_threshold", [hand_count_change_time_threshold])
+	
+	tracker_python_process.call_rpc_async(
+		"set_smoothing", [use_smoothing])
 
 	if _settings_old["use_external_tracker"] != _settings_new["use_external_tracker"]:
 		reset_tracker = true

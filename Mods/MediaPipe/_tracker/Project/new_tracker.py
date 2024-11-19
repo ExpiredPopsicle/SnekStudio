@@ -3,6 +3,7 @@
 import mediapipe
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+from OneEuroFilter import OneEuroFilter
 import cv2
 import time
 import json
@@ -71,6 +72,21 @@ class MediaPipeTracker:
             "left" : last_hand_data_template.copy(),
             "right" : last_hand_data_template.copy()
         }
+
+        # Initialize OneEuroFilter
+        # Filter settings modified from README
+        # TODO Tweaking these settings from UI
+        self.filter_config = {
+            'freq': 120,
+            'mincutoff': 1.0,
+            'beta': 10,
+            'dcutoff': 1.0
+        }
+
+        self.smoothing = True
+        self.position_filter = [OneEuroFilter(**self.filter_config) for i in range(3)]
+        self.rotation_filter = [OneEuroFilter(**self.filter_config) for i in range(4)]
+        self.blendshape_filter = [OneEuroFilter(**self.filter_config) for i in range(51)]
 
         # FIXME: Arrange into dictionary.
         self.last_head_position = numpy.array([0.0, 0.0, 0.0])
@@ -215,18 +231,27 @@ class MediaPipeTracker:
             output_image: mediapipe.Image, timestamp_ms: int):
 
         for transform in result.facial_transformation_matrixes:
+            head_position = kiri_math.get_origin_from_mediapipe_transform_matrix(transform) / 100.0
+            head_quat = kiri_math.quaternion_mirror_rotation_on_x_axis(kiri_math.matrix_to_quaternion(transform))
+
             self.time_since_last_face_detection = 0.0
-            self.last_head_position = kiri_math.get_origin_from_mediapipe_transform_matrix(transform) / 100.0
-            self.last_head_quat = kiri_math.quaternion_mirror_rotation_on_x_axis(
-                kiri_math.matrix_to_quaternion(transform))
+            # Applies OneEuroFilter here
+            if self.smoothing:
+                self.last_head_position = numpy.array([self.position_filter[i](head_position[i], timestamp_ms/1000.0) for i in range(3)])
+                self.last_head_quat = numpy.array([self.rotation_filter[i](head_quat[i], timestamp_ms/1000.0) for i in range(4)])
+            else:
+                self.last_head_position = head_position
+                self.last_head_quat = head_quat
 
         for face in result.face_blendshapes:
             self.time_since_last_face_detection = 0.0
-            for shape in face:
+            for shape, i in zip(face, range(51)):
 
                 # FIXME: Make this scaling value configurable. And
                 # move it into Godot.
-                self.last_blendshapes[shape.category_name] = shape.score # normalized
+
+                # Blendshape smoothing is always on.
+                self.last_blendshapes[shape.category_name] = self.blendshape_filter[i](shape.score, timestamp_ms/1000.0) # normalized
 
         with self.frames_queued_mutex:
             self.frames_queued_face -= 1
@@ -681,6 +706,9 @@ class MediaPipeTracker:
         with self.the_big_ugly_mutex:
             self.time_since_hand_count_changed_threshold = new_number
 
+    def set_smoothing(self, enabled: bool):
+        self.smoothing = enabled
+
     def _shutdown_mediapipe(self):
 
         if self.landmarker:
@@ -736,6 +764,10 @@ def set_hand_confidence_time_threshold(new_number):
 def set_hand_count_change_time_threshold(new_number):
     global mediapipe_controller
     mediapipe_controller.set_hand_count_change_time_threshold(new_number)
+
+def set_smoothing(enabled: bool):
+    global mediapipe_controller
+    mediapipe_controller.set_smoothing(enabled)
 
 def enumerate_camera_devices():
 
