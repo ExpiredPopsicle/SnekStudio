@@ -287,6 +287,7 @@ func serialize_settings(do_settings=true, do_mods=true):
 		settings_to_save["transparent_window"] = get_background_transparency()
 		settings_to_save["background_color"] = get_background_color().to_html()
 		settings_to_save["hide_window_decorations"] = hide_window_decorations_with_ui
+		settings_to_save["vsync_mode"] = DisplayServer.window_get_vsync_mode()
 
 		# Save sound stuff.
 		settings_to_save["volume_output"] = AudioServer.get_bus_volume_db(AudioServer.get_bus_index("Master"))
@@ -405,6 +406,10 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 
 		if "hide_window_decorations" in settings_dict:
 			hide_window_decorations_with_ui = settings_dict["hide_window_decorations"]
+
+		# Load VSync mode
+		if "vsync_mode" in settings_dict:
+			DisplayServer.window_set_vsync_mode(settings_dict["vsync_mode"])
 
 		# Load UI visibility.
 		if "ui_visible" in settings_dict:
