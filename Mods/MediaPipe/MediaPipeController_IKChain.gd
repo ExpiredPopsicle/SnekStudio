@@ -6,6 +6,8 @@ var skeleton : Skeleton3D = null
 var base_bone : String
 var tip_bone : String
 
+var tracker_object : Node = null
+
 var rotation_low : float = 0.1
 var rotation_high : float = 2.0 * PI - 0.1
 
@@ -19,6 +21,7 @@ var secondary_axis_of_rotation : Vector3 = Vector3(0.0, 1.0, 0.0)
 
 # Set to 0,0,0 if no pole target.
 var pole_direction_target : Vector3 = Vector3(0.0, 0.0, 0.0)
+var pole_direction_rotation_object : Node3D = null
 
 var _calculated_distance_to_angle_mappings = null
 var _calculated_max_extension_angle = 0.0
@@ -28,13 +31,20 @@ var _calculated_min_extension_distance = 0.0
 
 # FIXME: Get rid of these or make them actual config options once everything is
 # working.
-var do_spine = true
 var do_ik_curve = true
 var do_yaw_global = true
 var do_point_tracker = true
 var do_pole_targets = true
 var do_rotate_to_match_tracker = true
 
+var yaw_scale : float = 0.25
+var reset_first : bool = true
+
+var symmetric : bool = false
+# Local space to the rest position of whatever bone we're working on.
+var symmetric_axis : Vector3 = Vector3(1.0, 0.0, 0.0)
+var symmetric_influence_scale : float = 2.0
+var symmetric_influence_start_offset : float = 1.0
 
 func _debug_print_chain_rotation_mapping(
 	skel : Skeleton3D,
@@ -89,7 +99,6 @@ func rotate_chain_so_tip_points_in_direction(
 	
 	var rotation_axis = -delta_to_tracker.cross(delta_to_head).normalized()
 	var rotation_angle = acos(delta_to_tracker.dot(delta_to_head))
-
 	var hips_index = bone_after_hips
 	var root_index = skel.get_bone_parent(hips_index)
 	var hips_transform_worldspace = skel.get_global_transform() * skel.get_bone_global_pose(hips_index)
@@ -103,6 +112,13 @@ func rotate_chain_to_pole_target(
 	base_bone_index : int,
 	tip_bone_index : int,
 	pole_direction_target_skeleton_space : Vector3):
+
+	# If we have a reference rotation object, use that now.
+	if pole_direction_rotation_object:
+		var pole_direction_rotation_skeleton_space : Transform3D = \
+			skel.global_transform.inverse() * pole_direction_rotation_object.global_transform
+		pole_direction_target_skeleton_space = \
+			pole_direction_rotation_skeleton_space * pole_direction_target_skeleton_space
 
 	# Get average bone direction.
 	var current_bone_index = skel.get_bone_parent(tip_bone_index)
@@ -308,8 +324,11 @@ func rotate_bone_to_match_object(
 		head_index,
 		new_head_transform.basis.get_rotation_quaternion())
 
-func do_ik_chain(target_transform):
-		
+func do_ik_chain():
+	
+	var target_transform : Transform3D = \
+		tracker_object.global_transform
+	
 	if _calculated_distance_to_angle_mappings == null:	
 		evaluate_bone_chain_limit()
 	
@@ -318,12 +337,13 @@ func do_ik_chain(target_transform):
 	var current_bone_index = tip_bone_index
 
 	# Reset all rotations.
-	while current_bone_index != -1:
-		current_bone_index = skeleton.get_bone_parent(current_bone_index)
-		skeleton.reset_bone_pose(current_bone_index)
-	
-		if current_bone_index == base_bone_index:
-			break
+	if reset_first:
+		while current_bone_index != -1:
+			skeleton.reset_bone_pose(current_bone_index)
+			current_bone_index = skeleton.get_bone_parent(current_bone_index)
+		
+			if current_bone_index == base_bone_index:
+				break
 	
 	if do_ik_curve:
 
@@ -355,6 +375,13 @@ func do_ik_chain(target_transform):
 					break
 					
 
+		if symmetric:
+			var global_symmetric_axis : Vector3 = skeleton.global_transform.basis * skeleton.get_bone_global_pose(base_bone_index).basis * symmetric_axis
+			var global_symmetry_check_point : Vector3 = head_tracker_global - hips_global
+			var dp = global_symmetric_axis.dot(global_symmetry_check_point)
+			best_angle *= -dp * symmetric_influence_scale
+			#var symmetric_influence_start_offset : float = -1.0
+
 		attempt_spine_rotation(
 			skeleton, best_angle,
 			base_bone_index,
@@ -381,7 +408,7 @@ func do_ik_chain(target_transform):
 		rotate_chain_twist_on_secondary_axis(
 			skeleton, base_bone_index, tip_bone_index,
 			target_transform,
-			Vector3(0.0, 0.0, 1.0), 0.25)
+			Vector3(0.0, 0.0, 1.0), yaw_scale)
 
 	# -----------------------------------------------------------------------------------------
 	# Rotate whole spine section to point towards the head tracker.
@@ -522,6 +549,9 @@ func evaluate_bone_chain_limit():
 	_calculated_min_extension_angle = found_min_extension_angle
 	_calculated_max_extension_distance = found_max_extension_angle_distance
 	_calculated_min_extension_distance = found_min_extension_angle_distance
+
+	if symmetric:
+		_calculated_max_extension_distance += symmetric_influence_start_offset
 
 	return [ 
 		found_max_extension_angle, found_max_extension_angle_distance,
