@@ -42,6 +42,8 @@ var use_mediapipe_shapes = true
 var frame_rate_limit = 60
 var video_device = Array() # It's an array that we only ever put one thing in.
 
+var blendshape_calibration = {}
+
 var debug_visible_hand_trackers = false
 
 # TODO: Add settings for these
@@ -147,8 +149,25 @@ func _ready():
 			#"stop_tracker", [])
 		tracker_python_process.call_rpc_sync(
 			"start_tracker", []))
+
+	var calibration_label : Label = Label.new()
+	var calibration_button : Button = Button.new()
+	calibration_button.text = "Calibrate Face"
+	get_settings_window().add_child(calibration_label)
+	get_settings_window().add_child(calibration_button)
+	calibration_button.pressed.connect(_calibrate_face)
+
+	var clear_calibration_label : Label = Label.new()
+	var clear_calibration_button : Button = Button.new()
+	clear_calibration_button.text = "Clear Calibration"
+	get_settings_window().add_child(clear_calibration_label)
+	get_settings_window().add_child(clear_calibration_button)
+	clear_calibration_button.pressed.connect(func() : blendshape_calibration = {})
 	
 	_update_for_new_model_if_needed()
+
+func save_before(_settings_current: Dictionary):
+	_settings_current["blendshape_calibration"] = blendshape_calibration
 
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	super.load_after(_settings_old, _settings_new)
@@ -198,6 +217,9 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	if reset_blend_shapes:
 		for k in blend_shape_last_values.keys():
 			blend_shape_last_values[k] = 0.0
+	
+	if _settings_old["blendshape_calibration"] != _settings_new["blendshape_calibration"]:
+		blendshape_calibration = _settings_new["blendshape_calibration"]
 
 func scene_init():
 
@@ -472,6 +494,25 @@ func _update_for_new_model_if_needed():
 	_setup_ik_chains()
 	_update_arm_rest_positions()
 
+func _calibrate_face():
+	var data = {}
+	var start = Time.get_ticks_msec()
+	blendshape_calibration = {}
+
+	for key in blend_shape_last_values.keys():
+		data[key] = []
+
+	# Calibrate for 200 ms
+	while Time.get_ticks_msec() < start + 200:
+		for key in blend_shape_last_values:
+			if blend_shape_last_values[key] > 0 && key.countn("eye") == 0:
+				data[key].append(blend_shape_last_values[key])
+		await get_tree().process_frame
+
+	# Average data gathered
+	for blendshape in data.keys():
+		blendshape_calibration[blendshape] = (data[blendshape].reduce(func(accum, number): return accum + number, 0)) / 2.0
+
 # -----------------------------------------------------------------------------
 # Tracker process interop.
 
@@ -667,6 +708,11 @@ func process_new_packets(model, delta):
 
 				# Save the parsed data.
 				last_parsed_data["blendshapes"] = parsed_data["blendshapes"]
+
+				if blendshape_calibration != {}:
+					for blendshape in last_parsed_data["blendshapes"]:
+						if blendshape_calibration[blendshape]:
+							last_parsed_data["blendshapes"][blendshape] -= blendshape_calibration[blendshape]
 
  				#blend_shape_last_values.duplicate()
 	
