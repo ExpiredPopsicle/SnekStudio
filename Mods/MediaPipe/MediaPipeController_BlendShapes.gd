@@ -89,6 +89,10 @@ static func convert_mediapipe_shapes_to_vrm_standard(shape_dict):
 
 	return basic_shapes
 
+static func apply_blendshape_scale(shape_dict, scale):
+	for name in shape_dict.keys():
+		shape_dict[name] *= scale
+
 static func apply_smoothing(shape_dict_last_frame, shape_dict_from_tracker, delta):
 
 	var shape_dict_new = shape_dict_last_frame.duplicate()

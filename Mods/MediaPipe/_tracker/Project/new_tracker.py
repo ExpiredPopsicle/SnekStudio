@@ -226,7 +226,7 @@ class MediaPipeTracker:
 
                 # FIXME: Make this scaling value configurable. And
                 # move it into Godot.
-                self.last_blendshapes[shape.category_name] = shape.score * 1.2 # normalized
+                self.last_blendshapes[shape.category_name] = shape.score # normalized
 
         with self.frames_queued_mutex:
             self.frames_queued_face -= 1

@@ -71,6 +71,8 @@ var chest_yaw_scale : float = 0.25
 var lean_scale : float = 1.0
 var hip_adjustment_speed : float = 1.0
 
+var blendshape_scale : float = 1.2
+
 func _ready():
 
 	var script_path : String = self.get_script().get_path()
@@ -111,6 +113,8 @@ func _ready():
 	add_tracked_setting("lean_scale", "Lean Scale", { "min" : -4.0, "max" : 4.0 })
 
 	add_tracked_setting("hip_adjustment_speed", "Hip Adjustment Speed", { "min" : 0.0, "max" : 10.0 })
+
+	add_tracked_setting("blendshape_scale", "Blend Shape Scale", { "min" : 0.0, "max" : 10.0 })
 
 	_scan_video_devices()
 	
@@ -630,6 +634,8 @@ func process_new_packets(model, delta):
 			if mirror_mode:
 				parsed_data = mirror_parsed_data(parsed_data)
 
+			if parsed_data.has("blendshapes"):
+				functions_blendshapes.apply_blendshape_scale(parsed_data["blendshapes"], blendshape_scale)
 
 
 			last_parsed_data["head_quat"] = parsed_data["head_quat"]
