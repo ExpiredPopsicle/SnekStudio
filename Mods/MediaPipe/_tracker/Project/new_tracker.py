@@ -589,9 +589,9 @@ class MediaPipeTracker:
                         # to SnekStudio.
                         output_data = {
                             "hand_left_origin" :
-                            self.last_hand_data["left"]["position"].tolist(),
+                                self.last_hand_data["left"]["position"].tolist(),
                             "hand_left_rotation" :
-                            self.last_hand_data["left"]["rotation_matrix"].tolist(),
+                                self.last_hand_data["left"]["rotation_matrix"].tolist(),
                             "hand_left_score" :
                                 self.last_hand_data["left"]["position_confidence"],
                             "hand_right_origin" :

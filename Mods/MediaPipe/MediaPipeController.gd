@@ -32,6 +32,7 @@ var _ikchains = []
 
 # Settings stuff
 @export var mirror_mode : bool = true
+@export var mirror_mode_2 : bool = true
 @export var arm_rest_angle : float = 70
 @export var arm_reset_time : float = 0.5
 @export var arm_reset_speed : float = 0.1
@@ -90,6 +91,7 @@ func _ready():
 	add_tracked_setting("use_vrm_basic_shapes", "Use basic VRM shapes")
 	add_tracked_setting("use_mediapipe_shapes", "Use MediaPipe shapes")
 	add_tracked_setting("mirror_mode", "Mirror mode")
+	add_tracked_setting("mirror_mode_2", "Mirror mode 2")
 	add_tracked_setting("frame_rate_limit", "Frame rate limit", { "min" : 1.0, "max" : 240.0 })
 	add_tracked_setting("arm_rest_angle", "Arm rest angle", { "min" : 0.0, "max" : 180.0 })
 	add_tracked_setting("use_external_tracker", "Disable internal tracker")
@@ -525,6 +527,81 @@ func stop_tracker():
 	
 	set_status("Stopped")
 
+
+
+
+func mirror_parsed_data(parsed_data : Dictionary) -> Dictionary:
+
+	var new_parsed_data : Dictionary = parsed_data.duplicate(true)
+
+	# Flip head rotation.
+	new_parsed_data["head_quat"][1] *= -1
+	new_parsed_data["head_quat"][2] *= -1
+
+	# Flip head position
+	new_parsed_data["head_origin"][0] *= -1
+
+	# First, just swap the names.
+	for hand_name in [ "left", "right" ]:
+		var opposite_hand : String = "left"
+		if hand_name == "left": 
+			opposite_hand = "right"
+		
+		new_parsed_data["hand_" + hand_name + "_score"] = parsed_data["hand_" + opposite_hand + "_score"]
+		new_parsed_data["hand_" + hand_name + "_rotation"] = parsed_data["hand_" + opposite_hand + "_rotation"]
+		new_parsed_data["hand_" + hand_name + "_origin"] = parsed_data["hand_" + opposite_hand + "_origin"]
+		new_parsed_data["hand_landmarks_" + hand_name] = parsed_data["hand_landmarks_" + opposite_hand]
+
+
+	# Now, swap the values.
+	for hand_name in [ "left", "right" ]:
+		
+		var hand_score_str = "hand_" + hand_name + "_score"
+		var hand_rotation_str = "hand_" + hand_name + "_rotation"
+		var hand_origin_str = "hand_" + hand_name + "_origin"
+		var hand_landmark_str = "hand_landmarks_" + hand_name 
+
+		# Mirror origins.
+		new_parsed_data[hand_origin_str][0] *= -1
+
+		# Mirror the rotation by converting to a quaternion and flipping the
+		# same way we flipped the head. Then just convert back.
+		var rotation_basis_array = new_parsed_data[hand_rotation_str]
+		var rotation_basis = Basis(
+			Vector3(rotation_basis_array[0][0], rotation_basis_array[0][1], rotation_basis_array[0][2]),
+			Vector3(rotation_basis_array[1][0], rotation_basis_array[1][1], rotation_basis_array[1][2]),
+			Vector3(rotation_basis_array[2][0], rotation_basis_array[2][1], rotation_basis_array[2][2]))
+		var new_rotation : Basis = (rotation_basis * Basis()).orthonormalized()
+		var new_rot_quat = new_rotation.get_rotation_quaternion()
+		new_rot_quat.y *= -1.0
+		new_rot_quat.z *= -1.0
+		new_rotation = Basis(new_rot_quat)
+		new_parsed_data[hand_rotation_str] = [
+			[new_rotation.x.x, new_rotation.x.y, new_rotation.x.z],
+			[new_rotation.y.x, new_rotation.y.y, new_rotation.y.z],
+			[new_rotation.z.x, new_rotation.z.y, new_rotation.z.z]]
+
+		# Flip the landmark positions on both X and Z (horizontal and forward)
+		# axes.
+		for landmark_index in range(0, len(new_parsed_data[hand_landmark_str])):
+			new_parsed_data[hand_landmark_str][landmark_index][1] *= -1
+			new_parsed_data[hand_landmark_str][landmark_index][2] *= -1
+
+	# Mirror blend shapes.
+	if  parsed_data.has("blendshapes"):
+		for shape_name : String in parsed_data["blendshapes"].keys():
+			var new_string = shape_name
+			if shape_name.contains("Left"):
+				new_string = shape_name.replace("Left", "Right")
+			elif shape_name.contains("Right"):
+				new_string = shape_name.replace("Right", "Left")
+			if new_string != shape_name:
+				new_parsed_data["blendshapes"][new_string] = parsed_data["blendshapes"][shape_name]
+
+	return new_parsed_data
+
+
+
 func process_new_packets(model, delta):
 	var most_recent_packet = null
 	var dropped_packets = 0
@@ -550,7 +627,14 @@ func process_new_packets(model, delta):
 				continue
 
 			set_status("Receiving tracker data")
-			
+
+
+			# -----------------
+			if mirror_mode_2:
+				parsed_data = mirror_parsed_data(parsed_data)
+
+
+
 			last_parsed_data["head_quat"] = parsed_data["head_quat"]
 			last_parsed_data["head_origin"] = parsed_data["head_origin"]
 			last_parsed_data["head_missing_time"] = parsed_data["head_missing_time"]
@@ -901,7 +985,7 @@ func _process(delta):
 				target_origin = chest_transform_global_pose * tracker_in_chest_space
 
 				var rotation_basis_array = parsed_data[hand_rotation_str]
-				
+
 				var rotation_basis = Basis(
 					Vector3(rotation_basis_array[0][0], rotation_basis_array[0][1], rotation_basis_array[0][2]),
 					Vector3(rotation_basis_array[1][0], rotation_basis_array[1][1], rotation_basis_array[1][2]),
