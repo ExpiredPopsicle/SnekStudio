@@ -176,7 +176,7 @@ static func fixup_eyes(shape_dict_new : Dictionary):
 
 	return shape_dict_new
 
-static func apply_animations(model, shape_dict, mirror_mode):
+static func apply_animations(model, shape_dict):
 
 	# Merge blend shapes with overridden stuff.
 	var combined_blend_shape_last_values = shape_dict.duplicate()
@@ -240,12 +240,6 @@ static func apply_animations(model, shape_dict, mirror_mode):
 			# Skip any animations that don't exist in this VRM.				
 			var full_anim_name = anim_name
 
-			if mirror_mode:
-				if full_anim_name.contains("Left"):
-					full_anim_name = full_anim_name.replace("Left", "Right")
-				elif full_anim_name.contains("Right"):
-					full_anim_name = full_anim_name.replace("Right", "Left")
-			
 			# Case-correct the animation name, and also verify that it's even
 			# in the list.
 			var found_animation_in_list = false

@@ -32,7 +32,6 @@ var _ikchains = []
 
 # Settings stuff
 @export var mirror_mode : bool = true
-@export var mirror_mode_2 : bool = true
 @export var arm_rest_angle : float = 70
 @export var arm_reset_time : float = 0.5
 @export var arm_reset_speed : float = 0.1
@@ -91,7 +90,6 @@ func _ready():
 	add_tracked_setting("use_vrm_basic_shapes", "Use basic VRM shapes")
 	add_tracked_setting("use_mediapipe_shapes", "Use MediaPipe shapes")
 	add_tracked_setting("mirror_mode", "Mirror mode")
-	add_tracked_setting("mirror_mode_2", "Mirror mode 2")
 	add_tracked_setting("frame_rate_limit", "Frame rate limit", { "min" : 1.0, "max" : 240.0 })
 	add_tracked_setting("arm_rest_angle", "Arm rest angle", { "min" : 0.0, "max" : 180.0 })
 	add_tracked_setting("use_external_tracker", "Disable internal tracker")
@@ -154,8 +152,7 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	
 	var reset_tracker = false
 	
-	if _settings_new["mirror_mode"] != _settings_old["mirror_mode"] or \
-	   _settings_new["chest_yaw_scale"] != _settings_old["chest_yaw_scale"]:
+	if _settings_new["chest_yaw_scale"] != _settings_old["chest_yaw_scale"]:
 		_setup_ik_chains()
 	
 	if _settings_new["frame_rate_limit"] != _settings_old["frame_rate_limit"]:
@@ -320,9 +317,9 @@ func _setup_ik_chains():
 	var hand_tracker_right : Node3D = $Hand_Right
 
 	# FIXME: UGHHHGGHfgjkdnjvhndfvdfnvjkdfnjksdfn
-	if not mirror_mode:
-		hand_tracker_left = $Hand_Right
-		hand_tracker_right = $Hand_Left
+	# FIXME: MIRROR MESS
+	hand_tracker_left = $Hand_Right
+	hand_tracker_right = $Hand_Left
 
 	# Make sure finger landmarks exist already.
 	_reset_hand_landmarks()
@@ -630,7 +627,7 @@ func process_new_packets(model, delta):
 
 
 			# -----------------
-			if mirror_mode_2:
+			if mirror_mode:
 				parsed_data = mirror_parsed_data(parsed_data)
 
 
@@ -695,7 +692,7 @@ func process_new_packets(model, delta):
 						blend_shape_last_values, delta, blend_to_rest_speed)
 
 				functions_blendshapes.apply_animations(
-					model, shape_dict_new, mirror_mode)
+					model, shape_dict_new)
 				
 				blend_shape_last_values = shape_dict_new
 				
@@ -846,14 +843,14 @@ func _process(delta):
 
 		var tracker_left = $Hand_Left
 		var tracker_right = $Hand_Right
+		
+		# FIXME: MIRROR MESS (CLEAN THIS UP)
+		hand_origin_multiplier = Vector3(-1.0, 1.0, 1.0)
+		head_origin_multiplier = Vector3(-1.0, 1.0, 1.0)
+		head_quat_multiplier = [1.0, -1.0, -1.0, 1.0]
 
-		if not mirror_mode:
-			hand_origin_multiplier = Vector3(-1.0, 1.0, 1.0)
-			head_origin_multiplier = Vector3(-1.0, 1.0, 1.0)
-			head_quat_multiplier = [1.0, -1.0, -1.0, 1.0]
-	
-			tracker_left = $Hand_Right
-			tracker_right = $Hand_Left
+		tracker_left = $Hand_Right
+		tracker_right = $Hand_Left
 
 		# -----------------------------------------------------------------------------------------
 		# Hand packets
@@ -861,9 +858,6 @@ func _process(delta):
 		# Pick hand rest references based on mirroring.
 		var hand_rest_reference_left = hand_rest_trackers["Left"]
 		var hand_rest_reference_right = hand_rest_trackers["Right"]
-		if mirror_mode:
-			hand_rest_reference_left = hand_rest_trackers["Right"]
-			hand_rest_reference_right = hand_rest_trackers["Left"]
 
 		# FIXME: Code smell. Replace with a function call.
 		var per_hand_data = [
@@ -879,11 +873,7 @@ func _process(delta):
 				"index" : 1
 			}
 		 ]
-		
-		if mirror_mode:
-			per_hand_data[0]["tracker_object"] = tracker_right
-			per_hand_data[1]["tracker_object"] = tracker_left
-		
+
 		for hand_data in per_hand_data:
 
 			var time_since_last_update = hand_time_since_last_update[hand_data["index"]]
@@ -957,22 +947,19 @@ func _process(delta):
 				#
 				# FIXME: Hardcoded values all over this part.
 				#
+				
+				# FIXME: THIS IS BAD CODE AND YOU (KIRI) SHOULD FEEL BAD ABOUT IT.
 				var tracker_in_chest_space = chest_transform_global_pose.inverse() * target_origin
 				# FIXME: Hack for mirror.
 				var swap_tracker = tracker_right
-				if mirror_mode:
-					swap_tracker = tracker_left
 				if tracker_ob == swap_tracker:
 					tracker_in_chest_space.x *= -1
 				# Just clamp the overall reach, first.
 
-				# FIXME: MIRROR MESS.
-				if mirror_mode:
-					if tracker_in_chest_space.x > 0.2:
-						tracker_in_chest_space.x = 0.2
-				else:
-					if tracker_in_chest_space.x < -0.2:
-						tracker_in_chest_space.x = -0.2
+				# Clamp tracker reach.
+				# FIXME: Hardcoded value.
+				if tracker_in_chest_space.x < -0.2:
+					tracker_in_chest_space.x = -0.2
 
 				# Now move forward.
 				if tracker_in_chest_space.x < 0.0:
@@ -992,36 +979,20 @@ func _process(delta):
 					Vector3(rotation_basis_array[2][0], rotation_basis_array[2][1], rotation_basis_array[2][2]))
 
 				var new_rotation : Basis = (rotation_basis * Basis()).orthonormalized()
-				
-				
-				if mirror_mode:
-					var new_rot_quat = new_rotation.get_rotation_quaternion()
-					new_rot_quat.y *= -1.0
-					new_rot_quat.z *= -1.0
-					new_rotation = Basis(new_rot_quat)
-				else:
-					var new_rot_quat = new_rotation.get_rotation_quaternion()
-					new_rot_quat.y *= -1.0
-					new_rot_quat.z *= -1.0
-					new_rot_quat.w *= -1.0
-					new_rot_quat.x *= -1.0
-					new_rotation = Basis(new_rot_quat)
-				
-				#var new_rot_ortho = new_rotation.orthonormalized().get_rotation_quaternion()
-				#var old_rot_ortho = tracker_ob.transform.basis.orthonormalized()
-				#var new_quat = old_rot_ortho.slerp(new_rotation, 0.1) 
-				# FIXME: Hardcoded smoothing factor
-				#tracker_ob.transform.basis = Basis(rotation_basis.get_rotation_quaternion())
-				
-				#if hand_score > 0.0:
-				#	tracker_ob.transform.basis.orthonormalized().slerp(
-				#		new_rotation.orthonormalized(), 1.0).orthonormalized()
-				
+
+				# If we don't do this, the hands often don't rotate. !?!?!?!?!
+				var new_rot_quat = new_rotation.get_rotation_quaternion()
+				#new_rot_quat.y *= -1.0
+				#new_rot_quat.z *= -1.0
+				#new_rot_quat.w *= -1.0
+				#new_rot_quat.x *= -1.0
+				new_rotation = Basis(new_rot_quat)
+
 				# Why do we have to go through the global transform? I guess we need like a "baked"
 				# version of the transform that handles all of our weird axis flipping.
 				
 				var old_world_transform = tracker_ob.get_global_transform()
-				
+
 				#tracker_ob.transform.basis = new_rotation # Basis(new_rotation.orthonormalized().get_rotation_quaternion())
 				
 				# FIXME: Can't work due to variability in chest bone location?
@@ -1096,12 +1067,10 @@ func _process(delta):
 		var x_pole_dist = 10.0
 		var z_pole_dist = 10.0
 		var y_pole_dist = 5.0
-		
-		
+
 		# FIXME: MIRRORING MESS
 		var tracker_to_use_right = tracker_right
 		var tracker_to_use_left = tracker_left
-		#if not mirror_mode:
 		tracker_to_use_right = tracker_left
 		tracker_to_use_left = tracker_right
 		
@@ -1183,30 +1152,8 @@ func _process(delta):
 
 
 		# Do hand stuff.
-				
-		# Process hand landmarks
-
 		if do_hands:
-
-
-			## UGLY HACK ALERT
-			#if mirror_mode != mirrored_last_frame:
-				#_reset_hand_landmarks()
-				#
-				#for tracker in [ $Hand_Left, $Hand_Right ]:
-					#var removal_queue = []
-					#for c in tracker.get_children():
-						#if c is MeshInstance3D:
-							#removal_queue.append(c)
-					#for c in removal_queue:
-						#tracker.remove_child(c)
-						#c.queue_free()
-		#
-				#hand_landmarks_left.clear()
-				#hand_landmarks_right.clear()
-		#
-				#mirrored_last_frame = mirror_mode
-				
+	
 			var hands = [ \
 				[ "Left", hand_landmarks_left, tracker_right, Basis() ], # FIXME: Remove the last value.
 				[ "Right", hand_landmarks_right, tracker_left, Basis() ]]  # FIXME: Remove the last value.
@@ -1298,20 +1245,12 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 		var marker_old_worldspace = marker.global_transform.origin
 		
 		var marker_original_local = Vector3(mark[0], mark[1], mark[2]) # FIXME: Add a scaling value.
-		if mirror_mode:
+
+		# FIXME: WHY THE HECK DO WE HAVE TO DO DO THIS!?!?!?!?!?!?!?!?!?!?!?!?!!!??!?!?!?!?!?!
+		if flipped_hand == "right":
 			marker_original_local[0] *= -1
-			# FIXME: WHY THE HECK DO WE HAVE TO DO DO THIS!?!?!?!?!?!?!?!?!?!?!?!?!!!??!?!?!?!?!?!
-			if flipped_hand == "right":
-				marker_original_local[0] *= -1
-				marker_original_local[1] *= -1
-				marker_original_local[2] *= -1
-		else:
-#							marker_original_local[0] *= -1
-			if flipped_hand == "right":
-				marker_original_local[0] *= -1
-				marker_original_local[1] *= -1
-				marker_original_local[2] *= -1
-			pass
+			marker_original_local[1] *= -1
+			marker_original_local[2] *= -1
 	
 		var marker_new_local = hand_landmark_rotation_to_use * \
 			marker_original_local
@@ -1369,12 +1308,12 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 		[ "ThumbProximal",      2,  3,  "ThumbDistal", "ThumbProximal" ],
 		[ "ThumbDistal",        3,  4,  "ThumbDistal", "ThumbProximal" ],
 	]
-	
-	if not mirror_mode:
-		if hand_landmarks == hand_landmarks_left:
-			hand_landmarks = hand_landmarks_right
-		elif hand_landmarks == hand_landmarks_right:
-			hand_landmarks = hand_landmarks_left
+
+	# FIXME: MIRROR MESS
+	if hand_landmarks == hand_landmarks_left:
+		hand_landmarks = hand_landmarks_right
+	elif hand_landmarks == hand_landmarks_right:
+		hand_landmarks = hand_landmarks_left
 			
 	if len(hand_landmarks) < 21:
 		return
@@ -1411,10 +1350,6 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 		var test_bone_pt_1 = hand_landmarks[finger_bone[1]].global_transform.origin
 		
 		
-		#if mirror_mode:
-		#	test_bone_pt_1.x *= -1
-		#	test_bone_pt_2.x *= -1
-			
 		var skel_inverse = skel.transform.inverse()
 		var test_bone_vec_global = (skel_inverse * test_bone_pt_2 - skel_inverse * test_bone_pt_1).normalized()
 
@@ -1435,15 +1370,10 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 		if flipped_hand == "left":
 			hand_index = 1
 
-		if mirror_mode:
-			hand_index = [1, 0][hand_index]
-
 		if hand_time_since_last_update[hand_index] > arm_reset_time:
 			#skel.set_bone_pose_rotation(test_bone_index,
 			#	skel.get_bone_pose(test_bone_index).basis.slerp(Basis(), arm_reset_speed))
 			skel.set_bone_pose_rotation(test_bone_index, Basis())
 		else:
-			#if mirror_mode:
-			#	angle_between += PI
 			rotate_bone_in_global_space(skel, test_bone_index, global_rotation_from_rest, -angle_between)
 		
