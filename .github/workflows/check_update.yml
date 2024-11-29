@@ -26,5 +26,9 @@ jobs:
   run-nightly-build:
     needs: release-check
     if: needs.release-check.outputs.run_nightly_build
-    uses: ./.github/workflows/nightly.yml
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: nightly-trigger
+
