@@ -137,7 +137,8 @@ func add_tracked_setting(setting_name, label_text, extra_args={}):
 	if prop_val is String:
 		settings_window_add_lineedit(
 			new_setting_prop["label"], new_setting_prop["name"],
-			new_setting_prop["args"].get("is_redeem", false))
+			new_setting_prop["args"].get("is_redeem", false),
+			new_setting_prop["args"].get("is_fileaccess", false))
 		
 	elif prop_val is bool:
 		settings_window_add_boolean(new_setting_prop["label"], new_setting_prop["name"])
@@ -177,6 +178,21 @@ func _test_redeem_with_settings_value(prop_name, local=true):
 	else:
 		get_app()._on_handle_channel_points_redeem(
 			"testuser", "TestUser", prop_val, "Test input")
+
+func _get_file_path(prop_name, widget: LineEdit, filter: PackedStringArray):
+	var prop_val = get(prop_name)
+	var file_dialog = get_app()._get_ui_root().get_node("LineEditFileDialog")
+	
+	# Set the file format filter
+	file_dialog.set_filters(filter)
+	file_dialog.popup()
+	
+	prop_val = await file_dialog.file_selected
+	modify_setting(prop_name, prop_val)
+	widget.set_text(prop_val)
+	
+	# clear filter
+	file_dialog.clear_filters()
 
 # Pull settings from app and update UI widgets to reflect them.	
 #
@@ -408,7 +424,7 @@ func settings_window_add_spinbox(
 	window.add_child(spinbox_widget)
 	_settings_widgets_by_setting_name[setting_name] = spinbox_widget
 
-func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false):
+func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false, is_fileaccess=false, file_filters: PackedStringArray = []):
 	
 	# This only works with the default-created settings window widget.
 	var window : GridContainer = get_settings_window()
@@ -429,7 +445,14 @@ func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false):
 			setting_name,
 			new_text))
 	group_widget.add_child(lineedit_widget)
-	
+
+	if is_fileaccess:
+		var dialog_button : Button = Button.new()
+		dialog_button.text = "..."
+		dialog_button.tooltip_text = "Open File"
+		group_widget.add_child(dialog_button)
+		dialog_button.button_down.connect(_get_file_path.bind(setting_name, lineedit_widget, file_filters))
+
 	if is_redeem:
 		var test_button : Button = Button.new()
 		test_button.text = "Test This"

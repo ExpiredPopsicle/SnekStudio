@@ -108,6 +108,12 @@ file_mode = 0
 access = 2
 filters = PackedStringArray("*.vrm")
 
+[node name="LineEditFileDialog" type="FileDialog" parent="."]
+title = "Open a File"
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+
 [node name="ModsWindow" parent="." instance=ExtResource("2_v48gv")]
 visible = false
 offset_left = 247.0
