@@ -1,5 +1,11 @@
 extends Mod_Base
 
+var image_path: String
+var image: Image
+
+var proceduralSky = ProceduralSkyMaterial.new()
+var panoramicSky = PanoramaSkyMaterial.new()
+
 var tonemapper = ["Linear"]
 var tonemaps = {
 	"Linear": Environment.ToneMapper.TONE_MAPPER_LINEAR,
@@ -86,9 +92,22 @@ func _ready():
 	add_tracked_setting("light_directional_multiplier", "Directional Light Energy", {"min": 0.0, "max": 2.0})
 	add_tracked_setting("light_directional_pitch", "Directional Light Pitch", {"min": -180.0, "max": 180.0})
 	add_tracked_setting("light_directional_yaw", "Directional Light Yaw", {"min": -180.0, "max": 180.0})
+	add_tracked_setting("image_path", "Custom Panorama (HDRI)", {"is_fileaccess": true, "file_filters": PackedStringArray(["*.exr,*.hdr,*.png;Panoramic HDR Images"])})
 	add_tracked_setting("draw_ground_plane", "Draw Ground Plane")
 
 	update_settings_ui()
 
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
+	
+	if _settings_old["image_path"] != _settings_new["image_path"]:
+		# This setting is only relevant if either sources are actually set to sky
+		if ambient_sources.get(light_ambient_source[0]) == Environment.AMBIENT_SOURCE_SKY || reflection_sources.get(light_reflection_source[0]) == Environment.REFLECTION_SOURCE_SKY:
+			# Fallback to procedural sky if image is invalid
+			image = Image.load_from_file(ProjectSettings.localize_path(image_path))
+			if !image:
+				$WorldEnvironment.environment.sky.set_material(proceduralSky)
+			else:
+				$WorldEnvironment.environment.sky.set_material(panoramicSky)
+				$WorldEnvironment.environment.sky.sky_material.set_panorama(ImageTexture.create_from_image(image))
+				
 	_save_settings_to_scene()
