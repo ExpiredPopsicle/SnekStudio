@@ -4,8 +4,6 @@ extends Mod_Base
 var udp_server = null
 @export var udp_port_base : int = 7098
 var _udp_port = udp_port_base # This will change dynamically based on port availability.
-var tracker_pid = -1
-var time_until_tracker_restart = 0.0
 
 # NEW tracker stuff.
 var tracker_python_process : KiriPythonWrapperInstance = null
@@ -87,9 +85,6 @@ func _ready():
 	if not tracker_python_process.setup_python(false):
 		OS.alert("Something went wrong when setting up tracker dependencies!")
 
-	print("Starting tracker process...")
-	tracker_python_process.start_process(false)
-
 	add_tracked_setting("hand_tracking_enabed", "Hand tracking enabled")
 	add_tracked_setting("use_vrm_basic_shapes", "Use basic VRM shapes")
 	add_tracked_setting("use_mediapipe_shapes", "Use MediaPipe shapes")
@@ -118,15 +113,17 @@ func _ready():
 
 	add_tracked_setting("blendshape_scale", "Blend Shape Scale", { "min" : 0.0, "max" : 10.0 })
 
+	# Star the Python tracker process just long enough to scan for video
+	# devices. We won't be starting "for real" until we get to scene_init.
+	tracker_python_process.start_process(false)
 	_scan_video_devices()
-	
 	add_tracked_setting(
 		"video_device", "Video Device",
 		{"values" : _devices_list,
 		 "combobox" : true})
+	tracker_python_process.stop_process()
 
 	add_tracked_setting("debug_visible_hand_trackers", "Debug: Visible hand trackers")
-
 
 	add_tracked_setting("tracking_pause", "Pause tracking")
 
@@ -137,19 +134,6 @@ func _ready():
 	
 	update_settings_ui()
 	
-	
-	# FIXME: Remove this.
-	var reset_label : Label = Label.new()
-	var reset_button : Button = Button.new()
-	reset_button.text = "Cycle Tracker"
-	get_settings_window().add_child(reset_label)
-	get_settings_window().add_child(reset_button)
-	reset_button.pressed.connect(func():
-		#tracker_python_process.call_rpc_sync(
-			#"stop_tracker", [])
-		tracker_python_process.call_rpc_sync(
-			"start_tracker", []))
-
 	var calibration_label : Label = Label.new()
 	var calibration_button : Button = Button.new()
 	calibration_button.text = "Calibrate Face"
@@ -169,29 +153,20 @@ func _ready():
 func save_before(_settings_current: Dictionary):
 	_settings_current["blendshape_calibration"] = blendshape_calibration
 
-func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
-	super.load_after(_settings_old, _settings_new)
-	_update_arm_rest_positions()
-	
-	var reset_tracker = false
-	
-	if _settings_new["chest_yaw_scale"] != _settings_old["chest_yaw_scale"]:
-		_setup_ik_chains()
-	
-	if _settings_new["frame_rate_limit"] != _settings_old["frame_rate_limit"]:
-		reset_tracker = true
-	if len(_settings_old["video_device"]) != len(_settings_new["video_device"]):
-		reset_tracker = true
+func _send_settings_to_tracker():
 
-	# If camera device selection changed, call the RPC to open the new device,
-	if len(_settings_old["video_device"]) > 0 and len(_settings_new["video_device"]) > 0:
-		if _settings_old["video_device"][0] != _settings_new["video_device"][0]:
-			var actual_device_data = _devices_by_list_entry[video_device[0]]
-			tracker_python_process.call_rpc_sync(
-				"set_video_device_number", [actual_device_data["index"]])
+	# Don't send these if the tracker process isn't running. We'll send them
+	# after it starts, instead (called in _start_process).
+	if tracker_python_process.get_status() != KiriPythonWrapperInstance.KiriPythonWrapperStatus.STATUS_RUNNING:
+		return
 
-	# If no camera selected, then select device -1.
-	if len(_settings_new["video_device"]) == 0:
+	# Set the video device.
+	if len(video_device):
+		var actual_device_data = _devices_by_list_entry[video_device[0]]
+		tracker_python_process.call_rpc_sync(
+			"set_video_device_number", [actual_device_data["index"]])
+	else:
+		# If no camera selected, then select device -1.
 		tracker_python_process.call_rpc_sync(
 			"set_video_device_number", [-1])
 
@@ -201,13 +176,15 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	tracker_python_process.call_rpc_async(
 		"set_hand_count_change_time_threshold", [hand_count_change_time_threshold])
 
-	if _settings_old["use_external_tracker"] != _settings_new["use_external_tracker"]:
-		reset_tracker = true
 
-	if reset_tracker:
-		stop_tracker()
-		if not use_external_tracker:
-			time_until_tracker_restart = 3.0
+func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
+	super.load_after(_settings_old, _settings_new)
+	_update_arm_rest_positions()
+
+	if _settings_new["chest_yaw_scale"] != _settings_old["chest_yaw_scale"]:
+		_setup_ik_chains()
+
+	_send_settings_to_tracker()
 
 	var reset_blend_shapes = false
 	if _settings_old["use_vrm_basic_shapes"] != _settings_new["use_vrm_basic_shapes"]:
@@ -223,6 +200,9 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 
 func scene_init():
 
+	_start_process()
+	start_tracker()
+
 	blend_shape_last_values = {}
 	last_parsed_data = {}
 
@@ -237,9 +217,7 @@ func scene_init():
 		if udp_error != OK:
 			_udp_port += 1
 
-	if not use_external_tracker:
-		start_tracker()
-
+	# Move hand "rest" trackers into the scene.
 	var root = get_skeleton().get_parent()
 	var left_rest = $LeftHandRestReference
 	var right_rest = $RightHandRestReference
@@ -259,8 +237,10 @@ func scene_init():
 	_init_complete = true
 
 func scene_shutdown():
-	
+
 	stop_tracker()
+
+	_stop_process()
 	
 	udp_server.close()
 	udp_server = null
@@ -560,13 +540,10 @@ func start_tracker():
 		"start_tracker", [])
 
 func stop_tracker():
-	
-	if tracker_pid == -1:
-		return
-	
-	OS.kill(tracker_pid)
-	tracker_pid = -1
-	
+
+	tracker_python_process.call_rpc_sync(
+		"stop_tracker", [])
+
 	set_status("Stopped")
 
 
@@ -808,28 +785,16 @@ func handle_lean(skel : Skeleton3D, angle : float):
 		rotate_bone_in_global_space(skel, current_bone, Vector3(0.0, 0.0, 1.0), angle, true)
 		current_bone = skel.get_bone_parent(current_bone)
 
+func _start_process():
+	tracker_python_process.start_process(false)
+	_send_settings_to_tracker()
+
+func _stop_process():
+	tracker_python_process.stop_process()
+
 func _process(delta):
 
 	var skel : Skeleton3D = get_app().get_skeleton()
-
-	if tracker_python_process:
-		tracker_python_process.poll()
-
-	if tracker_pid != -1:
-		if not OS.is_process_running(tracker_pid):
-			if time_until_tracker_restart <= 0:
-				stop_tracker()
-				time_until_tracker_restart = 1
-
-	if time_until_tracker_restart > 0:
-		time_until_tracker_restart -= delta
-		if time_until_tracker_restart <= 0:
-			if tracker_pid != -1:
-				stop_tracker()
-			if not use_external_tracker:
-				start_tracker()
-		else:
-			set_status("Restarting in: " + str(int(time_until_tracker_restart)))
 
 	if not _init_complete:
 		return

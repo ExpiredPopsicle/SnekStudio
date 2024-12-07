@@ -245,6 +245,8 @@ func execute_python(
 
 func start_process(open_terminal : bool = false):
 
+	assert(_external_process_pid == -1)
+
 	# FIXME: Make sure we don't have one running.
 
 	var open_port = 9500
