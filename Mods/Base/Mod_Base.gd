@@ -24,12 +24,11 @@ func scene_shutdown():
 #
 # This function can be overridden.
 #
-# This is the *default* version, which creates a GridContainer that can be
+# This is the *default* version, which creates a VBoxContainer that can be
 # filled with settings_window_add_*() functions.
 func _create_settings_window():
 	assert(not _settings_window)
-	_settings_window = GridContainer.new()
-	_settings_window.columns = 2
+	_settings_window = VBoxContainer.new()
 	_settings_window.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_settings_window.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	return _settings_window
@@ -381,20 +380,23 @@ func get_files_in_directory(
 func settings_window_add_boolean(setting_label, setting_name):
 	
 	# This only works with the default-created settings window widget.
-	var window : GridContainer = get_settings_window()
-	assert(window is GridContainer)
-	assert(window.columns == 2)
+	var window : Container = get_settings_window()
+	#assert(window is GridContainer)
+	#assert(window.columns == 2)
+
+	var container_widget : HBoxContainer = HBoxContainer.new()
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label
+	label_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	
 	var checkbox_widget = CheckBox.new()
-	checkbox_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	checkbox_widget.pressed.connect(
 		func(): modify_setting(setting_name, checkbox_widget.button_pressed))
 	
-	window.add_child(label_widget)
-	window.add_child(checkbox_widget)
+	container_widget.add_child(label_widget)
+	container_widget.add_child(checkbox_widget)
+	window.add_child(container_widget)
 	
 	_settings_widgets_by_setting_name[setting_name] = checkbox_widget
 
@@ -404,9 +406,7 @@ func settings_window_add_spinbox(
 	min_value=0, max_value=4294967296):
 
 	# This only works with the default-created settings window widget.
-	var window : GridContainer = get_settings_window()
-	assert(window is GridContainer)
-	assert(window.columns == 2)
+	var window : Container = get_settings_window()
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label
@@ -427,9 +427,7 @@ func settings_window_add_spinbox(
 func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false, is_fileaccess=false, file_filters: PackedStringArray = []):
 	
 	# This only works with the default-created settings window widget.
-	var window : GridContainer = get_settings_window()
-	assert(window is GridContainer)
-	assert(window.columns == 2)
+	var window : Container = get_settings_window()
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label
@@ -480,9 +478,7 @@ func settings_window_add_slider_with_number(
 	step=0.1):
 	
 	# This only works with the default-created settings window widget.
-	var window : GridContainer = get_settings_window()
-	assert(window is GridContainer)
-	assert(window.columns == 2)
+	var window : Container = get_settings_window()
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label
@@ -509,9 +505,7 @@ func settings_window_add_selector(
 	use_combobox = false):
 	
 	# This only works with the default-created settings window widget.
-	var window : GridContainer = get_settings_window()
-	assert(window is GridContainer)
-	assert(window.columns == 2)
+	var window : Container = get_settings_window()
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label
@@ -560,9 +554,7 @@ func settings_window_add_colorpicker(
 	setting_label, setting_name):
 	
 	# This only works with the default-created settings window widget.
-	var window : GridContainer = get_settings_window()
-	assert(window is GridContainer)
-	assert(window.columns == 2)
+	var window : Container = get_settings_window()
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label

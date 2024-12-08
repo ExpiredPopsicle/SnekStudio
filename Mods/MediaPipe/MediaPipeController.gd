@@ -93,10 +93,10 @@ func _ready():
 	add_tracked_setting("arm_rest_angle", "Arm rest angle", { "min" : 0.0, "max" : 180.0 })
 	add_tracked_setting("use_external_tracker", "Disable internal tracker")
 
-	add_tracked_setting("hand_confidence_time_threshold", "Hand confidence time threshold", { "min" : 0.0, "max" : 20.0 })
-	add_tracked_setting("hand_count_change_time_threshold", "Hand count change time threshold", { "min" : 0.0, "max" : 20.0 })
+	add_tracked_setting("hand_confidence_time_threshold", "Hand confidence time", { "min" : 0.0, "max" : 20.0 })
+	add_tracked_setting("hand_count_change_time_threshold", "Hand count change time", { "min" : 0.0, "max" : 20.0 })
 
-	add_tracked_setting("frames_missing_before_spine_reset", "Tracking loss frames before resetting to rest pose", { "min" : -1.0, "max" : 120.0, "step" : 1.0 })
+	add_tracked_setting("frames_missing_before_spine_reset", "Untracked frames before reset", { "min" : -1.0, "max" : 120.0, "step" : 1.0 })
 	add_tracked_setting("blend_to_rest_speed", "Blend back to rest pose speed", { "min" : 0.0, "max" : 10.0, "step" : 0.1 })
 
 	add_tracked_setting("head_vertical_offset", "Head vertical offset", { "min" : -1.0, "max" : 1.0 })
@@ -134,17 +134,13 @@ func _ready():
 	
 	update_settings_ui()
 	
-	var calibration_label : Label = Label.new()
 	var calibration_button : Button = Button.new()
 	calibration_button.text = "Calibrate Face"
-	get_settings_window().add_child(calibration_label)
 	get_settings_window().add_child(calibration_button)
 	calibration_button.pressed.connect(_calibrate_face)
 
-	var clear_calibration_label : Label = Label.new()
 	var clear_calibration_button : Button = Button.new()
 	clear_calibration_button.text = "Clear Calibration"
-	get_settings_window().add_child(clear_calibration_label)
 	get_settings_window().add_child(clear_calibration_button)
 	clear_calibration_button.pressed.connect(func() : blendshape_calibration = {})
 	
@@ -209,6 +205,7 @@ func scene_init():
 	_start_process()
 
 	# Find a port number that's open to use. Must be done before start_tracker.
+	# OR call the set port number RPC after changing it.
 	assert(!udp_server)
 	udp_server = PacketPeerUDP.new()
 	var udp_error = 1
