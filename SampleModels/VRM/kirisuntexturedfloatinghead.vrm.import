@@ -32,3 +32,6 @@ animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
 import_script/path=""
 _subresources={}
+vrm/head_hiding_method=0
+vrm/only_if_head_hiding_uses_layers/first_person_layers=2
+vrm/only_if_head_hiding_uses_layers/third_person_layers=4

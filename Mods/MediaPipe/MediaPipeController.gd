@@ -160,6 +160,12 @@ func _send_settings_to_tracker():
 	if tracker_python_process.get_status() != KiriPythonWrapperInstance.KiriPythonWrapperStatus.STATUS_RUNNING:
 		return
 
+	# Clear out video device setting if it doesn't exist in the list of video
+	# devices.
+	if len(video_device):
+		if not video_device[0] in _devices_by_list_entry.keys():
+			video_device.clear()
+
 	# Set the video device.
 	if len(video_device):
 		var actual_device_data = _devices_by_list_entry[video_device[0]]
@@ -201,14 +207,9 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 func scene_init():
 
 	_start_process()
-	start_tracker()
 
-	blend_shape_last_values = {}
-	last_parsed_data = {}
-
+	# Find a port number that's open to use. Must be done before start_tracker.
 	assert(!udp_server)
-	
-	# Find a port number that's open to use.
 	udp_server = PacketPeerUDP.new()
 	var udp_error = 1
 	_udp_port = udp_port_base
@@ -216,6 +217,11 @@ func scene_init():
 		udp_error = udp_server.bind(_udp_port, "127.0.0.1")
 		if udp_error != OK:
 			_udp_port += 1
+
+	start_tracker()
+
+	blend_shape_last_values = {}
+	last_parsed_data = {}
 
 	# Move hand "rest" trackers into the scene.
 	var root = get_skeleton().get_parent()

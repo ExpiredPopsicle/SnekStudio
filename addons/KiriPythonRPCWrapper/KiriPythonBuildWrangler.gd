@@ -123,6 +123,9 @@ func needs_to_unpack_python() -> bool:
 	var python_archive_path : String = _detect_archive_for_runtime()
 	var reader : KiriTARReader = KiriTARReader.new()
 	var err : Error = reader.open(python_archive_path)
+
+	if err != OK:
+		OS.alert("There was a problem loading the Python archive. Did you download it in the \"Python Builds\" tab?")
 	
 	# If you hit this assert, you probably need to download the right Python
 	# build using the Python Builds tab down at the bottom.
