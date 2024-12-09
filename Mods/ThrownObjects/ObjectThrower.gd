@@ -115,10 +115,13 @@ func throw_random_object():
 		bit_scene_path = bit_scene_path.substr(len(executable_path) + 1)
 	
 	var bit_scene_packed = load(bit_scene_path)
-	var bit_scene = bit_scene_packed.instantiate()
+	if bit_scene_packed:
+		var bit_scene = bit_scene_packed.instantiate()
 
-	thrown_object_queue.append(bit_scene)
-	add_autodelete_object(bit_scene)
+		thrown_object_queue.append(bit_scene)
+		add_autodelete_object(bit_scene)
+	else:
+		push_error("Failed to load scene for throwable: ", bit_scene_path)
 
 func add_head_impact_rotation(rot : Quaternion):
 	head_impact_rotation_offset = head_impact_rotation_offset * rot

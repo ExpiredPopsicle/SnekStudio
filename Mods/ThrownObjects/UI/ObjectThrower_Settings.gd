@@ -19,4 +19,3 @@ func _on_value_count_mulitplier_value_changed(_value):
 
 func _on_value_throwable_list_multi_selected(_index, _selected):
 	wrap_signal()
-

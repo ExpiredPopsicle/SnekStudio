@@ -193,7 +193,7 @@ func get_model():
 	return $ModelController.get_node_or_null("Model")
 
 func get_skeleton():
-	var skeleton = $ModelController.find_child("GeneralSkeleton", true, false)
+	var skeleton = get_model().find_child("GeneralSkeleton", false, false)
 	assert(skeleton)
 	return skeleton
 

@@ -212,7 +212,7 @@ static func apply_animations(model, shape_dict):
 
 	var total_bone_rotations = {}
 
-	var anim_player : AnimationPlayer = model.find_child("AnimationPlayer", true, false)
+	var anim_player : AnimationPlayer = model.find_child("AnimationPlayer", false, false)
 	var anim_list : PackedStringArray = anim_player.get_animation_list()
 	var anim_root = anim_player.get_node(anim_player.root_node)
 
