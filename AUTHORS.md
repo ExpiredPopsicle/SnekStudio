@@ -10,6 +10,8 @@ exodrifter - https://www.exodrifter.space
 
 GenericFiredemon - https://twitch.tv/GenericFiredemon
 
+Hubble the Wolverine - https://gulo.dev
+
 Lain
 
 WileJan
