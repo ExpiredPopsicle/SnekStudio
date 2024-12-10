@@ -89,8 +89,8 @@ func rotate_chain_so_tip_points_in_direction(
 	var bone_after_hips = base_bone_index
 
 	# Get *current* hips and head positions.
-	var head_world_space = skel.get_global_transform() * skel.get_bone_global_pose(tip_bone_index)
-	var hips_world_space = skel.get_global_transform() * skel.get_bone_global_pose(bone_after_hips)
+	var head_world_space = skel.get_transform() * skel.get_bone_global_pose(tip_bone_index)
+	var hips_world_space = skel.get_transform() * skel.get_bone_global_pose(bone_after_hips)
 
 	# Figure out the rotation from the direction the spine is pointing, to the direction to the
 	# head tracker.
@@ -101,9 +101,9 @@ func rotate_chain_so_tip_points_in_direction(
 	var rotation_angle = acos(delta_to_tracker.dot(delta_to_head))
 	var hips_index = bone_after_hips
 	var root_index = skel.get_bone_parent(hips_index)
-	var hips_transform_worldspace = skel.get_global_transform() * skel.get_bone_global_pose(hips_index)
+	var hips_transform_worldspace = skel.get_transform() * skel.get_bone_global_pose(hips_index)
 	hips_transform_worldspace = hips_transform_worldspace.rotated(rotation_axis, rotation_angle)
-	var root_transform_worldspace = skel.get_global_transform() * skel.get_bone_global_pose(root_index)
+	var root_transform_worldspace = skel.get_transform() * skel.get_bone_global_pose(root_index)
 	var new_hips_transform = root_transform_worldspace.inverse() * hips_transform_worldspace
 	skel.set_bone_pose_rotation(hips_index, new_hips_transform.basis.get_rotation_quaternion())
 
@@ -116,7 +116,7 @@ func rotate_chain_to_pole_target(
 	# If we have a reference rotation object, use that now.
 	if pole_direction_rotation_object:
 		var pole_direction_rotation_skeleton_space : Transform3D = \
-			skel.global_transform.inverse() * pole_direction_rotation_object.global_transform
+			skel.transform.inverse() * pole_direction_rotation_object.transform
 		pole_direction_target_skeleton_space = \
 			pole_direction_rotation_skeleton_space * pole_direction_target_skeleton_space
 
@@ -274,7 +274,7 @@ func rotate_chain_twist_on_secondary_axis(
 	# Figure out angle difference between the direction where the hips are
 	# facing and the direction the head is facing.
 	var hips_forward_skelspace = skel.get_bone_global_pose(base_bone_index).basis * forward_axis_for_secondary_rotation
-	var head_forward_skelspace = skel.global_transform.basis.inverse() * target_transform_worldspace.basis * forward_axis_for_secondary_rotation
+	var head_forward_skelspace = skel.transform.basis.inverse() * target_transform_worldspace.basis * forward_axis_for_secondary_rotation
 	hips_forward_skelspace.y = 0.0
 	hips_forward_skelspace = hips_forward_skelspace.normalized()
 	head_forward_skelspace.y = 0.0
@@ -313,7 +313,7 @@ func rotate_bone_to_match_object(
 	
 	var head_index = tip_bone_index
 	var neck_index = skel.get_bone_parent(head_index)
-	var neck_transform = skel.get_global_transform() * skel.get_bone_global_pose(neck_index)
+	var neck_transform = skel.get_transform() * skel.get_bone_global_pose(neck_index)
 
 	var new_head_transform = \
 		neck_transform.inverse() * \
@@ -327,7 +327,7 @@ func rotate_bone_to_match_object(
 func do_ik_chain():
 	
 	var target_transform : Transform3D = \
-		tracker_object.global_transform
+		tracker_object.transform
 	
 	if _calculated_distance_to_angle_mappings == null:	
 		evaluate_bone_chain_limit()
@@ -347,7 +347,7 @@ func do_ik_chain():
 	
 	if do_ik_curve:
 
-		var hips_global = skeleton.global_transform * skeleton.get_bone_global_pose(base_bone_index).origin
+		var hips_global = skeleton.transform * skeleton.get_bone_global_pose(base_bone_index).origin
 		var head_tracker_global = target_transform.origin
 
 		var head_dist_target : float = (hips_global - head_tracker_global).length()
@@ -376,7 +376,7 @@ func do_ik_chain():
 					
 
 		if symmetric:
-			var global_symmetric_axis : Vector3 = skeleton.global_transform.basis * skeleton.get_bone_global_pose(base_bone_index).basis * symmetric_axis
+			var global_symmetric_axis : Vector3 = skeleton.transform.basis * skeleton.get_bone_global_pose(base_bone_index).basis * symmetric_axis
 			var global_symmetry_check_point : Vector3 = head_tracker_global - hips_global
 			var dp = global_symmetric_axis.dot(global_symmetry_check_point)
 			best_angle *= -dp * symmetric_influence_scale

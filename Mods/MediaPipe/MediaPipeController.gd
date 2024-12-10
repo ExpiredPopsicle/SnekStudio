@@ -16,12 +16,14 @@ var hand_time_since_last_update = [0.0, 0.0]
 var hand_time_since_last_missing = [0.0, 0.0]
 var mirrored_last_frame = true
 var blend_shape_last_values = {}
+var head_tracker : Node3D
+var hand_trackers = {}
 var hand_rest_trackers = {}
 var _init_complete = false
 
 var frames_missing_before_spine_reset = 6.0
 var blend_to_rest_speed = 4.5
-var head_vertical_offset : float = -0.2
+var head_vertical_offset : float = 0.0
 var hips_vertical_blend_speed : float = 6.0
 
 
@@ -127,6 +129,9 @@ func _ready():
 
 	add_tracked_setting("tracking_pause", "Pause tracking")
 
+	head_tracker = $Head
+	hand_trackers["Left"] = $Hand_Left
+	hand_trackers["Right"] = $Hand_Right
 	hand_rest_trackers["Left"] = $LeftHandRestReference
 	hand_rest_trackers["Right"] = $RightHandRestReference
 	
@@ -220,19 +225,17 @@ func scene_init():
 	blend_shape_last_values = {}
 	last_parsed_data = {}
 
-	# Move hand "rest" trackers into the scene.
+	# Move trackers into the scene.
 	var root = get_skeleton().get_parent()
-	var left_rest = $LeftHandRestReference
-	var right_rest = $RightHandRestReference
-	remove_child(left_rest)
-	remove_child(right_rest)
-	root.add_child(left_rest)
-	root.add_child(right_rest)
+	head_tracker.reparent(root)
+	hand_trackers["Left"].reparent(root)
+	hand_trackers["Right"].reparent(root)
+	hand_rest_trackers["Left"].reparent(root)
+	hand_rest_trackers["Right"].reparent(root)
 
 	# Set the head tracker to match the model's head position.
 	var head_bone_index = get_skeleton().find_bone("Head")
-	$Head.global_transform = get_skeleton().get_bone_global_rest(
-		head_bone_index)
+	head_tracker.transform = get_skeleton().get_bone_global_rest(head_bone_index)
 
 	_setup_ik_chains()
 	_update_arm_rest_positions()
@@ -248,14 +251,11 @@ func scene_shutdown():
 	udp_server.close()
 	udp_server = null
 	
-	var root = get_skeleton().get_parent()
-	var left_rest = root.get_node("LeftHandRestReference")
-	var right_rest = root.get_node("RightHandRestReference")
-	
-	root.remove_child(left_rest)
-	root.remove_child(right_rest)
-	add_child(left_rest)
-	add_child(right_rest)
+	head_tracker.reparent(self)
+	hand_trackers["Left"].reparent(self)
+	hand_trackers["Right"].reparent(self)
+	hand_rest_trackers["Left"].reparent(self)
+	hand_rest_trackers["Right"].reparent(self)
 	
 	_ikchains = []
 	
@@ -303,7 +303,7 @@ func _setup_ik_chains():
 	chain_spine.main_axis_of_rotation = Vector3(1.0, 0.0, 0.0)
 	chain_spine.secondary_axis_of_rotation = Vector3(0.0, 1.0, 0.0)
 	chain_spine.pole_direction_target = Vector3(0.0, 0.0, 0.0) # No pole target
-	chain_spine.tracker_object = $Head
+	chain_spine.tracker_object = head_tracker
 	chain_spine.yaw_scale = chest_yaw_scale
 
 	#chain_spine.do_rotate_to_match_tracker = false
@@ -322,13 +322,13 @@ func _setup_ik_chains():
 
 
 
-	var hand_tracker_left : Node3D = $Hand_Left
-	var hand_tracker_right : Node3D = $Hand_Right
+	var hand_tracker_left : Node3D = hand_trackers["Left"]
+	var hand_tracker_right : Node3D = hand_trackers["Right"]
 
 	# FIXME: UGHHHGGHfgjkdnjvhndfvdfnvjkdfnjksdfn
 	# FIXME: MIRROR MESS
-	hand_tracker_left = $Hand_Right
-	hand_tracker_right = $Hand_Left
+	hand_tracker_left = hand_trackers["Right"]
+	hand_tracker_right = hand_trackers["Left"]
 
 	# Make sure finger landmarks exist already.
 	_reset_hand_landmarks()
@@ -817,20 +817,17 @@ func _process(delta):
 
 	# FIXME: Hack.
 	# This just moves the body based on the head position.
-	var head_pos = $Head.transform.origin
+	var head_pos = head_tracker.transform.origin
 	var model_pos = model_root.transform.origin
+
+	var head_rest_transform = skel.get_bone_global_rest(skel.find_bone("Head"))
 	
 	if true:
 		model_root.transform.origin = model_pos.lerp(head_pos, delta * hip_adjustment_speed)
 		#model_root.transform.origin = head_pos
 		#model_root.transform.origin.y = model_y 
 		#model_root.transform.origin.y = lerp(model_pos.y, head_pos.y - 1.9, 0.01)
-		
-		# FIXME: Another hack!
-		var head_rest_transform = get_skeleton().get_bone_global_rest(
-			get_skeleton().find_bone("Head"))
-		#print(head_rest_transform.origin.y)
-		
+
 		# FIXME: Hard-coded fudge factor.
 		# FIXME: Why can't we just map this directly again? It looks like we're shrugging when the arms get set up wrong or something.
 		model_root.transform.origin.y = lerp(
@@ -849,7 +846,12 @@ func _process(delta):
 		var parsed_data = last_parsed_data
 
 		# FIXME: Make these adjustable.
-		var model_origin_offset = Vector3(0.0, 2.0, 0.0)
+		# (copygirl) Assume that the tracking camera is placed 30cm directly in front
+		#            of the user's head. For that, offset by head's rest transform.
+		var camera_origin_offset = Vector3(0.0, 0.0, 0.3) + head_rest_transform.origin
+		# (copygirl) For some reason the raw hand data does not appear to be properly
+		#            relative to the camera? This 15cm offset might help with that.
+		var hand_origin_offset = Vector3(0.0, 0.15, 0.0)
 		var arbitrary_scale = 1.0
 		var score_exponent = 1.5
 		var score_threshold = 0.1
@@ -861,16 +863,16 @@ func _process(delta):
 		var head_origin_multiplier = Vector3(1.0, 1.0, 1.0)
 		var head_quat_multiplier = [1.0, 1.0, 1.0, 1.0]
 
-		var tracker_left = $Hand_Left
-		var tracker_right = $Hand_Right
+		var tracker_left = hand_trackers["Left"]
+		var tracker_right = hand_trackers["Right"]
 		
 		# FIXME: MIRROR MESS (CLEAN THIS UP)
 		hand_origin_multiplier = Vector3(-1.0, 1.0, 1.0)
 		head_origin_multiplier = Vector3(-1.0, 1.0, 1.0)
 		head_quat_multiplier = [1.0, -1.0, -1.0, 1.0]
 
-		tracker_left = $Hand_Right
-		tracker_right = $Hand_Left
+		tracker_left = hand_trackers["Right"]
+		tracker_right = hand_trackers["Left"]
 
 		# -----------------------------------------------------------------------------------------
 		# Hand packets
@@ -929,13 +931,13 @@ func _process(delta):
 				
 				var reference_ob = hand_data["rest_reference_object"]
 				# Move hand to rest position.
-				tracker_ob.global_transform.origin = tracker_ob.global_transform.origin.lerp(
-					reference_ob.global_transform.origin, arm_reset_speed) # FIXME: Hardcoded value.
+				tracker_ob.transform.origin = tracker_ob.transform.origin.lerp(
+					reference_ob.transform.origin, arm_reset_speed) # FIXME: Hardcoded value.
 				
-				var rot_quat1 = tracker_ob.global_transform.basis.get_rotation_quaternion()
-				var rot_quat2 = reference_ob.global_transform.basis.get_rotation_quaternion()
-				tracker_ob.global_transform.basis = Basis(rot_quat1.slerp(rot_quat2, arm_reset_speed)) # FIXME: Hardcoded value
-				tracker_ob.global_transform.basis = tracker_ob.global_transform.basis.orthonormalized()
+				var rot_quat1 = tracker_ob.transform.basis.get_rotation_quaternion()
+				var rot_quat2 = reference_ob.transform.basis.get_rotation_quaternion()
+				tracker_ob.transform.basis = Basis(rot_quat1.slerp(rot_quat2, arm_reset_speed)) # FIXME: Hardcoded value
+				tracker_ob.transform.basis = tracker_ob.transform.basis.orthonormalized()
 
 			elif time_since_last_missing > 0.1: # FIXME: Hardcoded value.
 
@@ -943,53 +945,53 @@ func _process(delta):
 				parsed_data[hand_score_str] = pow(parsed_data[hand_score_str], score_exponent)
 			
 				# TODO: Replace the tracker object with just a Transform3D.
-				var target_origin = model_origin_offset + (Vector3(
-					hand_origin_array[0],
-					hand_origin_array[1],
-					hand_origin_array[2]) * hand_origin_multiplier) * arbitrary_scale
+				var target_origin = camera_origin_offset + hand_origin_offset \
+					+ Vector3(hand_origin_array[0], hand_origin_array[1], hand_origin_array[2]) \
+					* hand_origin_multiplier * arbitrary_scale
 				
-				# Attempt to move hand in front of model. Reaching behind is
-				# *usually* the results of bad data.
-				#
-				# FIXME: Ugly hack.
-				#   If we're going to do this, we need to make sure we do it in the model's forward
-				#   direction.
-				#
-				# FIXME: Hardcoded values all over this part.
-				#
-				var chest_transform_global_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
-				var min_z = (skel.global_transform * chest_transform_global_pose).origin
-				if target_origin.z < min_z.z + 0.2:
-					target_origin.z = min_z.z + 0.2
-
-				# Move tracker forward if we're reaching across the chest to see
-				# if we can fix some clipping-into-chest problems.
-				#
-				# FIXME: Hardcoded values all over this part.
-				#
-				
-				# FIXME: THIS IS BAD CODE AND YOU (KIRI) SHOULD FEEL BAD ABOUT IT.
-				var tracker_in_chest_space = chest_transform_global_pose.inverse() * target_origin
-				# FIXME: Hack for mirror.
-				var swap_tracker = tracker_right
-				if tracker_ob == swap_tracker:
-					tracker_in_chest_space.x *= -1
-				# Just clamp the overall reach, first.
-
-				# Clamp tracker reach.
-				# FIXME: Hardcoded value.
-				if tracker_in_chest_space.x < -0.2:
-					tracker_in_chest_space.x = -0.2
-
-				# Now move forward.
-				if tracker_in_chest_space.x < 0.0:
-					# FIXME: Hardcoded scaling value.
-					tracker_in_chest_space.z += -(tracker_in_chest_space.x - 0.1) * 0.2
-				# FIXME: Hack for mirror.
-				if tracker_ob == swap_tracker:
-					tracker_in_chest_space.x *= -1
-				
-				target_origin = chest_transform_global_pose * tracker_in_chest_space
+# (copygirl) TODO: Can this be removed? What is its purpose?
+#				# Attempt to move hand in front of model. Reaching behind is
+#				# *usually* the results of bad data.
+#				#
+#				# FIXME: Ugly hack.
+#				#   If we're going to do this, we need to make sure we do it in the model's forward
+#				#   direction.
+#				#
+#				# FIXME: Hardcoded values all over this part.
+#				#
+#				var chest_transform_global_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
+#				var min_z = chest_transform_global_pose.origin
+#				if target_origin.z < min_z.z + 0.2:
+#					target_origin.z = min_z.z + 0.2
+#
+#				# Move tracker forward if we're reaching across the chest to see
+#				# if we can fix some clipping-into-chest problems.
+#				#
+#				# FIXME: Hardcoded values all over this part.
+#				#
+#				
+#				# FIXME: THIS IS BAD CODE AND YOU (KIRI) SHOULD FEEL BAD ABOUT IT.
+#				var tracker_in_chest_space = chest_transform_global_pose.inverse() * target_origin
+#				# FIXME: Hack for mirror.
+#				var swap_tracker = tracker_right
+#				if tracker_ob == swap_tracker:
+#					tracker_in_chest_space.x *= -1
+#				# Just clamp the overall reach, first.
+#
+#				# Clamp tracker reach.
+#				# FIXME: Hardcoded value.
+#				if tracker_in_chest_space.x < -0.2:
+#					tracker_in_chest_space.x = -0.2
+#
+#				# Now move forward.
+#				if tracker_in_chest_space.x < 0.0:
+#					# FIXME: Hardcoded scaling value.
+#					tracker_in_chest_space.z += -(tracker_in_chest_space.x - 0.1) * 0.2
+#				# FIXME: Hack for mirror.
+#				if tracker_ob == swap_tracker:
+#					tracker_in_chest_space.x *= -1
+#				
+#				target_origin = chest_transform_global_pose * tracker_in_chest_space
 
 				var rotation_basis_array = parsed_data[hand_rotation_str]
 
@@ -1008,10 +1010,7 @@ func _process(delta):
 				#new_rot_quat.x *= -1.0
 				new_rotation = Basis(new_rot_quat)
 
-				# Why do we have to go through the global transform? I guess we need like a "baked"
-				# version of the transform that handles all of our weird axis flipping.
-				
-				var old_world_transform = tracker_ob.get_global_transform()
+				var old_transform = tracker_ob.get_transform()
 
 				#tracker_ob.transform.basis = new_rotation # Basis(new_rotation.orthonormalized().get_rotation_quaternion())
 				
@@ -1023,7 +1022,7 @@ func _process(delta):
 #				# FIXME: Hardcoded threshold.
 #				if tracker_in_chest_space.y < 0.0:
 #					var reference_ob = hand[3]
-#					target_origin = reference_ob.global_transform.origin
+#					target_origin = reference_ob.transform.origin
 #					#tracker_ob.transform.basis = reference_ob.transform.basis
 #					new_rotation = reference_ob.transform.basis
 					
@@ -1037,11 +1036,11 @@ func _process(delta):
 					tracker_ob.transform.basis.orthonormalized().get_rotation_quaternion().slerp(
 					new_rotation, 1.0 / hand_rotation_smoothing)) # Basis(new_rotation.orthonormalized().get_rotation_quaternion())
 				
-				var new_world_transform = tracker_ob.get_global_transform()
+				var new_transform = tracker_ob.get_transform()
 				
 				# FIXME: Hardcoded smoothing value.
-				var interped_transform = old_world_transform.interpolate_with(new_world_transform, 0.75)
-				tracker_ob.global_transform.basis = interped_transform.basis
+				var interped_transform = old_transform.interpolate_with(new_transform, 0.75)
+				tracker_ob.transform.basis = interped_transform.basis
 
 				#tracker_ob.transform.basis = new_rotation
 				if tracker_ob.mesh:
@@ -1053,8 +1052,8 @@ func _process(delta):
 		# FIXME: Hardcoded transform
 		var head_origin_array = parsed_data["head_origin"]
 		if parsed_data["head_missing_time"] <= frames_missing_before_spine_reset:
-			$Head.transform.origin = $Head.transform.origin.lerp(
-				model_origin_offset +
+			head_tracker.transform.origin = head_tracker.transform.origin.lerp(
+				camera_origin_offset +
 				(Vector3(
 					head_origin_array[0],
 					head_origin_array[1],
@@ -1066,7 +1065,7 @@ func _process(delta):
 				head_quat_array[1] * head_quat_multiplier[1],
 				head_quat_array[2] * head_quat_multiplier[2],
 				head_quat_array[3] * head_quat_multiplier[3])).get_euler()
-			$Head.transform.basis = $Head.transform.basis.slerp(
+			head_tracker.transform.basis = head_tracker.transform.basis.slerp(
 				Basis.from_euler(head_euler * head_rotation_scale),
 				delta_scale * 0.5) # FIXME: Hardcoded smoothing.
 		else:
@@ -1075,8 +1074,8 @@ func _process(delta):
 			# rest position.
 			var head_index : int = skel.find_bone("Head")
 			var rest_global : Transform3D = skel.get_bone_rest(head_index)
-			$Head.global_transform.basis = Basis(
-				$Head.global_transform.basis.get_rotation_quaternion().slerp(
+			head_tracker.transform.basis = Basis(
+				head_tracker.transform.basis.get_rotation_quaternion().slerp(
 					rest_global.basis.get_rotation_quaternion(), blend_to_rest_speed * delta))
 
 		# ---------------------------------------------------------------------
@@ -1106,7 +1105,7 @@ func _process(delta):
 				pole_target_x = -x_pole_dist
 		
 			var tracker_local_position = \
-				skel.get_global_transform().inverse() * tracker_to_use.get_global_transform()
+				skel.get_transform().inverse() * tracker_to_use.get_transform()
 			var base_bone_position = skel.get_bone_global_pose(
 				skel.find_bone(_ikchains[k].base_bone)).origin
 			#print(tracker_local_position.origin.x - bone_position.x)
@@ -1191,11 +1190,11 @@ func _process(delta):
 
 
 	# Lean!
-	var lean_check_axis : Vector3 = (skel.transform * skel.get_bone_global_pose(skel.find_bone("Hips"))).basis * Vector3(1.0, 0.0, 0.0)
+	var lean_check_axis : Vector3 = skel.get_bone_global_pose(skel.find_bone("Hips")).basis * Vector3(1.0, 0.0, 0.0)
 	#print(lean_check_axis)
 	lean_check_axis = lean_check_axis.normalized()
-	#var head_offset : Vector3 = $Head.transform.origin - (skel.transform * skel.get_bone_global_pose(skel.find_bone("Head"))).origin
-	var head_offset : Vector3 = $Head.transform.origin - model_root.transform.origin
+	#var head_offset : Vector3 = head_tracker.transform.origin - skel.get_bone_global_pose(skel.find_bone("Head")).origin
+	var head_offset : Vector3 = head_tracker.transform.origin - model_root.transform.origin
 	var lean_amount : float = sin(lean_check_axis.dot(head_offset))
 	handle_lean(skel, lean_amount * lean_scale)
 
@@ -1203,13 +1202,16 @@ func _process(delta):
 
 func _reset_hand_landmarks():
 
-	for tracker : Node3D in [ $Hand_Left, $Hand_Right ]:
+	for tracker : Node3D in [ hand_trackers["Left"], hand_trackers["Right"] ]:
 		
 		# Make sure we have all the children.
 		while tracker.get_child_count() < 21:
 			var new_finger_tracker : MeshInstance3D = MeshInstance3D.new()
+			# FIXME: Hack. Should be relative to hand.
+			#        Unfortunately, other code expect it to be relative to model.
+			new_finger_tracker.top_level = true
 			tracker.add_child(new_finger_tracker)
-			if tracker == $Hand_Left:
+			if tracker == hand_trackers["Left"]:
 				hand_landmarks_left.append(new_finger_tracker)
 			else:
 				hand_landmarks_right.append(new_finger_tracker)
@@ -1239,6 +1241,7 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 
 	var hand_landmark_rotation_to_use = hand[3]
 	var hand_landmarks = hand[1]
+	var hand_tracker = hand[2]
 
 	for mark in parsed_data["hand_landmarks_" + flipped_hand]:
 		
@@ -1262,24 +1265,22 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 		
 		var marker = hand_landmarks[mark_counter]
 		
-		var marker_old_worldspace = marker.global_transform.origin
+		var marker_old_worldspace = marker.transform.origin
 		
 		var marker_original_local = Vector3(mark[0], mark[1], mark[2]) # FIXME: Add a scaling value.
 
 		# FIXME: WHY THE HECK DO WE HAVE TO DO DO THIS!?!?!?!?!?!?!?!?!?!?!?!?!!!??!?!?!?!?!?!
 		if flipped_hand == "right":
-			marker_original_local[0] *= -1
-			marker_original_local[1] *= -1
-			marker_original_local[2] *= -1
+			marker_original_local *= -1
 	
 		var marker_new_local = hand_landmark_rotation_to_use * \
 			marker_original_local
-		var marker_new_worldspace = marker.get_parent().transform * marker_new_local
+		var marker_new_worldspace = hand_tracker.transform * marker_new_local
 		
 #						marker.transform.origin = \
 #							hand_landmark_rotation_to_use * \
 #							(Vector3(mark[0], mark[1], mark[2]) * hand_landmark_position_multiplier)
-		marker.global_transform.origin = lerp( \
+		marker.transform.origin = lerp( \
 			marker_old_worldspace, \
 			marker_new_worldspace, \
 			0.25) # FIXME: Hardcoded smoothing
@@ -1294,7 +1295,7 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 #					# direction of the tracker.
 #					var metacarpal_index = skel.find_bone(hand[0] + "ThumbMetacarpal")
 #					var metacarpal_rest_origin = skel.get_bone_rest(metacarpal_index).origin
-#					var metacarpal_tracker_delta_world = hand[1][1].global_transform.origin - hand[1][0].global_transform.origin
+#					var metacarpal_tracker_delta_world = hand[1][1].transform.origin - hand[1][0].transform.origin
 #					var metacarpal_tracker_delta_global = skel.transform.basis.inverse() * metacarpal_tracker_delta_world
 #					var metacarpal_tracker_delta_bone = skel.get_bone_global_pose(metacarpal_index).basis.inverse() * metacarpal_tracker_delta_global
 #					print(metacarpal_tracker_delta_bone)
@@ -1366,12 +1367,11 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 
 		skel.reset_bone_pose(test_bone_index)
 			
-		var test_bone_pt_2 = hand_landmarks[finger_bone[2]].global_transform.origin
-		var test_bone_pt_1 = hand_landmarks[finger_bone[1]].global_transform.origin
+		var test_bone_pt_2 = hand_landmarks[finger_bone[2]].transform.origin
+		var test_bone_pt_1 = hand_landmarks[finger_bone[1]].transform.origin
 		
 		
-		var skel_inverse = skel.transform.inverse()
-		var test_bone_vec_global = (skel_inverse * test_bone_pt_2 - skel_inverse * test_bone_pt_1).normalized()
+		var test_bone_vec_global = (test_bone_pt_2 - test_bone_pt_1).normalized()
 
 		var current_finger_vec_global = \
 			(skel.get_bone_global_pose(skel.find_bone(finger_bone_reference_1)).origin -
