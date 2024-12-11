@@ -1,0 +1,37 @@
+[gd_scene load_steps=8 format=3 uid="uid://ct067jt6erw8l"]
+
+[ext_resource type="PackedScene" uid="uid://fhm0lw7jf81x" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject.tscn" id="1_8yele"]
+[ext_resource type="AudioStream" uid="uid://ck6s4l8wot1fp" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_Sound_HitHurt2.wav" id="2_0ts3g"]
+[ext_resource type="PackedScene" uid="uid://imivwlheemct" path="res://Mods/ThrownObjects/Objects/Shork/shork.glb" id="2_sk53b"]
+[ext_resource type="Shader" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteShader.gdshader" id="3_fveor"]
+[ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="4_sojs2"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_kgaga"]
+radius = 0.145
+height = 0.92
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_d4iad"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("3_fveor")
+shader_parameter/rotation = null
+shader_parameter/uniform_scale = 1.0
+shader_parameter/texture_albedo = ExtResource("4_sojs2")
+
+[node name="ThrownObject" instance=ExtResource("1_8yele")]
+sticky = false
+stickiness_chance = 0.0
+collision_sound = ExtResource("2_0ts3g")
+
+[node name="shork" parent="." index="0" instance=ExtResource("2_sk53b")]
+
+[node name="MeshInstance" parent="." index="1"]
+visible = false
+
+[node name="CollisionShape" parent="." index="2"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_kgaga")
+
+[node name="Sprite3D" parent="." index="4"]
+visible = false
+material_override = SubResource("ShaderMaterial_d4iad")

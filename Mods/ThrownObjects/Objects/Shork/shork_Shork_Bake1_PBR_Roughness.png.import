@@ -1,0 +1,39 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://ckioisy6cpwrf"
+path.s3tc="res://.godot/imported/shork_Shork_Bake1_PBR_Roughness.png-1c64e555d94b02bb80ee896b1d64c0d9.s3tc.ctex"
+path.etc2="res://.godot/imported/shork_Shork_Bake1_PBR_Roughness.png-1c64e555d94b02bb80ee896b1d64c0d9.etc2.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "b4c0607dd81b810b7718541253f584e1"
+}
+
+[deps]
+
+source_file="res://Mods/ThrownObjects/Objects/Shork/shork_Shork_Bake1_PBR_Roughness.png"
+dest_files=["res://.godot/imported/shork_Shork_Bake1_PBR_Roughness.png-1c64e555d94b02bb80ee896b1d64c0d9.s3tc.ctex", "res://.godot/imported/shork_Shork_Bake1_PBR_Roughness.png-1c64e555d94b02bb80ee896b1d64c0d9.etc2.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0
