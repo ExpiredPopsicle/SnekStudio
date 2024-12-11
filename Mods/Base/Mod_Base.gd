@@ -562,6 +562,7 @@ func settings_window_add_colorpicker(
 	var colorpicker_widget = ColorPickerButton.new()
 	
 	colorpicker_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	colorpicker_widget.custom_minimum_size.y = 32
 	
 	colorpicker_widget.color_changed.connect(
 		func(new_value): modify_setting(
