@@ -73,6 +73,10 @@ var hip_adjustment_speed : float = 1.0
 
 var blendshape_scale : float = 1.2
 
+var hand_position_scale : Vector3 = Vector3(7.0, 7.0, 3.5)
+var hand_position_offset : Vector3 = Vector3(0.0, -0.14, 0.0)
+var hand_to_head_scale : float = 2.0
+
 func _ready():
 
 	var script_path : String = self.get_script().get_path()
@@ -113,6 +117,10 @@ func _ready():
 
 	add_tracked_setting("blendshape_scale", "Blend Shape Scale", { "min" : 0.0, "max" : 10.0 })
 
+	add_tracked_setting("hand_position_scale", "Hand Position Scale")
+	add_tracked_setting("hand_position_offset", "Hand Position Offset")
+	add_tracked_setting("hand_to_head_scale", "Hand to Head Position Scale", { "min" : 0.01, "max" : 10.0 })
+
 	# Star the Python tracker process just long enough to scan for video
 	# devices. We won't be starting "for real" until we get to scene_init.
 	tracker_python_process.start_process(false)
@@ -149,6 +157,10 @@ func _ready():
 func save_before(_settings_current: Dictionary):
 	_settings_current["blendshape_calibration"] = blendshape_calibration
 
+## Convert a Vector3 to an array, for sending across an RPC call.
+static func _vec3_to_array(vec : Vector3):
+	return [vec[0], vec[1], vec[2]]
+
 func _send_settings_to_tracker():
 
 	# Don't send these if the tracker process isn't running. We'll send them
@@ -178,6 +190,13 @@ func _send_settings_to_tracker():
 	tracker_python_process.call_rpc_async(
 		"set_hand_count_change_time_threshold", [hand_count_change_time_threshold])
 
+	# FIXME: Replace all of the above with this one call.
+	tracker_python_process.call_rpc_async(
+		"update_settings", [{
+			"hand_position_scale"  : _vec3_to_array(hand_position_scale),
+			"hand_position_offset" : _vec3_to_array(hand_position_offset),
+			"hand_to_head_scale"   : hand_to_head_scale
+		}])
 
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	super.load_after(_settings_old, _settings_new)

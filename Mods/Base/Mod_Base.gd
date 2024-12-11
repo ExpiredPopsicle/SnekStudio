@@ -165,7 +165,11 @@ func add_tracked_setting(setting_name, label_text, extra_args={}):
 	elif prop_val is Color:
 		settings_window_add_colorpicker(
 			new_setting_prop["label"], new_setting_prop["name"])
-			
+
+	elif prop_val is Vector3:
+		settings_window_add_vector3(
+			new_setting_prop["label"], new_setting_prop["name"])
+
 	else:
 		# I don't recognize that type for a new setting.
 		assert(false)
@@ -238,6 +242,9 @@ func update_settings_ui(_ui_window = null):
 						if widget.get_item_text(item_index) == val:
 							widget.select(item_index)
 							break
+
+			if widget is VectorSettingWidget:
+				widget.value = value
 
 # -----------------------------------------------------------------------------
 # Functions usable by the mods themselves
@@ -573,6 +580,29 @@ func settings_window_add_colorpicker(
 	window.add_child(colorpicker_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = colorpicker_widget
+
+func settings_window_add_vector3(
+	setting_label, setting_name):
+
+	# This only works with the default-created settings window widget.
+	var window : Container = get_settings_window()
+
+	var label_widget = Label.new()
+	label_widget.text = setting_label
+
+	var vec3_widget : VectorSettingWidget = \
+		load("res://Core/UI/VectorSettingWidget.tscn").instantiate()
+	vec3_widget.custom_minimum_size.y = 32
+	vec3_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vec3_widget.value_changed.connect(
+		func(new_value): modify_setting(
+			setting_name,
+			new_value))
+
+	window.add_child(label_widget)
+	window.add_child(vec3_widget)
+
+	_settings_widgets_by_setting_name[setting_name] = vec3_widget
 
 func modify_setting(setting_name, value):
 	var existing_settings = save_settings()

@@ -226,7 +226,9 @@ def guess_depth_from_known_distance(landmarks, landmarks_world, index0, index1, 
 def get_hand_viewspace_origin(
         landmarks,
         world_landmarks,
-        hand_to_head_scale=1.0):
+        hand_to_head_scale=1.0,
+        position_scale=numpy.array([7.0, 7.0, 3.5]),
+        position_offset=numpy.array([0.0, -0.14, 0.0])):
 
     # Determine a fake Z by taking the average of three separate
     # measurements, to try to get the most accurate (or at least less
@@ -356,14 +358,9 @@ def get_hand_viewspace_origin(
         landmark_to_vector(landmarks[0]),
         -fake_z_avg)
 
-    viewspace_origin[0] *= 7.0 # FIXME: Fudge factor. (horizontal scale)
-    viewspace_origin[1] *= 7.0 # FIXME: Fudge factor. (vertical scale)
-    viewspace_origin[1] -= 0.14 # FIXME: Fudge factor. (vertical offset)
-    viewspace_origin[2] *= 3.5 # FIXME: Fudge (depth scale)
-
-    # viewspace_origin[2] += 0.0 # FIXME: Fudge (depth offset)
-    # viewspace_origin[2] -= 0.1
-    # viewspace_origin[1] -= 0.0 # FIXME: Vertical offset fudge factor. - is up, + is down
+    # Apply calibration settings.
+    viewspace_origin *= position_scale
+    viewspace_origin += position_offset
 
     return viewspace_origin
 

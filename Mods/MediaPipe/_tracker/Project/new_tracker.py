@@ -96,6 +96,10 @@ class MediaPipeTracker:
         # the number of hands has changed.
         self.time_since_hand_count_changed_threshold = 1.0
 
+        self.hand_position_scale = numpy.array([7.0, 7.0, 3.5])
+        self.hand_position_offset = numpy.array([0.0, -0.14, 0.0])
+        self.hand_to_head_scale = 2.0
+
     def _close_video_device(self):
 
         with self.the_big_ugly_mutex:
@@ -325,7 +329,9 @@ class MediaPipeTracker:
                 hand_landmarks,
                 hand_world_landmarks,
                 #9/5) # FIXME: Hardcoded value. Add calibration.
-                2.0)
+                self.hand_to_head_scale,
+                self.hand_position_scale,
+                self.hand_position_offset)
 
             # Decide handedness
             handedness_decided = ""
@@ -661,6 +667,8 @@ class MediaPipeTracker:
 
 
     # Set to -1 to just release all devices.
+    #
+    # FIXME: Merge into update_settings.
     def set_video_device_number(self, new_number):
 
         if self.video_device_index != new_number:
@@ -669,17 +677,29 @@ class MediaPipeTracker:
             self._close_video_device()
             self._open_video_device()
 
+    # FIXME: Merge into update_settings.
     def set_udp_port_number(self, new_number):
         with self.the_big_ugly_mutex:
             self.udp_port_number = new_number
 
+    # FIXME: Merge into update_settings.
     def set_hand_confidence_time_threshold(self, new_number):
         with self.the_big_ugly_mutex:
             self.confidence_time_threshold = new_number
 
+    # FIXME: Merge into update_settings.
     def set_hand_count_change_time_threshold(self, new_number):
         with self.the_big_ugly_mutex:
             self.time_since_hand_count_changed_threshold = new_number
+
+    def update_settings(self, new_settings_dict):
+
+        if "hand_position_scale" in new_settings_dict:
+            self.hand_position_scale = new_settings_dict["hand_position_scale"]
+        if "hand_position_offset" in new_settings_dict:
+            self.hand_position_offset = new_settings_dict["hand_position_offset"]
+        if "hand_to_head_scale" in new_settings_dict:
+            self.hand_to_head_scale = new_settings_dict["hand_to_head_scale"]
 
     def _shutdown_mediapipe(self):
 
@@ -721,21 +741,31 @@ def stop_tracker():
     mediapipe_controller.stop_tracker()
 
 # Set to -1 to just release all devices.
+#
+# FIXME: Merge into update_settings.
 def set_video_device_number(new_number):
     global mediapipe_controller
     mediapipe_controller.set_video_device_number(new_number)
 
+# FIXME: Merge into update_settings.
 def set_udp_port_number(new_number):
     global mediapipe_controller
     mediapipe_controller.set_udp_port_number(new_number)
 
+# FIXME: Merge into update_settings.
 def set_hand_confidence_time_threshold(new_number):
     global mediapipe_controller
     mediapipe_controller.set_hand_confidence_time_threshold(new_number)
 
+# FIXME: Merge into update_settings.
 def set_hand_count_change_time_threshold(new_number):
     global mediapipe_controller
     mediapipe_controller.set_hand_count_change_time_threshold(new_number)
+
+def update_settings(new_settings_dict):
+    global mediapipe_controller
+    mediapipe_controller.update_settings(new_settings_dict)
+
 
 def enumerate_camera_devices():
 
