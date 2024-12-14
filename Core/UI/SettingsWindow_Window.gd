@@ -10,6 +10,8 @@ func settings_changed_from_app():
 		%ColorPickerButton_BackgroundColor.color = Color.html(settings_dict["background_color"])
 	if "hide_window_decorations" in settings_dict:
 		%CheckBox_HideWindowDecorations.button_pressed = settings_dict["hide_window_decorations"]
+	if "vsync_mode" in settings_dict:
+		%OptionButton_VSyncMode.selected = settings_dict["vsync_mode"]
 
 func show_window():
 	super.show_window()
@@ -24,6 +26,7 @@ func update_to_app():
 	settings_dict["transparent_window"] = %CheckBox_TransparentBackground.button_pressed
 	settings_dict["background_color"] = %ColorPickerButton_BackgroundColor.color.to_html()
 	settings_dict["hide_window_decorations"] = %CheckBox_HideWindowDecorations.button_pressed
+	settings_dict["vsync_mode"] = %OptionButton_VSyncMode.selected
 	
 	app.deserialize_settings(settings_dict)
 
