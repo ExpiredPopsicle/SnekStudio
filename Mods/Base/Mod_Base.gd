@@ -7,6 +7,8 @@ var _settings_properties = []
 var _mod_status : String = ""
 var _mod_log : Array = []
 
+const defaults_text_get_rid_of_me = "\u27F2"
+
 # -----------------------------------------------------------------------------
 # Virtual functions
 
@@ -400,9 +402,20 @@ func settings_window_add_boolean(setting_label, setting_name):
 	var checkbox_widget = CheckBox.new()
 	checkbox_widget.pressed.connect(
 		func(): modify_setting(setting_name, checkbox_widget.button_pressed))
+		
+	var reset_default = Button.new()
+	var reset_default_action = func(default_value):
+		modify_setting(setting_name, default_value)
+		checkbox_widget.set_pressed_no_signal(default_value)
+	reset_default.text = defaults_text_get_rid_of_me
+	reset_default.flat = true
+	reset_default.pressed.connect(
+		reset_default_action.bind(get(setting_name))
+	)
 	
 	container_widget.add_child(label_widget)
 	container_widget.add_child(checkbox_widget)
+	container_widget.add_child(reset_default)
 	window.add_child(container_widget)
 	
 	_settings_widgets_by_setting_name[setting_name] = checkbox_widget
@@ -427,8 +440,23 @@ func settings_window_add_spinbox(
 					roundi(new_number)))
 	spinbox_widget.min_value = min_value
 	spinbox_widget.max_value = max_value
+		
+	var reset_default = Button.new()
+	var reset_default_action = func(default_value):
+		modify_setting(setting_name, default_value)
+		spinbox_widget.set_value_no_signal(default_value)
+	reset_default.text = defaults_text_get_rid_of_me
+	reset_default.flat = true
+	reset_default.pressed.connect(
+		reset_default_action.bind(get(setting_name))
+	)
 
-	window.add_child(spinbox_widget)
+	var container_widget : HBoxContainer = HBoxContainer.new()
+	
+	container_widget.add_child(spinbox_widget)
+	container_widget.add_child(reset_default)
+	
+	window.add_child(container_widget)
 	_settings_widgets_by_setting_name[setting_name] = spinbox_widget
 
 func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false, is_fileaccess=false, file_filters: PackedStringArray = []):
@@ -450,6 +478,17 @@ func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false, 
 			setting_name,
 			new_text))
 	group_widget.add_child(lineedit_widget)
+		
+	var reset_default = Button.new()
+	var reset_default_action = func(default_value):
+		modify_setting(setting_name, default_value)
+		lineedit_widget.set_text(default_value)
+	reset_default.text = defaults_text_get_rid_of_me
+	reset_default.flat = true
+	reset_default.pressed.connect(
+		reset_default_action.bind(get(setting_name))
+	)
+	group_widget.add_child(reset_default)
 
 	if is_fileaccess:
 		var dialog_button : Button = Button.new()
@@ -500,8 +539,22 @@ func settings_window_add_slider_with_number(
 			setting_name,
 			new_value))
 	
+	var reset_default = Button.new()
+	var reset_default_action = func(default_value):
+		modify_setting(setting_name, default_value)
+		slider_widget.set_value_no_signal(default_value)
+	reset_default.text = defaults_text_get_rid_of_me
+	reset_default.flat = true
+	reset_default.pressed.connect(
+		reset_default_action.bind(get(setting_name))
+	)
+	
+	var container_widget : HBoxContainer = HBoxContainer.new()
+	container_widget.add_child(slider_widget)
+	container_widget.add_child(reset_default)
+	
 	window.add_child(label_widget)
-	window.add_child(slider_widget)
+	window.add_child(container_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = slider_widget
 
@@ -519,6 +572,11 @@ func settings_window_add_selector(
 	
 	var selection_widget = null
 	
+	var reset_default_action = null
+	var reset_default = Button.new()
+	reset_default.text = defaults_text_get_rid_of_me
+	reset_default.flat = true
+	
 	var callback = func(widget):
 		var new_value = []
 		var selected_items = []
@@ -535,6 +593,14 @@ func settings_window_add_selector(
 		selection_widget.fit_to_longest_item = false
 		selection_widget.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		selection_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		
+		reset_default_action = func(default_value):
+			modify_setting(setting_name, default_value)
+			for value in default_value:
+				for idx in selection_widget.item_count:
+					if selection_widget.get_item_text(idx) == value:
+						selection_widget.select(idx)
+						break
 	else:
 		selection_widget = ItemList.new()
 		selection_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -542,10 +608,24 @@ func settings_window_add_selector(
 		selection_widget.select_mode = ItemList.SELECT_SINGLE
 		if allow_multiple:
 			selection_widget.select_mode = ItemList.SELECT_MULTI
+		
+		reset_default_action = func(default_value):
+			var single = selection_widget.select_mode != ItemList.SELECT_MULTI
+			modify_setting(setting_name, default_value)
+			if !single:
+				selection_widget.deselect_all()
+			for value in default_value:
+				for idx in selection_widget.item_count:
+					if selection_widget.get_item_text(idx) == value:
+						selection_widget.select(idx, single)
 
 		selection_widget.multi_selected.connect(
 			(func(_index, widget): callback.call(widget)).bind(selection_widget))
 
+	reset_default.pressed.connect(
+		reset_default_action.bind(get(setting_name))
+	)
+	
 	selection_widget.item_selected.connect(
 		(func(_index, widget): callback.call(widget)).bind(selection_widget))
 
@@ -553,7 +633,11 @@ func settings_window_add_selector(
 		selection_widget.add_item(item)
 	
 	window.add_child(label_widget)
-	window.add_child(selection_widget)
+
+	var container_widget : HBoxContainer = HBoxContainer.new()
+	container_widget.add_child(selection_widget)
+	container_widget.add_child(reset_default)
+	window.add_child(container_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = selection_widget
 
@@ -576,7 +660,23 @@ func settings_window_add_colorpicker(
 			setting_name,
 			new_value))
 		
+	var reset_default = Button.new()
+	var reset_default_action = func(default_value):
+		modify_setting(setting_name, default_value)
+		colorpicker_widget.set_pick_color(default_value)
+	reset_default.text = defaults_text_get_rid_of_me
+	reset_default.flat = true
+	reset_default.pressed.connect(
+		reset_default_action.bind(get(setting_name))
+	)
+
 	window.add_child(label_widget)
+	
+	var container_widget : HBoxContainer = HBoxContainer.new()
+	container_widget.add_child(colorpicker_widget)
+	container_widget.add_child(reset_default)
+	window.add_child(container_widget)
+	
 	window.add_child(colorpicker_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = colorpicker_widget
@@ -600,7 +700,21 @@ func settings_window_add_vector3(
 			new_value))
 
 	window.add_child(label_widget)
-	window.add_child(vec3_widget)
+	
+	var reset_default = Button.new()
+	var reset_default_action = func(default_value):
+		modify_setting(setting_name, default_value)
+		vec3_widget.set_value_no_signal(default_value)
+	reset_default.text = defaults_text_get_rid_of_me
+	reset_default.flat = true
+	reset_default.pressed.connect(
+		reset_default_action.bind(get(setting_name))
+	)
+	
+	var container_widget : HBoxContainer = HBoxContainer.new()
+	container_widget.add_child(vec3_widget)
+	container_widget.add_child(reset_default)
+	window.add_child(container_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = vec3_widget
 
