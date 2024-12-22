@@ -22,3 +22,6 @@ StuffToRemove
 # Extra junk from the build.
 Build/build_vars.sh
 Build/Builds
+
+
+Saved/*
