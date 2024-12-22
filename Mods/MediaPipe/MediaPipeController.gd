@@ -65,8 +65,8 @@ var tracking_pause = false
 var hand_confidence_time_threshold = 1.0
 var hand_count_change_time_threshold = 1.0
 
-var hand_rotation_smoothing : float = 1.0
-var hand_position_smoothing : float = 1.0
+var hand_rotation_smoothing : float = 2.0
+var hand_position_smoothing : float = 4.0
 var chest_yaw_scale : float = 0.25
 var lean_scale : float = 1.0
 var hip_adjustment_speed : float = 1.0
