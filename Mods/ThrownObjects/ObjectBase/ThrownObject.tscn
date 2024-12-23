@@ -31,8 +31,8 @@ size = Vector2(0.063, 0.063)
 
 [node name="ThrownObject" type="RigidBody3D"]
 collision_layer = 0
-max_contacts_reported = 1
 contact_monitor = true
+max_contacts_reported = 1
 script = ExtResource("1_orge0")
 
 [node name="MeshInstance" type="MeshInstance3D" parent="."]
