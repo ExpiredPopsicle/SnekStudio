@@ -85,7 +85,7 @@ func _ready():
 	tracker_python_process = KiriPythonWrapperInstance.new( \
 		script_dirname.path_join("/_tracker/Project/new_tracker.py"))
 
-	tracker_python_process.set_cache_path(get_app().get_saved_location())
+	tracker_python_process.set_cache_path(get_app().get_cache_location())
 
 	print("Setting up Python...")
 	if not tracker_python_process.setup_python(false):

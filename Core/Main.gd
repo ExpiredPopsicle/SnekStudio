@@ -63,24 +63,29 @@ func _load_mods():
 	if _mods_loaded:
 		return
 
-	# This function only needs to be run for builds, as the Mods folder already
-	# exists when running in-editor.
-	if OS.has_feature("editor"):
-		print("skipping mod loading because we are in-editor...")
-		_mods_loaded = true
-		return
+	var mods_paths : PackedStringArray = []
+
+	# If we're running a build, make sure we add mods next to the binary by
+	# default.
+	if not OS.has_feature("editor"):
+		var default_mods_dir : String = OS.get_executable_path().get_base_dir().path_join("Mods")
+		mods_paths.append(default_mods_dir)
+
+	# Add other environment-variable-defined mod locations.
+	mods_paths.append_array(get_added_mods_locations())
 
 	# Scan for mods and add them.
-	var mods_dir : String = OS.get_executable_path().get_base_dir().path_join("Mods")
-	if not DirAccess.dir_exists_absolute(mods_dir):
-		print("mods folder \"", mods_dir, "\" does not exist")
-		return
+	for mods_dir : String in mods_paths:
 
-	print("loading mods from \"", mods_dir, "\"...")
-	var mods_zip_list : PackedStringArray = DirAccess.get_files_at(mods_dir)
-	for mod_zip in mods_zip_list:
-		print("  loading: ", mod_zip)
-		DirAccessWithMods.add_zip(mods_dir.path_join(mod_zip))
+		if not DirAccess.dir_exists_absolute(mods_dir):
+			push_error("mods folder \"", mods_dir, "\" does not exist")
+			continue
+
+		print("loading mods from \"", mods_dir, "\"...")
+		var mods_zip_list : PackedStringArray = DirAccess.get_files_at(mods_dir)
+		for mod_zip in mods_zip_list:
+			print("  loading: ", mod_zip)
+			DirAccessWithMods.add_zip(mods_dir.path_join(mod_zip))
 
 	_mods_loaded = true
 
@@ -138,9 +143,11 @@ func is_dev_mode():
 
 func _get_default_settings_path():
 	if is_dev_mode():
-		return get_saved_location().path_join("settings_dev.json")
+		# FIXME: Remove "dev mode" now that we're fully portable and
+		#   controllable with environment variables for config paths.
+		return get_config_location().path_join("settings_dev.json")
 	else:
-		return get_saved_location().path_join("settings.json")
+		return get_config_location().path_join("settings.json")
 
 func _get_ui_root():
 	return $CanvasLayer2/UI_Root
@@ -665,3 +672,30 @@ static func get_saved_location() -> String:
 	if OS.has_feature("editor"):
 		return "res://Saved"
 	return OS.get_executable_path().get_base_dir().path_join("Saved")
+
+## Get the config directory. Will default to the user data directory unless
+## overridden by environment variable.
+static func get_config_location() -> String:
+	var env_path : String = OS.get_environment("SNEKSTUDIO_CONFIG_PATH")
+	if env_path != "":
+		return ProjectSettings.localize_path(env_path)
+	return get_saved_location()
+
+## Get the cache location. Mainly this is where Python gets unpacked to.
+## Defaults to saved user data directory unless overridden.
+static func get_cache_location() -> String:
+	var env_path : String = OS.get_environment("SNEKSTUDIO_CACHE_PATH")
+	if env_path != "":
+		return ProjectSettings.localize_path(env_path)
+	return get_saved_location()
+
+## Get additional mods locations. These will be scanned after the ones that come
+## alongside the executable.
+static func get_added_mods_locations() -> PackedStringArray:
+	var env_path : String = OS.get_environment("SNEKSTUDIO_MODS_PATHS")
+	var paths_localized : PackedStringArray = []
+	if env_path != "":
+		var paths_global : PackedStringArray = env_path.split(":", false)
+		for global_path : String in paths_global:
+			paths_localized.append(ProjectSettings.localize_path(global_path))
+	return paths_localized
