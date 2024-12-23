@@ -93,6 +93,12 @@ try:
         ret_dict_json = json.dumps(ret_dict)
         packet_socket.send_packet(ret_dict_json.encode("utf-8"))
 
+        # Also spam the console.
+        try:
+            sys.stderr.write("RPC Error: " + message + "\n")
+        except Exception as e:
+            sys.stderr.write("RPC Error: Unknown. Unable to decode error.\n")
+
     def send_response(result, request_id):
         try:
             ret_dict = {
@@ -117,8 +123,6 @@ try:
         while next_packet:
             this_packet = next_packet
             next_packet = packet_socket.get_next_packet()
-
-            print("GOT PACKET: ", this_packet)
 
             # FIXME: Handle batches.
 

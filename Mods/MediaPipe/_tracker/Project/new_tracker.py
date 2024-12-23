@@ -629,7 +629,9 @@ class MediaPipeTracker:
 
                         with self.frames_queued_mutex:
                             status_packet_str = "Tracking data sending. (Queue: %2d hand, %2d face)" % (self.frames_queued_hands, self.frames_queued_face)
-                        self._write_log(status_packet_str)
+
+                        # FIXME: This is too spammy.
+                        # self._write_log(status_packet_str)
 
                         # Output the packet.
                         self._udp_socket.sendto(output_data_json, ("127.0.0.1", self.udp_port_number))

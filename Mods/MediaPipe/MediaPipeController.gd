@@ -179,11 +179,11 @@ func _send_settings_to_tracker():
 	# Set the video device.
 	if len(video_device):
 		var actual_device_data = _devices_by_list_entry[video_device[0]]
-		tracker_python_process.call_rpc_sync(
+		tracker_python_process.call_rpc_async(
 			"set_video_device_number", [actual_device_data["index"]])
 	else:
 		# If no camera selected, then select device -1.
-		tracker_python_process.call_rpc_sync(
+		tracker_python_process.call_rpc_async(
 			"set_video_device_number", [-1])
 
 	tracker_python_process.call_rpc_async(
@@ -539,10 +539,10 @@ func _scan_video_devices():
 
 func start_tracker():
 	
-	tracker_python_process.call_rpc_sync(
+	tracker_python_process.call_rpc_async(
 		"set_udp_port_number", [_udp_port])
 
-	tracker_python_process.call_rpc_sync(
+	tracker_python_process.call_rpc_async(
 		"set_hand_confidence_time_threshold", [hand_confidence_time_threshold])
 
 	var video_device_index_to_use = 0
@@ -560,7 +560,7 @@ func start_tracker():
 	tracker_python_process.call_rpc_async(
 		"set_hand_count_change_time_threshold", [hand_count_change_time_threshold])
 
-	tracker_python_process.call_rpc_sync(
+	tracker_python_process.call_rpc_async(
 		"start_tracker", [])
 
 func stop_tracker():
@@ -817,6 +817,10 @@ func _stop_process():
 	tracker_python_process.stop_process()
 
 func _process(delta):
+
+	# Process RPC IO.
+	if tracker_python_process:
+		tracker_python_process.poll()
 
 	var skel : Skeleton3D = get_app().get_skeleton()
 
