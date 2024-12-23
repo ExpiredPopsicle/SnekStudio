@@ -33,7 +33,13 @@ func get_camera_distance():
 	
 func set_camera_distance(new_camera_distance):
 	$Camera3D.transform.origin[2] = new_camera_distance
-	
+
+func set_camera_fov(new_camera_fov : float) -> void:
+	$Camera3D.fov = new_camera_fov
+
+func get_camera_fov() -> float:
+	return $Camera3D.fov
+
 func zoom_camera(offset : float):
 	var camera_distance = get_camera_distance()
 	camera_distance -= offset
@@ -54,6 +60,7 @@ func save_settings():
 		get_camera_position()[0],
 		get_camera_position()[1],
 		get_camera_position()[2]]
+	output_dict["fov"] = get_camera_fov()
 	return output_dict
 	
 func load_settings(settings_dict):
@@ -64,7 +71,10 @@ func load_settings(settings_dict):
 		settings_dict["position"][1],
 		settings_dict["position"][2])
 	set_camera_position(new_camera_position)
-	
+
+	if "fov" in settings_dict:
+		set_camera_fov(settings_dict["fov"])
+
 func reset_to_default():
 	transform = Transform3D(Basis(), Vector3(0.0, 1.7, 0.0))
 	set_camera_distance(4.5)

@@ -3,23 +3,23 @@ extends BasicSubWindow
 func _get_app_root():
 	return get_node("../../..")
 
-func settings_changed_from_app():
-	pass
+func settings_changed_from_app() -> void:
+	var settings : Dictionary = _get_app_root().serialize_settings(true, false)
 
-func settings_changed_from_ui():
-	pass
+	var fov : float = settings["camera"]["fov"]
+	%BasicSliderWithNumber_CameraFOV.set_value_no_signal(fov)
+
+func settings_changed_from_ui() -> void:
+	var app = _get_app_root()
+
+	var settings_dict : Dictionary = _get_app_root().serialize_settings(true, false)
+
+	settings_dict["camera"]["fov"] = %BasicSliderWithNumber_CameraFOV.value
+
+	app.deserialize_settings(settings_dict)
 
 # ------------------------------------------------------------------------------
 # Signals from various widgets indicating something has changed
 
-func _on_button_ok_pressed():
-	close_window()
-
-func _on_button_apply_pressed():
-	pass
-
-func _on_button_cancel_pressed():
-	close_window()
-
-func show_window():
-	super.show_window()
+func _on_basic_slider_with_number_camera_fov_value_changed(value: Variant) -> void:
+	settings_changed_from_ui()

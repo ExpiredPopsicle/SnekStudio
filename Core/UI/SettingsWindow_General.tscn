@@ -1,10 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://6rc2mjibeujw"]
+[gd_scene load_steps=4 format=3 uid="uid://6rc2mjibeujw"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_fb5na"]
 [ext_resource type="Script" path="res://Core/UI/SettingsWindow_General.gd" id="2_1jk3i"]
+[ext_resource type="PackedScene" uid="uid://cwt2oqwri2i5y" path="res://Core/UI/BasicSliderWithNumber.tscn" id="3_nw828"]
 
-[node name="SettingsWindow_VMC" instance=ExtResource("1_fb5na")]
-offset_right = 785.0
+[node name="SettingsWindow_General" instance=ExtResource("1_fb5na")]
+offset_right = 675.0
 offset_bottom = 284.0
 script = ExtResource("2_1jk3i")
 label_text = "General Settings"
@@ -16,25 +17,16 @@ offset_right = 676.0
 offset_right = 644.0
 text = "Settings"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." index="2"]
+[node name="ScrollContainer" type="ScrollContainer" parent="." index="2"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="Label" type="Label" parent="VBoxContainer" index="0"]
-custom_minimum_size = Vector2(256, 0)
-layout_mode = 2
-text = "There are no settings here at the moment! There used to be and there may be again, but for now there are not."
-autowrap_mode = 2
-
-[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer" index="1"]
-layout_mode = 2
 size_flags_vertical = 3
 
-[node name="GridContainer" type="GridContainer" parent="VBoxContainer/ScrollContainer" index="0"]
+[node name="GridContainer" type="GridContainer" parent="ScrollContainer" index="0"]
 clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -43,25 +35,16 @@ theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 2
 columns = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" index="2"]
+[node name="Label" type="Label" parent="ScrollContainer/GridContainer" index="0"]
 layout_mode = 2
-alignment = 2
+text = "Camera FOV"
 
-[node name="Button_Cancel" type="Button" parent="VBoxContainer/HBoxContainer" index="0"]
-custom_minimum_size = Vector2(128, 0)
+[node name="BasicSliderWithNumber_CameraFOV" parent="ScrollContainer/GridContainer" index="1" instance=ExtResource("3_nw828")]
+unique_name_in_owner = true
 layout_mode = 2
-text = "Cancel"
+min_value = 5.0
+max_value = 150.0
+value = 16.0
+disabled = false
 
-[node name="Button_Apply" type="Button" parent="VBoxContainer/HBoxContainer" index="1"]
-custom_minimum_size = Vector2(128, 0)
-layout_mode = 2
-text = "Apply"
-
-[node name="Button_OK" type="Button" parent="VBoxContainer/HBoxContainer" index="2"]
-custom_minimum_size = Vector2(128, 0)
-layout_mode = 2
-text = "OK"
-
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/Button_Cancel" to="." method="_on_button_cancel_pressed"]
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/Button_Apply" to="." method="_on_button_apply_pressed"]
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/Button_OK" to="." method="_on_button_ok_pressed"]
+[connection signal="value_changed" from="ScrollContainer/GridContainer/BasicSliderWithNumber_CameraFOV" to="." method="_on_basic_slider_with_number_camera_fov_value_changed"]

@@ -81,5 +81,6 @@ func _on_spin_box_value_changed(new_value):
 	_handle_value_change(value)
 
 func _set_disabled(new_disabled : bool):
+	disabled = new_disabled
 	$HSlider.editable = not new_disabled
 	$SpinBox.editable = not new_disabled
