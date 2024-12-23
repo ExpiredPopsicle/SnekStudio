@@ -23,3 +23,8 @@ func scene_shutdown():
 		app._on_handle_channel_points_redeem)
 	$TwitchService.handle_channel_raid.disconnect(
 		app._on_handle_channel_raid)
+
+func _ready() -> void:
+	var twitch : TwitchService = TwitchService.new()
+	twitch.twitch_client_id = "mcelg5q6vbtp2phjxi3d5u4shb6uzh"
+	twitch.config_root = get_app().get_saved_location()

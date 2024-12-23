@@ -138,10 +138,9 @@ func is_dev_mode():
 
 func _get_default_settings_path():
 	if is_dev_mode():
-		return OS.get_user_data_dir().path_join("settings_dev.json")
+		return get_saved_location().path_join("settings_dev.json")
 	else:
-		return OS.get_user_data_dir().path_join("settings.json")
-		#return OS.get_user_data_dir().path_join("settings.json")
+		return get_saved_location().path_join("settings.json")
 
 func _get_ui_root():
 	return $CanvasLayer2/UI_Root
@@ -653,3 +652,11 @@ func get_audio():
 
 func get_controller():
 	return $ModelController
+
+## Get the saved user data directory. When running in the editor, this will be
+## the "Saved" directory under the project. For running outside the editor, it
+## will be the "Saved" directory under the same directory as the binary.
+static func get_saved_location() -> String:
+	if OS.has_feature("editor"):
+		return "res://Saved"
+	return OS.get_executable_path().get_base_dir().path_join("Saved")

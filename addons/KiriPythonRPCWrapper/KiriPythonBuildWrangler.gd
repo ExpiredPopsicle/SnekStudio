@@ -5,6 +5,8 @@
 extends RefCounted
 class_name KiriPythonBuildWrangler
 
+var cache_path : String = "user://"
+
 # Cached release info so we don't have to constantly reload the .json file.
 var _python_release_info : Dictionary = {}
 
@@ -60,14 +62,14 @@ func _get_cache_path_relative():
 ## Example return value:
 ##   "/home/kiri/.local/share/godot/app_userdata/GodotJSONRPCTest/_python_dist/cpython-3.12.5+20240814-x86_64-unknown-linux-gnu-install_only_stripped"
 func _get_script_cache_path_system() -> String:
-	return OS.get_user_data_dir().path_join(_get_cache_path_relative()).path_join("packaged_scripts")
+	return ProjectSettings.globalize_path(cache_path).path_join(_get_cache_path_relative()).path_join("packaged_scripts")
 
 ## Get the full cache path, as understood by Godot.
 ##
 ## Example return value:
 ##   "user://_python_dist/20240415/3.12.3"
 func _get_cache_path_godot() -> String:
-	return "user://".path_join(_get_cache_path_relative())
+	return cache_path.path_join(_get_cache_path_relative())
 
 #endregion
 
@@ -316,5 +318,10 @@ func get_extra_scripts_list(platform_list : Array = []) -> Array:
 ## Get the OS name for the instance we're running.
 static func get_host_os_name():
 	return OS.get_name() + "-" + Engine.get_architecture_name()
+
+## Set the cache location. Default is "user://". This is where the build
+## wrangler will unpack files.
+func set_cache_path(new_path : String) -> void:
+	cache_path = new_path
 
 #endregion

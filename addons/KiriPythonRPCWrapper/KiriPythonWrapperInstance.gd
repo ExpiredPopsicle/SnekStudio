@@ -210,13 +210,14 @@ func run_python_command(
 func convert_cache_item_to_real_path(path : String):
 	var real_python_script_path = path
 	if real_python_script_path.begins_with("res://"):
-		real_python_script_path = _build_wrangler._get_script_cache_path_system().path_join(
-			real_python_script_path.substr(len("res://")))
+		var real_python_script_path_without_res : String = real_python_script_path.substr(len("res://"))
+		var script_cache_path_system : String = _build_wrangler._get_script_cache_path_system()
+		real_python_script_path = script_cache_path_system.path_join(
+			real_python_script_path_without_res)
 	else:
 		real_python_script_path = ProjectSettings.globalize_path(
 			real_python_script_path)
 	return real_python_script_path
-
 
 func execute_python_async(arguments : PackedStringArray):
 
@@ -463,3 +464,6 @@ func poll() -> Error:
 			return FAILED
 
 	return OK
+
+func set_cache_path(new_path : String) -> void:
+	_build_wrangler.set_cache_path(new_path)

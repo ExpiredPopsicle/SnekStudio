@@ -93,6 +93,9 @@ class SnekStudioExporter extends EditorExportPlugin:
 		# Copy our own LICENSE file.
 		DirAccess.copy_absolute("res://LICENSE", _export_path.path_join("LICENSE.txt"))
 
+		# Create the empty Saved directory, for user settings and stuff.
+		DirAccess.make_dir_recursive_absolute(_export_path.path_join("Saved"))
+
 	func copy_recursive(dest : String, src : String, match_string : String = ""):
 		
 		# Make the directory to put the thing in.
