@@ -35,6 +35,12 @@ func _set_value(new_value : Vector3):
 	_update_widgets_with_new_values()
 	_handle_value_change(value)
 
+func set_value_no_signal(new_value : Vector3):
+	_dont_handle_change_temporarily = true
+	value = new_value
+	_dont_handle_change_temporarily = false
+	_update_widgets_with_new_values()
+
 func _handle_value_change(new_value : Vector3):
 	value_changed.emit(new_value)
 

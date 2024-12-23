@@ -35,6 +35,12 @@ func _set_value(new_value):
 	_update_widgets_with_new_values()
 	_handle_value_change(value)
 
+func set_value_no_signal(new_value):
+	_dont_handle_change_temporarily = true
+	value = new_value
+	_dont_handle_change_temporarily = false
+	_update_widgets_with_new_values()
+	
 func _set_min_value(new_min_value):
 	_dont_handle_change_temporarily = true
 	min_value = new_min_value
