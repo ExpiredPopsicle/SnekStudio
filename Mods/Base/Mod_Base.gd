@@ -478,17 +478,6 @@ func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false, 
 			setting_name,
 			new_text))
 	group_widget.add_child(lineedit_widget)
-		
-	var reset_default = Button.new()
-	var reset_default_action = func(default_value):
-		modify_setting(setting_name, default_value)
-		lineedit_widget.set_text(default_value)
-	reset_default.text = defaults_text_get_rid_of_me
-	reset_default.flat = true
-	reset_default.pressed.connect(
-		reset_default_action.bind(get(setting_name))
-	)
-	group_widget.add_child(reset_default)
 
 	if is_fileaccess:
 		var dialog_button : Button = Button.new()
@@ -511,8 +500,18 @@ func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false, 
 		group_widget.add_child(test_button)
 		test_button.button_down.connect(
 			_test_redeem_with_settings_value.bind(setting_name, false))
-		
-	
+
+	var reset_default = Button.new()
+	var reset_default_action = func(default_value):
+		modify_setting(setting_name, default_value)
+		lineedit_widget.set_text(default_value)
+	reset_default.text = defaults_text_get_rid_of_me
+	reset_default.flat = true
+	reset_default.pressed.connect(
+		reset_default_action.bind(get(setting_name))
+	)
+	group_widget.add_child(reset_default)
+
 	window.add_child(label_widget)
 	window.add_child(group_widget)
 
@@ -676,8 +675,6 @@ func settings_window_add_colorpicker(
 	container_widget.add_child(colorpicker_widget)
 	container_widget.add_child(reset_default)
 	window.add_child(container_widget)
-	
-	window.add_child(colorpicker_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = colorpicker_widget
 
