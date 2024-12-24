@@ -87,9 +87,9 @@ func _ready():
 	add_tracked_setting("light_reflection_source", "Reflection Source", {"values" : reflection_sources.keys(), "combobox" : true})
 	add_tracked_setting("light_ambient_source", "Ambient Light Source", {"values" : ambient_sources.keys(), "combobox" : true})
 	add_tracked_setting("light_ambient_color", "Ambient Light Color")
-	add_tracked_setting("light_ambient_multiplier", "Ambient Light Energy", {"min": 0.0, "max": 2.0})
+	add_tracked_setting("light_ambient_multiplier", "Ambient Light Energy", {"min": 0.0, "max": 10.0})
 	add_tracked_setting("light_directional_color", "Directional Light Color")
-	add_tracked_setting("light_directional_multiplier", "Directional Light Energy", {"min": 0.0, "max": 2.0})
+	add_tracked_setting("light_directional_multiplier", "Directional Light Energy", {"min": 0.0, "max": 10.0})
 	add_tracked_setting("light_directional_pitch", "Directional Light Pitch", {"min": -180.0, "max": 180.0})
 	add_tracked_setting("light_directional_yaw", "Directional Light Yaw", {"min": -180.0, "max": 180.0})
 	add_tracked_setting("image_path", "Custom Panorama (HDRI)", {"is_fileaccess": true, "file_filters": PackedStringArray(["*.exr,*.hdr,*.png;Panoramic HDR Images"])})
@@ -97,9 +97,13 @@ func _ready():
 
 	update_settings_ui()
 
-func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
-	
-	if _settings_old["image_path"] != _settings_new["image_path"]:
+func load_after(_settings_old : Dictionary, _settings_new : Dictionary) -> void:
+
+	if _settings_old["image_path"] != _settings_new["image_path"] or \
+		_settings_old["light_reflection_source"] != _settings_new["light_reflection_source"] or \
+		_settings_old["light_ambient_multiplier"] != _settings_new["light_ambient_multiplier"] or \
+		_settings_old["light_ambient_source"] != _settings_new["light_ambient_source"]:
+
 		# This setting is only relevant if either sources are actually set to sky
 		if ambient_sources.get(light_ambient_source[0]) == Environment.AMBIENT_SOURCE_SKY || reflection_sources.get(light_reflection_source[0]) == Environment.REFLECTION_SOURCE_SKY:
 			# Fallback to procedural sky if image is invalid
@@ -109,5 +113,6 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 			else:
 				$WorldEnvironment.environment.sky.set_material(panoramicSky)
 				$WorldEnvironment.environment.sky.sky_material.set_panorama(ImageTexture.create_from_image(image))
-				
+				$WorldEnvironment.environment.sky.sky_material.energy_multiplier = light_ambient_multiplier
+
 	_save_settings_to_scene()
