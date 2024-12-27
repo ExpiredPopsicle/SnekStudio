@@ -525,8 +525,11 @@ func settings_window_add_slider_with_number(
 	# This only works with the default-created settings window widget.
 	var window : Container = get_settings_window()
 
-	var label_widget = Label.new()
-	label_widget.text = setting_label
+	var label_widget : Label = null
+	# FIXME: Apply this label-optional thing to every tracked setting type.
+	if setting_label != "":
+		label_widget = Label.new()
+		label_widget.text = setting_label
 	
 	var slider_widget = load("res://Core/UI/BasicSliderWithNumber.tscn").instantiate()
 	slider_widget.min_value = min_value
@@ -552,7 +555,8 @@ func settings_window_add_slider_with_number(
 	container_widget.add_child(slider_widget)
 	container_widget.add_child(reset_default)
 	
-	window.add_child(label_widget)
+	if label_widget:
+		window.add_child(label_widget)
 	window.add_child(container_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = slider_widget

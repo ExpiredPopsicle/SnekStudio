@@ -77,6 +77,134 @@ var hand_position_scale : Vector3 = Vector3(7.0, 7.0, 3.5)
 var hand_position_offset : Vector3 = Vector3(0.0, -0.14, 0.0)
 var hand_to_head_scale : float = 2.0
 
+const blendshape_names_mediapipe : PackedStringArray = [
+	"_neutral",
+	"browDownLeft",
+	"browDownRight",
+	"browInnerUp",
+	"browOuterUpLeft",
+	"browOuterUpRight",
+	"cheekPuff",
+	"cheekSquintLeft",
+	"cheekSquintRight",
+	"eyeBlinkLeft",
+	"eyeBlinkRight",
+	"eyeLookDownLeft",
+	"eyeLookDownRight",
+	"eyeLookInLeft",
+	"eyeLookInRight",
+	"eyeLookOutLeft",
+	"eyeLookOutRight",
+	"eyeLookUpLeft",
+	"eyeLookUpRight",
+	"eyeSquintLeft",
+	"eyeSquintRight",
+	"eyeWideLeft",
+	"eyeWideRight",
+	"jawForward",
+	"jawLeft",
+	"jawOpen",
+	"jawRight",
+	"mouthClose",
+	"mouthDimpleLeft",
+	"mouthDimpleRight",
+	"mouthFrownLeft",
+	"mouthFrownRight",
+	"mouthFunnel",
+	"mouthLeft",
+	"mouthLowerDownLeft",
+	"mouthLowerDownRight",
+	"mouthPressLeft",
+	"mouthPressRight",
+	"mouthPucker",
+	"mouthRight",
+	"mouthRollLower",
+	"mouthRollUpper",
+	"mouthShrugLower",
+	"mouthShrugUpper",
+	"mouthSmileLeft",
+	"mouthSmileRight",
+	"mouthStretchLeft",
+	"mouthStretchRight",
+	"mouthUpperUpLeft",
+	"mouthUpperUpRight",
+	"noseSneerLeft",
+	"noseSneerRight",
+]
+
+var blendshape_scales : Dictionary = {}
+var blendshape_offsets : Dictionary = {}
+var blendshape_progressbars : Dictionary = {}
+var blendshape_progressbar_update_index : int = 0
+
+func _get_property_list() -> Array[Dictionary]:
+
+	var properties : Array[Dictionary] = []
+
+	for blend_shape : String in blendshape_names_mediapipe:
+		var new_entry_scale : Dictionary = {
+			"name" : "blendshape_scale_" + blend_shape,
+			"type" : TYPE_FLOAT
+		}
+		var new_entry_offset : Dictionary = {
+			"name" : "blendshape_offset_" + blend_shape,
+			"type" : TYPE_FLOAT
+		}
+		properties.append(new_entry_scale)
+		properties.append(new_entry_offset)
+
+	return properties
+
+func _get(property: StringName) -> Variant:
+
+	if property.begins_with("blendshape_scale_"):
+		var blendshape_name : String = property.substr(len("blendshape_scale_"))
+		if blendshape_name in blendshape_names_mediapipe:
+			if blendshape_name in blendshape_scales:
+				return blendshape_scales[blendshape_name]
+			else:
+				return 1.0
+		else:
+			return null
+
+	if property.begins_with("blendshape_offset_"):
+		var blendshape_name : String = property.substr(len("blendshape_offset_"))
+		if blendshape_name in blendshape_names_mediapipe:
+			if blendshape_name in blendshape_offsets:
+				return blendshape_offsets[blendshape_name]
+			else:
+				return 0.0
+		else:
+			return null
+
+	return null
+
+func _set(property: StringName, value: Variant) -> bool:
+
+	if property.begins_with("blendshape_scale_"):
+		var blendshape_name : String = property.substr(len("blendshape_scale_"))
+		if blendshape_name in blendshape_names_mediapipe:
+			if value == 1.0:
+				blendshape_scales.erase(blendshape_name)
+			else:
+				blendshape_scales[blendshape_name] = value
+			return true
+		else:
+			return false
+
+	if property.begins_with("blendshape_offset_"):
+		var blendshape_name : String = property.substr(len("blendshape_offset_"))
+		if blendshape_name in blendshape_names_mediapipe:
+			if value == 0.0:
+				blendshape_offsets.erase(blendshape_name)
+			else:
+				blendshape_offsets[blendshape_name] = value
+			return true
+		else:
+			return false
+
+	return false
+
 func _ready():
 
 	var script_path : String = self.get_script().get_path()
@@ -137,9 +265,31 @@ func _ready():
 
 	add_tracked_setting("tracking_pause", "Pause tracking")
 
+	for blendshape_name in blendshape_names_mediapipe:
+
+		var label : Label = Label.new()
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		label.text = blendshape_name + " scale/offset"
+		get_settings_window().add_child(label)
+
+		var progressbar : ProgressBar = ProgressBar.new()
+		progressbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		progressbar.show_percentage = false
+		progressbar.value = randf()
+		progressbar.min_value = 0.0
+		progressbar.max_value = 1.0
+		progressbar.custom_minimum_size = Vector2(0, 32.0)
+		get_settings_window().add_child(progressbar)
+
+		add_tracked_setting("blendshape_scale_" + blendshape_name, "",  { "min" : 0.0, "max" : 2.0 })
+		add_tracked_setting("blendshape_offset_" + blendshape_name, "",  { "min" : -2.0, "max" : 2.0 })
+		blendshape_progressbars[blendshape_name] = progressbar
+
+		# TODO: Link together left/right sides (optionally?)
+
 	hand_rest_trackers["Left"] = $LeftHandRestReference
 	hand_rest_trackers["Right"] = $RightHandRestReference
-	
+
 	set_status("Waiting to start")
 	
 	update_settings_ui()
@@ -679,6 +829,10 @@ func process_new_packets(model, delta):
 			if parsed_data.has("blendshapes"):
 				functions_blendshapes.apply_blendshape_scale(parsed_data["blendshapes"], blendshape_scale)
 
+				# Apply blendshape scales to MediaPipe shapes.
+				functions_blendshapes.apply_blendshape_scale_offset_dict(
+					parsed_data["blendshapes"],
+					blendshape_scales, blendshape_offsets)
 
 			last_parsed_data["head_quat"] = parsed_data["head_quat"]
 			last_parsed_data["head_origin"] = parsed_data["head_origin"]
@@ -721,14 +875,38 @@ func process_new_packets(model, delta):
 				
 				# Merge in MediaPipe or basic VRM blendshapes per options.
 				if use_vrm_basic_shapes:
+					var vrm_shapes : Dictionary = functions_blendshapes.convert_mediapipe_shapes_to_vrm_standard( \
+						last_parsed_data["blendshapes"])
+
+					# Apply blendshape scales to basic VRM shapes.
+					functions_blendshapes.apply_blendshape_scale_offset_dict(
+						vrm_shapes, blendshape_scales, blendshape_offsets)
 					shape_dict_new.merge(
-						functions_blendshapes.convert_mediapipe_shapes_to_vrm_standard(last_parsed_data["blendshapes"]),
+						vrm_shapes,
 						true)
+
 				if use_mediapipe_shapes:
 					shape_dict_new.merge(
 						last_parsed_data["blendshapes"],
 						true)
-				
+
+				# Update a few of the progress bars.
+				var shape_keys : Array = blendshape_progressbars.keys()
+				for i in range(0, 5):
+
+					var shape_name : String = \
+						shape_keys[blendshape_progressbar_update_index]
+
+					if shape_name in shape_dict_new:
+						blendshape_progressbars[shape_name].value = \
+							shape_dict_new[shape_name]
+					else:
+						blendshape_progressbars[shape_name].value = 0.0
+
+					blendshape_progressbar_update_index += 1
+					blendshape_progressbar_update_index %= len(shape_keys)
+
+
 				# Apply smoothing.
 				# FIXME: Parameterize.
 				shape_dict_new = functions_blendshapes.apply_smoothing(
