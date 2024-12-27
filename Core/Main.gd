@@ -199,7 +199,12 @@ func get_model():
 	return $ModelController.get_node_or_null("Model")
 
 func get_skeleton():
-	var skeleton = get_model().find_child("GeneralSkeleton", false, false)
+	# Skeleton may not be directly a child of the model.
+	# We also want to make sure it is actually a Skeleton3D.
+	var possible_skeletons = get_model().find_children("*", "Skeleton3D", true)
+	assert(possible_skeletons.size() >= 1)
+	
+	var skeleton = possible_skeletons[0]
 	assert(skeleton)
 	return skeleton
 
