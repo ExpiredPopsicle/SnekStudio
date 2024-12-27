@@ -5,6 +5,9 @@ var colliders_by_model_name = {}
 
 var hide_window_decorations_with_ui : bool = false
 
+# TODO (multiplayer): Make this dictionary per-model.
+var module_global_data : Dictionary = {}
+
 func _process(_delta):
 	_set_process_order()
 
@@ -638,25 +641,19 @@ func load_vrm(path):
 
 	set_colliders(collider_data)
 
-
 	reinit_mods()
 	_force_update_ui()
 
 func shutdown_mods():
 	if _mods_running:
-		
 		for mod in $Mods.get_children():
 			mod.scene_shutdown()
-		
 		_mods_running = false
-	
 
 func reinit_mods():
 	if not _mods_running:
-	
 		for mod in $Mods.get_children():
 			mod.scene_init()
-	
 		_mods_running = true
 
 func get_audio():

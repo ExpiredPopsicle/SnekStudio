@@ -12,6 +12,8 @@ const defaults_text_get_rid_of_me = "\u27F2"
 # -----------------------------------------------------------------------------
 # Virtual functions
 
+#region Virtual functions
+
 # Virtual function called after the model is added to the scene, OR after the
 # model is swapped.
 func scene_init():
@@ -248,8 +250,15 @@ func update_settings_ui(_ui_window = null):
 			if widget is VectorSettingWidget:
 				widget.value = value
 
+func _handle_global_mod_message(key : String, values : Dictionary):
+	return
+
+#endregion
+
 # -----------------------------------------------------------------------------
 # Functions usable by the mods themselves
+
+#region Mod API
 
 func _update_log_ui(update_log = true, update_status = true):
 	# FIXME: This is a really gross way to do this thing.
@@ -381,10 +390,27 @@ func get_files_in_directory(
 
 	return output_list
 
+func get_global_mod_data(key : String) -> Dictionary:
+	var app : Node = get_app()
+	if key in app.module_global_data:
+		return app.module_global_data[key]
+	app.module_data[key] = {}
+	return app.module_global_data[key]
+
+func send_global_mod_message(key : String, values : Dictionary, skip_current : bool = true):
+	var mods_container : Node = get_app().get_node("Mods")
+	for mod in mods_container.get_children():
+		if mod != self or not skip_current:
+			mod._handle_global_mod_message(key, values)
+
+#endregion
+
 # -----------------------------------------------------------------------------
 # Settings window setup functions, to simplify settings UI creation
 #
 # Use these in ready().
+
+#region Settings window
 
 func settings_window_add_boolean(setting_label, setting_name):
 	
@@ -720,8 +746,12 @@ func modify_setting(setting_name, value):
 	existing_settings[setting_name] = value
 	load_settings(existing_settings)
 
+#endregion
+
 # -----------------------------------------------------------------------------
 # Stuff used by external systems
+
+#region external
 
 func get_settings_window():
 	
@@ -737,8 +767,12 @@ func get_settings_window():
 
 	return _settings_window
 
+#endregion
+
 # -----------------------------------------------------------------------------
 # Internal stuff
+
+#region internal
 
 func _cleanup_settings_window():
 	if _settings_window:
@@ -751,3 +785,5 @@ func _autodelete_remove_everything():
 	var group_nodes = get_tree().get_nodes_in_group(get_autodelete_group_name())
 	for node in group_nodes:
 		node.queue_free()
+
+#endregion
