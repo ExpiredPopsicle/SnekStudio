@@ -24,11 +24,10 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 			$KiriOSCServer.stop_server()
 
 func _on_OSCServer_message_received(address_string, arguments):
-	
-	#return # -Kiri
-	var model = get_app().get_model()
-	var skeleton = model.find_child("GeneralSkeleton")
-	var model_controller = get_app().get_node("ModelController")
+
+	var model : Node3D = get_app().get_model()
+	var skeleton : Skeleton3D = get_app().get_skeleton()
+	var model_controller : Node3D = get_app().get_node("ModelController")
 	
 	if address_string == "/VMC/Ext/Bone/Pos":
 	
@@ -126,7 +125,7 @@ func _on_OSCServer_message_received(address_string, arguments):
 			print("NO BONE FOUND FOR VMC THING: ", actual_bone_name)
 
 	# -------------------------------------------------------------------------
-	# Blend shapes		
+	# Blend shapes
 
 	if address_string == "/VMC/Ext/Blend/Val":
 		blend_shape_last_values[arguments[0].to_upper()] = arguments[1]

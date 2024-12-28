@@ -22,16 +22,17 @@ func _rotate_meshinstances_recursively(node):
 func get_last_loaded_vrm():
 	return _last_loaded_vrm
 
-func load_vrm(path):
+## Load a new VRM. Returns the newly instantiated scene's root node on success,
+## or null on failure.
+func load_vrm(path) -> Node3D:
 
 	# If the file doesn't exist, return immediately.
 	if not FileAccess.file_exists(path):
+		push_error("Failed to load ", path, ": file does not exist.")
 		return null
 
-	#FLAGS: 26
-	#OPTIONS: { "nodes/root_type": "", "nodes/root_name": "", "nodes/apply_root_scale": true, "nodes/root_scale": 1, "meshes/ensure_tangents": true, "meshes/generate_lods": true, "meshes/create_shadow_meshes": true, "meshes/light_baking": 1, "meshes/lightmap_texel_size": 0.2, "meshes/force_disable_compression": false, "skins/use_named_skins": true, "animation/import": true, "animation/fps": 30, "animation/trimming": false, "animation/remove_immutable_tracks": true, "import_script/path": "", "_subresources": {  }, "gltf/naming_version": 1, "gltf/embedded_image_handling": 1 }
-
 	# Attempt to load file.
+	# FIXME: Determine of the flags used are still needed. Remove them if not.
 	var gltf: GLTFDocument = GLTFDocument.new()
 	var vrm_extension: GLTFDocumentExtension = load("res://addons/godot-vrm/vrm_extension.gd").new()
 	GLTFDocument.register_gltf_document_extension(vrm_extension, true)
@@ -63,13 +64,29 @@ func load_vrm(path):
 	# Cleanup.
 	GLTFDocument.unregister_gltf_document_extension(vrm_extension)
 
+	# Fixup.
 	_set_lod_bias_recursively(self)
-	#_attach_colliders()
-	
+
 	if generated_scene:
 		_last_loaded_vrm = path
-	
+
 	return generated_scene
+
+func get_model() -> Node3D:
+	return get_node("Model")
+
+func get_skeleton() -> Skeleton3D:
+
+	var model : Node3D = get_model()
+	if not model:
+		return null
+
+	var secondary : VRMSecondary = $Model.get_node("secondary")
+	if not secondary:
+		return null
+
+	var skeleton : Skeleton3D = secondary.get_node(secondary.skeleton)
+	return skeleton
 
 # Find a bone index based on the VRM bone name. This can be different from the
 # bone name on the model itself. These names match the Unity humanoid.
@@ -82,7 +99,7 @@ func find_mapped_bone_index(bone_name : String):
 	#var fixed_bone_name = bone_name[0].to_lower() + bone_name.substr(1)
 	var fixed_bone_name = bone_name
 
-	var skeleton = $Model.find_child("GeneralSkeleton")
+	var skeleton : Skeleton3D = get_skeleton()
 	
 	var bone_index = bone_mapping.profile.find_bone(fixed_bone_name)
 	if bone_index != -1:
@@ -113,11 +130,15 @@ func find_mapped_bone_index(bone_name : String):
 	#print("CANNOT FIND BONE: ", fixed_bone_name)
 	return -1
 
+## Get a bone's "global" (local to the skeleton objectm not the scene) pose.
 func get_bone_transform(bone_name : String):
-	
+
 	var bone_index = find_mapped_bone_index(bone_name)
 	if bone_index == -1:
 		return null
 
-	var skeleton = $Model.find_child("GeneralSkeleton")
+	var skeleton : Skeleton3D = get_skeleton()
+	if not skeleton:
+		return null
+
 	return skeleton.get_bone_global_pose(bone_index)

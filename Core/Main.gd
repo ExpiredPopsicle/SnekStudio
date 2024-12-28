@@ -174,9 +174,9 @@ func _get_current_model_base_name():
 
 func _save_colliders_for_current_model():
 	var model_base_name = _get_current_model_base_name()
-	
+
 	var new_list = []
-	
+
 	var skeleton = get_skeleton()
 	for c in skeleton.get_children():
 		if c is AvatarCollider:
@@ -186,42 +186,47 @@ func _save_colliders_for_current_model():
 			#var pos = c.
 			#new_collider_entry["position"] = c.
 			new_list.append(new_collider_entry)
-	
-	
+
 	colliders_by_model_name[model_base_name] = new_list
 
-
-func get_colliders():
+## Get settings for colliders for this model, as an array of Dictionaries
+## containing their settings (not the actual instantiated collider objects).
+func get_colliders(create_defaults_if_missing : bool = false) -> Array:
 	var model_base_name = _get_current_model_base_name()
-	if model_base_name in colliders_by_model_name:
-		return colliders_by_model_name[model_base_name]
-	else:
-		return []
 
-func get_model():
-	return $ModelController.get_node_or_null("Model")
+	if model_base_name in colliders_by_model_name:
+		# Settings exist for this model. Use them.
+		return colliders_by_model_name[model_base_name]
+
+	else:
+		# No settings? Optionally create defaults, otherwise return empty.
+		var default_colliders : Array = []
+		if create_defaults_if_missing:
+			default_colliders = [
+				{
+					"bone_name" : "Head",
+					"position" : [0.0, 0.1, 0.02],
+					"radius" : 0.12,
+					"from_vrm" : false,
+				}
+			]
+			colliders_by_model_name[model_base_name] = default_colliders
+
+		return default_colliders
+
+## Get the root object of the VTuber model.
+func get_model() -> Node3D:
+	# FIXME (multiplayer): Get model by index or something.
+	return $ModelController.get_model()
 
 ## Get the skeleton of the VTuber model.
-func get_skeleton():
-
+func get_skeleton() -> Skeleton3D:
 	# FIXME (multiplayer): Get skeleton by index or something.
-
-	# Attempt to find the skeleton through the normal VRM structures first.
-	var model : VRMTopLevel = get_model()
-	if not model:
-		return null
-	var secondary : VRMSecondary = model.get_node("secondary")
-	if secondary:
-		return secondary.get_node(secondary.skeleton)
-
-	# Buggy fallback.
-	var skeleton = get_model().find_child("GeneralSkeleton", false, false)
-	assert(skeleton)
-	return skeleton
+	return $ModelController.get_skeleton()
 
 ## Sync colliders on model with whatever is in the dictionary, or do a default
 ## if colliders_list is null.
-func set_colliders(colliders_list=null):
+func set_colliders(colliders_list=null) -> void:
 
 	var collider_type = preload("res://Core/AvatarColliders/AvatarCollider.tscn")
 
@@ -245,7 +250,6 @@ func set_colliders(colliders_list=null):
 				skeleton.add_child(new_collider)
 
 		_save_colliders_for_current_model()
-			
 
 func reset_settings_to_default():
 	
@@ -577,20 +581,28 @@ func load_settings(path : String = ""):
 	
 	_force_update_ui()
 
-func load_vrm(path):
+## Load a new VRM file from a given path. Returns true on success and false on
+## failure.
+func load_vrm(path) -> bool:
+
+	# FIXME: Handle failure cases.
+
 	shutdown_mods()
-	$ModelController.load_vrm(path)
-	
+	var new_model_root : Node3D = $ModelController.load_vrm(path)
+
+	if not new_model_root:
+		reinit_mods()
+		push_error("Failed to load VRM: ", path)
+		return false
+
 	# Load colliders list
-	var model_base_name = _get_current_model_base_name()
-	var collider_data = []
-	if model_base_name in colliders_by_model_name:
-		collider_data = colliders_by_model_name[model_base_name]
-		
-		# Clear "from_vrm" from everything loaded because we'll correlate
-		# loaded colliders in the next step.
-		for collider in collider_data:
-			collider["from_vrm"] = false
+	var model_base_name : String = _get_current_model_base_name()
+	var collider_data : Array = get_colliders(true)
+
+	# Clear "from_vrm" from everything loaded because we'll correlate
+	# loaded colliders in the next step.
+	for collider in collider_data:
+		collider["from_vrm"] = false
 
 	# Add colliders from VRM (the ones used for springbone collisions).
 	var model = $ModelController.get_node_or_null("Model")
@@ -609,7 +621,7 @@ func load_vrm(path):
 
 					# FIXME: Add support for capsules.
 					if sphere_collider.is_capsule:
-						return
+						continue
 
 					var bone_name = sphere_collider.bone			
 
@@ -656,6 +668,8 @@ func load_vrm(path):
 
 	reinit_mods()
 	_force_update_ui()
+
+	return true
 
 func shutdown_mods():
 	if _mods_running:
