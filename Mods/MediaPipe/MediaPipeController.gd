@@ -91,6 +91,16 @@ func _ready():
 	if not tracker_python_process.setup_python(false):
 		OS.alert("Something went wrong when setting up tracker dependencies!")
 
+	# Start the Python tracker process just long enough to scan for video
+	# devices. We won't be starting "for real" until we get to scene_init.
+	tracker_python_process.start_process(false)
+	_scan_video_devices()
+	add_tracked_setting(
+		"video_device", "Video Device",
+		{"values" : _devices_list,
+		 "combobox" : true})
+	tracker_python_process.stop_process()
+
 	add_tracked_setting("hand_tracking_enabed", "Hand tracking enabled")
 	add_tracked_setting("use_vrm_basic_shapes", "Use basic VRM shapes")
 	add_tracked_setting("use_mediapipe_shapes", "Use MediaPipe shapes")
@@ -122,16 +132,6 @@ func _ready():
 	add_tracked_setting("hand_position_scale", "Hand Position Scale")
 	add_tracked_setting("hand_position_offset", "Hand Position Offset")
 	add_tracked_setting("hand_to_head_scale", "Hand to Head Position Scale", { "min" : 0.01, "max" : 10.0 })
-
-	# Star the Python tracker process just long enough to scan for video
-	# devices. We won't be starting "for real" until we get to scene_init.
-	tracker_python_process.start_process(false)
-	_scan_video_devices()
-	add_tracked_setting(
-		"video_device", "Video Device",
-		{"values" : _devices_list,
-		 "combobox" : true})
-	tracker_python_process.stop_process()
 
 	add_tracked_setting("debug_visible_hand_trackers", "Debug: Visible hand trackers")
 
