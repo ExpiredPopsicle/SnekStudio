@@ -222,14 +222,17 @@ func update_settings_ui(_ui_window = null):
 				widget.text = value
 
 			if widget is SpinBox:
-				widget.value = roundi(value)
+				value = roundi(value)
+				widget.value = value
 			
 			# BasicSliderWithNumber/float
 			if widget is BasicSliderWithNumber:
+				value = roundf((value - widget.min_value) / widget.step) * widget.step + widget.min_value
 				widget.value = value
 			
 			if widget is ColorPickerButton:
 				widget.color = value
+				value = Color(value)
 			
 			# ItemList/array
 			if widget is ItemList:
@@ -249,6 +252,16 @@ func update_settings_ui(_ui_window = null):
 
 			if widget is VectorSettingWidget:
 				widget.value = value
+			
+			var default_value = widget.get_meta("default")
+			var is_default = false
+			if value is float:
+				is_default = is_equal_approx(value, default_value)
+			else:
+				is_default = value == default_value
+			var reset_default = widget.get_meta("reset_button")
+			reset_default.disabled = is_default
+			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
 
 func _handle_global_mod_message(key : String, values : Dictionary):
 	return
@@ -426,8 +439,8 @@ func settings_window_add_boolean(setting_label, setting_name):
 	label_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	
 	var checkbox_widget = CheckBox.new()
-	checkbox_widget.pressed.connect(
-		func(): modify_setting(setting_name, checkbox_widget.button_pressed))
+	
+	var default_value = get(setting_name)
 		
 	var reset_default = Button.new()
 	var reset_default_action = func(default_value):
@@ -436,7 +449,17 @@ func settings_window_add_boolean(setting_label, setting_name):
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
 	reset_default.pressed.connect(
-		reset_default_action.bind(get(setting_name))
+		reset_default_action.bind(default_value)
+	)
+	
+	checkbox_widget.set_meta("default", default_value)
+	checkbox_widget.set_meta("reset_button", reset_default)
+	checkbox_widget.pressed.connect(
+		func():
+			modify_setting(setting_name, checkbox_widget.button_pressed)
+			var is_default = checkbox_widget.button_pressed == default_value
+			reset_default.disabled = is_default
+			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
 	)
 	
 	container_widget.add_child(label_widget)
@@ -460,21 +483,31 @@ func settings_window_add_spinbox(
 	
 	var spinbox_widget : SpinBox = SpinBox.new()
 	spinbox_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	spinbox_widget.value_changed.connect(
-				func(new_number): modify_setting(
-					setting_name,
-					roundi(new_number)))
+					
 	spinbox_widget.min_value = min_value
 	spinbox_widget.max_value = max_value
 		
+	var default_value = get(setting_name)
+	
 	var reset_default = Button.new()
 	var reset_default_action = func(default_value):
 		modify_setting(setting_name, default_value)
 		spinbox_widget.set_value_no_signal(default_value)
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
+	reset_default.disabled = true
 	reset_default.pressed.connect(
-		reset_default_action.bind(get(setting_name))
+		reset_default_action.bind(default_value)
+	)
+
+	spinbox_widget.set_meta("default", default_value)
+	spinbox_widget.set_meta("reset_button", reset_default)
+	spinbox_widget.value_changed.connect(
+		func(new_number):
+			modify_setting(setting_name, roundi(new_number))
+			var is_default = new_number == default_value
+			reset_default.disabled = is_default
+			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
 	)
 
 	var container_widget : HBoxContainer = HBoxContainer.new()
@@ -499,10 +532,6 @@ func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false, 
 
 	var lineedit_widget = LineEdit.new()
 	lineedit_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	lineedit_widget.text_changed.connect(
-		func(new_text): modify_setting(
-			setting_name,
-			new_text))
 	group_widget.add_child(lineedit_widget)
 
 	if is_fileaccess:
@@ -527,6 +556,8 @@ func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false, 
 		test_button.button_down.connect(
 			_test_redeem_with_settings_value.bind(setting_name, false))
 
+	var default_value = get(setting_name)
+	
 	var reset_default = Button.new()
 	var reset_default_action = func(default_value):
 		modify_setting(setting_name, default_value)
@@ -534,8 +565,19 @@ func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false, 
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
 	reset_default.pressed.connect(
-		reset_default_action.bind(get(setting_name))
+		reset_default_action.bind(default_value)
 	)
+
+	lineedit_widget.set_meta("default", default_value)
+	lineedit_widget.set_meta("reset_button", reset_default)
+	lineedit_widget.text_changed.connect(
+		func(new_text):
+			modify_setting(setting_name, new_text)
+			var is_default = new_text == default_value
+			reset_default.disabled = is_default
+			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
+	)
+	
 	group_widget.add_child(reset_default)
 
 	window.add_child(label_widget)
@@ -559,10 +601,9 @@ func settings_window_add_slider_with_number(
 	slider_widget.max_value = max_value
 	slider_widget.step = step
 	slider_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider_widget.value_changed.connect(
-		func(new_value): modify_setting(
-			setting_name,
-			new_value))
+	
+	var default_value = get(setting_name)
+	default_value = roundf((default_value - min_value) / step) * step + min_value
 	
 	var reset_default = Button.new()
 	var reset_default_action = func(default_value):
@@ -571,7 +612,17 @@ func settings_window_add_slider_with_number(
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
 	reset_default.pressed.connect(
-		reset_default_action.bind(get(setting_name))
+		reset_default_action.bind(default_value)
+	)
+	
+	slider_widget.set_meta("default", default_value)
+	slider_widget.set_meta("reset_button", reset_default)
+	slider_widget.value_changed.connect(
+		func(new_value):
+			modify_setting(setting_name, new_value)
+			var is_default = is_equal_approx(new_value, default_value)
+			reset_default.disabled = is_default
+			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
 	)
 	
 	var container_widget : HBoxContainer = HBoxContainer.new()
@@ -602,6 +653,8 @@ func settings_window_add_selector(
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
 	
+	var default_value = get(setting_name)
+	
 	var callback = func(widget):
 		var new_value = []
 		var selected_items = []
@@ -612,6 +665,9 @@ func settings_window_add_selector(
 		for k in selected_items:			
 			new_value.append(widget.get_item_text(k))
 		modify_setting(setting_name, new_value)
+		var is_default = new_value == default_value
+		reset_default.disabled = is_default
+		reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
 	
 	if use_combobox:
 		selection_widget = OptionButton.new()
@@ -648,9 +704,11 @@ func settings_window_add_selector(
 			(func(_index, widget): callback.call(widget)).bind(selection_widget))
 
 	reset_default.pressed.connect(
-		reset_default_action.bind(get(setting_name))
+		reset_default_action.bind(default_value)
 	)
-	
+
+	selection_widget.set_meta("default", default_value)
+	selection_widget.set_meta("reset_button", reset_default)
 	selection_widget.item_selected.connect(
 		(func(_index, widget): callback.call(widget)).bind(selection_widget))
 
@@ -680,11 +738,8 @@ func settings_window_add_colorpicker(
 	colorpicker_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	colorpicker_widget.custom_minimum_size.y = 32
 	
-	colorpicker_widget.color_changed.connect(
-		func(new_value): modify_setting(
-			setting_name,
-			new_value))
-		
+	var default_value = get(setting_name)
+	
 	var reset_default = Button.new()
 	var reset_default_action = func(default_value):
 		modify_setting(setting_name, default_value)
@@ -692,7 +747,17 @@ func settings_window_add_colorpicker(
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
 	reset_default.pressed.connect(
-		reset_default_action.bind(get(setting_name))
+		reset_default_action.bind(default_value)
+	)
+	
+	colorpicker_widget.set_meta("default", default_value)
+	colorpicker_widget.set_meta("reset_button", reset_default)
+	colorpicker_widget.color_changed.connect(
+		func(new_value):
+			modify_setting(setting_name, new_value)
+			var is_default = new_value == default_value
+			reset_default.disabled = is_default
+			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
 	)
 
 	window.add_child(label_widget)
@@ -717,12 +782,10 @@ func settings_window_add_vector3(
 		load("res://Core/UI/VectorSettingWidget.tscn").instantiate()
 	vec3_widget.custom_minimum_size.y = 32
 	vec3_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vec3_widget.value_changed.connect(
-		func(new_value): modify_setting(
-			setting_name,
-			new_value))
 
 	window.add_child(label_widget)
+	
+	var default_value = get(setting_name)
 	
 	var reset_default = Button.new()
 	var reset_default_action = func(default_value):
@@ -731,7 +794,17 @@ func settings_window_add_vector3(
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
 	reset_default.pressed.connect(
-		reset_default_action.bind(get(setting_name))
+		reset_default_action.bind(default_value)
+	)
+	
+	vec3_widget.set_meta("default", default_value)
+	vec3_widget.set_meta("reset_button", reset_default)
+	vec3_widget.value_changed.connect(
+		func(new_value):
+			modify_setting(setting_name, new_value)
+			var is_default = new_value == default_value
+			reset_default.disabled = is_default
+			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
 	)
 	
 	var container_widget : HBoxContainer = HBoxContainer.new()
