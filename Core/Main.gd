@@ -141,16 +141,8 @@ func _input(event):
 				%UI_Root.set_visible(not %UI_Root.visible)
 				_update_window_decorations()
 
-func is_dev_mode():
-	return ("--dev" in OS.get_cmdline_args())
-
 func _get_default_settings_path():
-	if is_dev_mode():
-		# FIXME: Remove "dev mode" now that we're fully portable and
-		#   controllable with environment variables for config paths.
-		return get_config_location().path_join("settings_dev.json")
-	else:
-		return get_config_location().path_join("settings.json")
+	return get_config_location().path_join("settings.json")
 
 func _get_ui_root():
 	return $CanvasLayer2/UI_Root

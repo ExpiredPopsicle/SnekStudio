@@ -21,12 +21,6 @@ func _on_files_dropped(files):
 func _reset_window_title():
 	var full_title = ProjectSettings.get_setting("application/config/name")
 
-	# This is actually kinda important for me doing dev streams on Twitch
-	# because we want to keep the window capture system from gettin confused
-	# between the "live" instance and the "test" instance.
-	if _get_root().is_dev_mode():
-		full_title += " (Developer mode)"
-
 	DisplayServer.window_set_title(
 		full_title)
 
