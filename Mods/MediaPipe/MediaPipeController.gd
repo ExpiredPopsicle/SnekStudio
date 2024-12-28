@@ -33,7 +33,6 @@ var _ikchains = []
 @export var arm_rest_angle : float = 70
 @export var arm_reset_time : float = 0.5
 @export var arm_reset_speed : float = 0.1
-@export var use_external_tracker = false
 @export var hand_tracking_enabed : bool = true
 var use_vrm_basic_shapes = false
 var use_mediapipe_shapes = true
@@ -107,43 +106,86 @@ func _ready():
 	add_tracked_setting("mirror_mode", "Mirror mode")
 	add_tracked_setting("frame_rate_limit", "Frame rate limit", { "min" : 1.0, "max" : 240.0 })
 	add_tracked_setting("arm_rest_angle", "Arm rest angle", { "min" : 0.0, "max" : 180.0 })
-	add_tracked_setting("use_external_tracker", "Disable internal tracker")
 
-	add_tracked_setting("hand_confidence_time_threshold", "Hand confidence time", { "min" : 0.0, "max" : 20.0 })
-	add_tracked_setting("hand_count_change_time_threshold", "Hand count change time", { "min" : 0.0, "max" : 20.0 })
+	add_setting_group("advanced", "Advanced")
 
-	add_tracked_setting("frames_missing_before_spine_reset", "Untracked frames before reset", { "min" : -1.0, "max" : 120.0, "step" : 1.0 })
-	add_tracked_setting("blend_to_rest_speed", "Blend back to rest pose speed", { "min" : 0.0, "max" : 10.0, "step" : 0.1 })
+	add_tracked_setting(
+		"hand_confidence_time_threshold", "Hand confidence time",
+		{ "min" : 0.0, "max" : 20.0 },
+		"advanced")
+	add_tracked_setting(
+		"hand_count_change_time_threshold", "Hand count change time",
+		{ "min" : 0.0, "max" : 20.0 },
+		"advanced")
 
-	add_tracked_setting("head_vertical_offset", "Head vertical offset", { "min" : -1.0, "max" : 1.0 })
-	add_tracked_setting("hips_vertical_blend_speed", "Hips vertical blend speed", { "min" : 0.0, "max" : 20.0 })
+	add_tracked_setting(
+		"frames_missing_before_spine_reset", "Untracked frames before reset",
+		{ "min" : -1.0, "max" : 120.0, "step" : 1.0 },
+		"advanced")
+	add_tracked_setting(
+		"blend_to_rest_speed", "Blend back to rest pose speed",
+		{ "min" : 0.0, "max" : 10.0, "step" : 0.1 },
+		"advanced")
 
-	add_tracked_setting("hand_position_smoothing", "Hand Position Smoothing", { "min" : 1.0, "max" : 5.0 })
-	add_tracked_setting("hand_rotation_smoothing", "Hand Rotation Smoothing", { "min" : 1.0, "max" : 5.0 })
+	add_tracked_setting(
+		"head_vertical_offset", "Head vertical offset",
+		{ "min" : -1.0, "max" : 1.0 },
+		"advanced")
+	add_tracked_setting(
+		"hips_vertical_blend_speed", "Hips vertical blend speed",
+		{ "min" : 0.0, "max" : 20.0 },
+		"advanced")
 
-	add_tracked_setting("chest_yaw_scale", "Chest Yaw Rotation Scale", { "min" : -2.0, "max" : 2.0 })
+	add_tracked_setting(
+		"hand_position_smoothing", "Hand Position Smoothing",
+		{ "min" : 1.0, "max" : 5.0 },
+		"advanced")
+	add_tracked_setting(
+		"hand_rotation_smoothing", "Hand Rotation Smoothing",
+		{ "min" : 1.0, "max" : 5.0 },
+		"advanced")
 
-	add_tracked_setting("lean_scale", "Lean Scale", { "min" : -4.0, "max" : 4.0 })
+	add_tracked_setting(
+		"chest_yaw_scale", "Chest Yaw Rotation Scale",
+		{ "min" : -2.0, "max" : 2.0 },
+		"advanced")
 
-	add_tracked_setting("hip_adjustment_speed", "Hip Adjustment Speed", { "min" : 0.0, "max" : 10.0 })
+	add_tracked_setting(
+		"lean_scale", "Lean Scale",
+		{ "min" : -4.0, "max" : 4.0 },
+		"advanced")
 
-	add_tracked_setting("blendshape_scale", "Blend Shape Scale", { "min" : 0.0, "max" : 10.0 })
+	add_tracked_setting(
+		"hip_adjustment_speed", "Hip Adjustment Speed", { "min" : 0.0, "max" : 10.0 },
+		"advanced")
 
-	add_tracked_setting("hand_position_scale", "Hand Position Scale")
-	add_tracked_setting("hand_position_offset", "Hand Position Offset")
-	add_tracked_setting("hand_to_head_scale", "Hand to Head Position Scale", { "min" : 0.01, "max" : 10.0 })
+	add_tracked_setting(
+		"blendshape_scale", "Blend Shape Scale", { "min" : 0.0, "max" : 10.0 },
+		"advanced")
 
-	add_tracked_setting("debug_visible_hand_trackers", "Debug: Visible hand trackers")
+	add_tracked_setting(
+		"hand_position_scale", "Hand Position Scale", {},
+		"advanced")
+	add_tracked_setting(
+		"hand_position_offset", "Hand Position Offset", {},
+		"advanced")
+	add_tracked_setting(
+		"hand_to_head_scale", "Hand to Head Position Scale", { "min" : 0.01, "max" : 10.0 },
+		"advanced")
+
+	add_tracked_setting(
+		"debug_visible_hand_trackers", "Debug: Visible hand trackers", {},
+		"advanced")
 
 	add_tracked_setting("tracking_pause", "Pause tracking")
 
 	hand_rest_trackers["Left"] = $LeftHandRestReference
 	hand_rest_trackers["Right"] = $RightHandRestReference
-	
+
 	set_status("Waiting to start")
-	
+
 	update_settings_ui()
-	
+
 	var calibration_button : Button = Button.new()
 	calibration_button.text = "Calibrate Face"
 	get_settings_window().add_child(calibration_button)
@@ -153,7 +195,19 @@ func _ready():
 	clear_calibration_button.text = "Clear Calibration"
 	get_settings_window().add_child(clear_calibration_button)
 	clear_calibration_button.pressed.connect(func() : blendshape_calibration = {})
-	
+
+	# FIXME: REMOVE THIS. It's just to work around an annoyance while I stream
+	#   until the actual bug is fixed.
+	var reset_pose_button : Button = Button.new()
+	reset_pose_button.text = "Reset pose (FIXME!!!)"
+	get_settings_window().add_child(reset_pose_button)
+	reset_pose_button.pressed.connect(
+		func():
+			get_app().get_controller().reset_skeleton_to_rest_pose()
+			get_app().get_controller().reset_blend_shapes()
+			blend_shape_last_values = {}
+	)
+
 	_update_for_new_model_if_needed()
 
 func save_before(_settings_current: Dictionary):
@@ -265,21 +319,26 @@ func scene_shutdown():
 	stop_tracker()
 
 	_stop_process()
-	
+
 	udp_server.close()
 	udp_server = null
-	
+
 	var root = get_skeleton().get_parent()
 	var left_rest = root.get_node("LeftHandRestReference")
 	var right_rest = root.get_node("RightHandRestReference")
-	
+
 	root.remove_child(left_rest)
 	root.remove_child(right_rest)
 	add_child(left_rest)
 	add_child(right_rest)
-	
+
 	_ikchains = []
-	
+
+	# Reset pose and blendshapes.
+	get_app().get_controller().reset_skeleton_to_rest_pose()
+	get_app().get_controller().reset_blend_shapes()
+	blend_shape_last_values = {}
+
 	_init_complete = false
 
 # -----------------------------------------------------------------------------

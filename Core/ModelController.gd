@@ -3,8 +3,6 @@ class_name ModelController
 
 var _last_loaded_vrm = ""
 
-#var last_bone_transforms = {}
-
 func _set_lod_bias_recursively(node):
 	if node is MeshInstance3D:
 		node.lod_bias = 128
@@ -142,3 +140,20 @@ func get_bone_transform(bone_name : String):
 		return null
 
 	return skeleton.get_bone_global_pose(bone_index)
+
+## Reset the whole skeleton to its rest position.
+func reset_skeleton_to_rest_pose() -> void:
+	var skel : Skeleton3D = get_skeleton()
+	var bone_count : int = skel.get_bone_count()
+	for bone_index in range(0, bone_count):
+		skel.set_bone_pose(bone_index, skel.get_bone_rest(bone_index))
+
+## Reset all the blend shapes to their neutral state.
+func reset_blend_shapes() -> void:
+	var anim_player : AnimationPlayer = $Model.find_child("AnimationPlayer", false, false)
+	var anim_list : PackedStringArray = anim_player.get_animation_list()
+	var anim_root = anim_player.get_node(anim_player.root_node)
+
+	anim_player.play("RESET")
+	anim_player.advance(0)
+	anim_player.stop()

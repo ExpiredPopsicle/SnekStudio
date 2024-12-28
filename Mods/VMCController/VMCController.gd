@@ -23,6 +23,10 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 		else:
 			$KiriOSCServer.stop_server()
 
+func scene_shutdown() -> void:
+	get_app().get_controller().reset_skeleton_to_rest_pose()
+	get_app().get_controller().reset_blend_shapes()
+
 func _on_OSCServer_message_received(address_string, arguments):
 
 	var model : Node3D = get_app().get_model()

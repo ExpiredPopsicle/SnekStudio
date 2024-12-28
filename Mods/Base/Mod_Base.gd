@@ -3,7 +3,12 @@ class_name Mod_Base
 
 var _settings_window : Control = null
 var _settings_widgets_by_setting_name : Dictionary = {}
-var _settings_properties = []
+var _settings_properties : Array = []
+
+## Maps Strings (group names) to Controls (SettingsWindowGroup instances).
+var _settings_groups : Dictionary = {}
+
+# FIXME: Maybe don't need these? Or can be default hidden?
 var _mod_status : String = ""
 var _mod_log : Array = []
 
@@ -16,12 +21,12 @@ const defaults_text_get_rid_of_me = "\u27F2"
 
 # Virtual function called after the model is added to the scene, OR after the
 # model is swapped.
-func scene_init():
+func scene_init() -> void:
 	pass
 
 # Virtual function called before the object is removed from the scene, OR right
 # before the model is swapped.
-func scene_shutdown():
+func scene_shutdown() -> void:
 	pass
 
 # Create the UI used to display settings for the mod.
@@ -114,7 +119,27 @@ func load_settings(_settings_dict):
 
 	load_after(old_settings, new_settings)
 
-func add_tracked_setting(setting_name, label_text, extra_args={}):
+## Create a new setting group. This is a collapsible (default collapsed) group
+## of settings in the settings window. Useful for adding advanced settings that
+## you wouldn't normally need to mess with.
+func add_setting_group(group_name : String, label_text : String) -> SettingsWindowGroup:
+	var window : Container = get_settings_window()
+
+	assert(not (group_name in _settings_groups))
+
+	var new_control : SettingsWindowGroup = \
+		preload("res://Core/UI/SettingsWindowGroup.tscn").instantiate()
+	window.add_child(new_control)
+	_settings_groups[group_name] = new_control
+	new_control.set_label(label_text)
+
+	return new_control
+
+func add_tracked_setting(
+	setting_name : String,
+	label_text : String,
+	extra_args : Dictionary = {},
+	group_name : String = ""):
 
 	# Just make sure the property is actually in the list.
 	var prop_found = false
@@ -124,7 +149,7 @@ func add_tracked_setting(setting_name, label_text, extra_args={}):
 			prop_found = true
 			break
 	assert(prop_found)
-	
+
 	var new_setting_prop = {}
 	new_setting_prop["name"] = setting_name
 	new_setting_prop["label"] = label_text
@@ -136,47 +161,59 @@ func add_tracked_setting(setting_name, label_text, extra_args={}):
 	_settings_properties.append(new_setting_prop)
 
 	var prop_val = get(new_setting_prop["name"])
-	
+
+	var new_widget : Control = null
+
 	if prop_val is String:
-		settings_window_add_lineedit(
+		new_widget = settings_window_add_lineedit(
 			new_setting_prop["label"], new_setting_prop["name"],
 			new_setting_prop["args"].get("is_redeem", false),
 			new_setting_prop["args"].get("is_fileaccess", false))
-		
+
 	elif prop_val is bool:
-		settings_window_add_boolean(new_setting_prop["label"], new_setting_prop["name"])
-		
+		new_widget = settings_window_add_boolean(new_setting_prop["label"], new_setting_prop["name"])
+
 	elif prop_val is float:
-		settings_window_add_slider_with_number(
+		new_widget = settings_window_add_slider_with_number(
 			new_setting_prop["label"], new_setting_prop["name"],
 			new_setting_prop["args"].get("min", 0.0),
 			new_setting_prop["args"].get("max", 1.0),
 			new_setting_prop["args"].get("step", 0.1))
 
 	elif prop_val is int:
-		settings_window_add_spinbox(
+		new_widget = settings_window_add_spinbox(
 			new_setting_prop["label"], new_setting_prop["name"],
 			new_setting_prop["args"].get("min", 0),
 			new_setting_prop["args"].get("max", 4294967296))
 
 	elif prop_val is Array:
-		settings_window_add_selector(
+		new_widget = settings_window_add_selector(
 			new_setting_prop["label"], new_setting_prop["name"],
 			new_setting_prop["args"].get("values", {}),
 			new_setting_prop["args"].get("allow_multiple", false),
 			new_setting_prop["args"].get("combobox", false))
 			
 	elif prop_val is Color:
-		settings_window_add_colorpicker(
+		new_widget = settings_window_add_colorpicker(
 			new_setting_prop["label"], new_setting_prop["name"])
 
 	elif prop_val is Vector3:
-		settings_window_add_vector3(
+		new_widget = settings_window_add_vector3(
 			new_setting_prop["label"], new_setting_prop["name"])
 
 	else:
 		# I don't recognize that type for a new setting.
 		assert(false)
+
+	if new_widget:
+		if group_name == "":
+			var window : Container = get_settings_window()
+			window.add_child(new_widget)
+		else:
+			assert(group_name in _settings_groups)
+			var group_widget : SettingsWindowGroup = \
+				_settings_groups[group_name]
+			group_widget.add_setting_control(new_widget)
 
 func _test_redeem_with_settings_value(prop_name, local=true):
 	var prop_val = get(prop_name)
@@ -421,23 +458,18 @@ func send_global_mod_message(key : String, values : Dictionary, skip_current : b
 
 #region Settings window
 
-func settings_window_add_boolean(setting_label, setting_name):
-	
-	# This only works with the default-created settings window widget.
-	var window : Container = get_settings_window()
-	#assert(window is GridContainer)
-	#assert(window.columns == 2)
+func settings_window_add_boolean(setting_label, setting_name) -> Control:
 
 	var container_widget : HBoxContainer = HBoxContainer.new()
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label
 	label_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	
+
 	var checkbox_widget = CheckBox.new()
-	
+
 	var default_value = get(setting_name)
-		
+
 	var reset_default = Button.new()
 	var reset_default_action = func(default_value):
 		modify_setting(setting_name, default_value)
@@ -447,7 +479,7 @@ func settings_window_add_boolean(setting_label, setting_name):
 	reset_default.pressed.connect(
 		reset_default_action.bind(default_value)
 	)
-	
+
 	checkbox_widget.set_meta("default", default_value)
 	checkbox_widget.set_meta("reset_button", reset_default)
 	checkbox_widget.pressed.connect(
@@ -457,32 +489,32 @@ func settings_window_add_boolean(setting_label, setting_name):
 			reset_default.disabled = is_default
 			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
 	)
-	
+
 	container_widget.add_child(label_widget)
 	container_widget.add_child(checkbox_widget)
 	container_widget.add_child(reset_default)
-	window.add_child(container_widget)
-	
+
 	_settings_widgets_by_setting_name[setting_name] = checkbox_widget
 
+	return container_widget
 
 func settings_window_add_spinbox(
-	setting_label, setting_name,
-	min_value=0, max_value=4294967296):
+	setting_label : String, setting_name : String,
+	min_value = 0, max_value = 4294967296) -> Control:
 
-	# This only works with the default-created settings window widget.
-	var window : Container = get_settings_window()
+	var outer_container : VBoxContainer = VBoxContainer.new()
+	outer_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label
-	window.add_child(label_widget)
-	
+	outer_container.add_child(label_widget)
+
 	var spinbox_widget : SpinBox = SpinBox.new()
 	spinbox_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-					
+
 	spinbox_widget.min_value = min_value
 	spinbox_widget.max_value = max_value
-		
+
 	var default_value = get(setting_name)
 	
 	var reset_default = Button.new()
@@ -507,17 +539,22 @@ func settings_window_add_spinbox(
 	)
 
 	var container_widget : HBoxContainer = HBoxContainer.new()
-	
+
 	container_widget.add_child(spinbox_widget)
 	container_widget.add_child(reset_default)
-	
-	window.add_child(container_widget)
+
+	outer_container.add_child(container_widget)
 	_settings_widgets_by_setting_name[setting_name] = spinbox_widget
 
-func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false, is_fileaccess=false, file_filters: PackedStringArray = []):
-	
-	# This only works with the default-created settings window widget.
-	var window : Container = get_settings_window()
+	return outer_container
+
+func settings_window_add_lineedit(
+	setting_label, setting_name, is_redeem=false,
+	is_fileaccess=false, file_filters: PackedStringArray = [],
+	) -> Control:
+
+	var outer_container : VBoxContainer = VBoxContainer.new()
+	outer_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label
@@ -576,23 +613,25 @@ func settings_window_add_lineedit(setting_label, setting_name, is_redeem=false, 
 	
 	group_widget.add_child(reset_default)
 
-	window.add_child(label_widget)
-	window.add_child(group_widget)
+	outer_container.add_child(label_widget)
+	outer_container.add_child(group_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = lineedit_widget
 
+	return outer_container
+
 func settings_window_add_slider_with_number(
-	setting_label, setting_name,
-	min_value=0.0, max_value=1.0,
-	step=0.1):
+	setting_label : String, setting_name : String,
+	min_value : float = 0.0, max_value : float = 1.0,
+	step : float = 0.1) -> Control:
 	
-	# This only works with the default-created settings window widget.
-	var window : Container = get_settings_window()
+	var outer_container : VBoxContainer = VBoxContainer.new()
+	outer_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label
 	
-	var slider_widget = load("res://Core/UI/BasicSliderWithNumber.tscn").instantiate()
+	var slider_widget = preload("res://Core/UI/BasicSliderWithNumber.tscn").instantiate()
 	slider_widget.min_value = min_value
 	slider_widget.max_value = max_value
 	slider_widget.step = step
@@ -625,19 +664,21 @@ func settings_window_add_slider_with_number(
 	container_widget.add_child(slider_widget)
 	container_widget.add_child(reset_default)
 	
-	window.add_child(label_widget)
-	window.add_child(container_widget)
+	outer_container.add_child(label_widget)
+	outer_container.add_child(container_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = slider_widget
 
+	return outer_container
+
 func settings_window_add_selector(
-	setting_label, setting_name,
-	initial_values = [],
-	allow_multiple = false,
-	use_combobox = false):
-	
-	# This only works with the default-created settings window widget.
-	var window : Container = get_settings_window()
+	setting_label : String, setting_name : String,
+	initial_values : Array = [],
+	allow_multiple : bool = false,
+	use_combobox : bool = false) -> Control:
+
+	var outer_container : VBoxContainer = VBoxContainer.new()
+	outer_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label
@@ -711,20 +752,22 @@ func settings_window_add_selector(
 	for item in initial_values:
 		selection_widget.add_item(item)
 	
-	window.add_child(label_widget)
+	outer_container.add_child(label_widget)
 
 	var container_widget : HBoxContainer = HBoxContainer.new()
 	container_widget.add_child(selection_widget)
 	container_widget.add_child(reset_default)
-	window.add_child(container_widget)
+	outer_container.add_child(container_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = selection_widget
 
+	return outer_container
+
 func settings_window_add_colorpicker(
-	setting_label, setting_name):
-	
-	# This only works with the default-created settings window widget.
-	var window : Container = get_settings_window()
+	setting_label : String, setting_name : String) -> Control:
+
+	var outer_container : VBoxContainer = VBoxContainer.new()
+	outer_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label
@@ -756,20 +799,22 @@ func settings_window_add_colorpicker(
 			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
 	)
 
-	window.add_child(label_widget)
+	outer_container.add_child(label_widget)
 	
 	var container_widget : HBoxContainer = HBoxContainer.new()
 	container_widget.add_child(colorpicker_widget)
 	container_widget.add_child(reset_default)
-	window.add_child(container_widget)
+	outer_container.add_child(container_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = colorpicker_widget
 
-func settings_window_add_vector3(
-	setting_label, setting_name):
+	return outer_container
 
-	# This only works with the default-created settings window widget.
-	var window : Container = get_settings_window()
+func settings_window_add_vector3(
+	setting_label : String, setting_name : String) -> Control:
+
+	var outer_container : VBoxContainer = VBoxContainer.new()
+	outer_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var label_widget = Label.new()
 	label_widget.text = setting_label
@@ -779,7 +824,7 @@ func settings_window_add_vector3(
 	vec3_widget.custom_minimum_size.y = 32
 	vec3_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	window.add_child(label_widget)
+	outer_container.add_child(label_widget)
 	
 	var default_value = get(setting_name)
 	
@@ -806,9 +851,11 @@ func settings_window_add_vector3(
 	var container_widget : HBoxContainer = HBoxContainer.new()
 	container_widget.add_child(vec3_widget)
 	container_widget.add_child(reset_default)
-	window.add_child(container_widget)
+	outer_container.add_child(container_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = vec3_widget
+
+	return outer_container
 
 func modify_setting(setting_name, value):
 	var existing_settings = save_settings()

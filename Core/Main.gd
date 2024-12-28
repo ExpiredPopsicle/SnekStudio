@@ -540,7 +540,6 @@ func load_settings(path : String = ""):
 				"hand_tracking_enabed": true,
 				"mirror_mode": true,
 				"tracking_pause": false,
-				"use_external_tracker": false,
 				"use_mediapipe_shapes": true,
 				"use_vrm_basic_shapes": false,
 				"video_device": []
