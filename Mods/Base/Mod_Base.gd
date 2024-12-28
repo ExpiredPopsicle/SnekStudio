@@ -628,8 +628,11 @@ func settings_window_add_slider_with_number(
 	var outer_container : VBoxContainer = VBoxContainer.new()
 	outer_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	var label_widget = Label.new()
-	label_widget.text = setting_label
+	var label_widget : Label = null
+	# FIXME: Apply this label-optional thing to every tracked setting type.
+	if setting_label != "":
+		label_widget = Label.new()
+		label_widget.text = setting_label
 	
 	var slider_widget = preload("res://Core/UI/BasicSliderWithNumber.tscn").instantiate()
 	slider_widget.min_value = min_value
@@ -664,7 +667,8 @@ func settings_window_add_slider_with_number(
 	container_widget.add_child(slider_widget)
 	container_widget.add_child(reset_default)
 	
-	outer_container.add_child(label_widget)
+	if label_widget:
+		outer_container.add_child(label_widget)
 	outer_container.add_child(container_widget)
 
 	_settings_widgets_by_setting_name[setting_name] = slider_widget

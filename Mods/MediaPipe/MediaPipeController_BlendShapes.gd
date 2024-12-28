@@ -1,5 +1,8 @@
 extends Object
 
+# FIXME: We may need to make this aware of both VRM 0.0 and VRM 1.0, unless the
+#   VRM addon is doing conversion for us already.
+#   See https://github.com/vrm-c/vrm-specification/blob/282edef7b8de6044d782afdab12b14bd8ccf0630/specification/VRMC_vrm-1.0/expressions.md
 static func convert_mediapipe_shapes_to_vrm_standard(shape_dict):
 	var basic_shapes = {}
 	# TODO: sorrow, anger, fun, joy
@@ -92,6 +95,21 @@ static func convert_mediapipe_shapes_to_vrm_standard(shape_dict):
 static func apply_blendshape_scale(shape_dict, scale):
 	for name in shape_dict.keys():
 		shape_dict[name] *= scale
+
+static func apply_blendshape_scale_offset_dict(
+	shape_dict : Dictionary,
+	scale_dict : Dictionary,
+	offset_dict : Dictionary) -> void:
+
+	var shape_names : Array = shape_dict.keys()
+	for shape : String in shape_names:
+		if shape in scale_dict:
+			shape_dict[shape] *= scale_dict[shape]
+		if shape in offset_dict:
+			shape_dict[shape] += offset_dict[shape]
+
+		# FIXME: Should we be doing this here? Where's it normally done?
+		shape_dict[shape] = clampf(shape_dict[shape], 0.0, 1.0)
 
 static func apply_smoothing(shape_dict_last_frame, shape_dict_from_tracker, delta):
 
