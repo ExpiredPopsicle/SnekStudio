@@ -19,21 +19,6 @@ func _rotate_meshinstances_recursively(node):
 	for child in node.get_children():
 		_rotate_meshinstances_recursively(child)
 
-func _get_model_skeleton(node=null):
-	
-	if not node:
-		node = get_node_or_null("Model")
-		if not node:
-			return null
-
-	if node is Skeleton3D:
-		return node
-	
-	for child in node.get_children():
-		var maybe_skeleton = _get_model_skeleton(child)
-		if maybe_skeleton:
-			return maybe_skeleton
-
 func get_last_loaded_vrm():
 	return _last_loaded_vrm
 

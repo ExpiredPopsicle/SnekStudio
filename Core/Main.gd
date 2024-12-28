@@ -201,13 +201,26 @@ func get_colliders():
 func get_model():
 	return $ModelController.get_node_or_null("Model")
 
+## Get the skeleton of the VTuber model.
 func get_skeleton():
+
+	# FIXME (multiplayer): Get skeleton by index or something.
+
+	# Attempt to find the skeleton through the normal VRM structures first.
+	var model : VRMTopLevel = get_model()
+	if not model:
+		return null
+	var secondary : VRMSecondary = model.get_node("secondary")
+	if secondary:
+		return secondary.get_node(secondary.skeleton)
+
+	# Buggy fallback.
 	var skeleton = get_model().find_child("GeneralSkeleton", false, false)
 	assert(skeleton)
 	return skeleton
 
-# Sync colliders on model with whatever is in the dictionary, or do a default
-# if colliders_list is null.
+## Sync colliders on model with whatever is in the dictionary, or do a default
+## if colliders_list is null.
 func set_colliders(colliders_list=null):
 
 	var collider_type = preload("res://Core/AvatarColliders/AvatarCollider.tscn")
@@ -215,7 +228,7 @@ func set_colliders(colliders_list=null):
 	var skeleton = get_skeleton()
 	var children_to_delete = []
 	if skeleton:
-		
+
 		# Delete all existing colliders.
 		for c in skeleton.get_children():
 			if c is AvatarCollider:
@@ -226,7 +239,7 @@ func set_colliders(colliders_list=null):
 
 		# Add colliders.
 		if colliders_list != null:
-			for collider_data in colliders_list:				
+			for collider_data in colliders_list:
 				var new_collider : BoneAttachment3D = collider_type.instantiate()
 				new_collider.set_settings(collider_data)
 				skeleton.add_child(new_collider)

@@ -303,41 +303,37 @@ func print_log(args):
 	_update_log_ui(true, false)
 
 # Get the group name that all the autodelete objects belong to.
-func get_autodelete_group_name():
+func _get_autodelete_group_name():
 	return get_name() + "_autodelete_group"
 
-# Call this to add an object to be automatically deleted when the mod is
-# unloaded.
+## Call this to add an object to be automatically deleted when the mod is
+## unloaded. Use this for things like objects that get moved into the scene
+## hierarchy, such as things attached to the model.
 func add_autodelete_object(ob : Node):
 
 	if not tree_exiting.is_connected(_autodelete_remove_everything):
 		tree_exiting.connect(_autodelete_remove_everything)
 
-	ob.add_to_group(get_autodelete_group_name())
+	ob.add_to_group(_get_autodelete_group_name())
 
+## Get the main app (Main.gd) class instance.
 func get_app():
 	var current = self
 	while current.name != "SnekStudio_Main":
 		current = current.get_parent()
 	return current
 
+## Get the VTuber model's skeleton.
 func get_skeleton() -> Skeleton3D:
-	# This is kind of gross, but by putting it here we'll only have one place to
-	# update if we ever need to re-do this interface.
-	# FIXME: Better way to get this path.
-	return get_app().get_node("ModelController")._get_model_skeleton()
+	# FIXME (multiplayer): Return the skeleton of the specific model this
+	#   applies to.
+	return get_app().get_skeleton()
 
+## Get the VTuber model in the scene.
 func get_model() -> Node3D:
-
+	# FIXME (multiplayer): Return the specific model this applies to.
 	var controller = get_app().get_node("ModelController")
 	return controller.get_node_or_null("Model")
-	
-	#var skeleton = controller._get_model_skeleton()
-	#if !skeleton:
-		#return null
-		#
-	#var model_root = skeleton.get_parent()
-	#return model_root
 
 func get_bone_transform(bone_name) -> Transform3D:
 	var skeleton = get_skeleton()
@@ -855,7 +851,7 @@ func _cleanup_settings_window():
 	_settings_widgets_by_setting_name = {}
 
 func _autodelete_remove_everything():
-	var group_nodes = get_tree().get_nodes_in_group(get_autodelete_group_name())
+	var group_nodes = get_tree().get_nodes_in_group(_get_autodelete_group_name())
 	for node in group_nodes:
 		node.queue_free()
 
