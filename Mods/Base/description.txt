@@ -1,0 +1,1 @@
+The base class for SnekStudio modules. Does nothing on its own.

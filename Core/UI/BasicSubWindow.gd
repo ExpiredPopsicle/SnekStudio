@@ -50,19 +50,19 @@ func _find_child():
 		if child != $WindowTitlePanel and child != $WindowBorder:
 			return child
 	return null
-			
-func _on_resized():
+
+func _on_resized() -> void:
 	var current_title_size = $WindowTitlePanel.size
 	$WindowTitlePanel.size = Vector2(size[0], current_title_size[1])
 	$WindowTitlePanel/WindowTitle.size.x = \
 		$WindowTitlePanel.size.x - \
 		2 * $WindowTitlePanel/WindowTitle.position.x
-	
+
 	if $WindowTitlePanel/CloseButton.visible:
 		$WindowTitlePanel/WindowTitle.size.x = \
 			$WindowTitlePanel/WindowTitle.size.x - \
 			$WindowTitlePanel/CloseButton.size.x
-			
+
 	var child = _find_child()
 	if child:
 		child.set_size(size)

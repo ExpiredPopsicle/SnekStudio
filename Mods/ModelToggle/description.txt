@@ -1,0 +1,3 @@
+A module that allows toggling pieces of the VTuber model on and off.
+
+Used in conjuction with the TwitchIntegration module.

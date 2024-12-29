@@ -300,6 +300,7 @@ func update_settings_ui(_ui_window = null):
 			reset_default.disabled = is_default
 			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
 
+## Override to receive messages from the global mod message API.
 func _handle_global_mod_message(key : String, values : Dictionary):
 	return
 

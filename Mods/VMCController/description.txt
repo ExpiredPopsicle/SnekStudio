@@ -1,0 +1,3 @@
+A VMC receiver.
+
+This can be used to control a VTuber model through another application such as VSeeFace, by receiving VMC (Virtual Motion Capture) messages.

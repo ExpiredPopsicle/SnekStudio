@@ -8,6 +8,8 @@ var hide_window_decorations_with_ui : bool = false
 # TODO (multiplayer): Make this dictionary per-model.
 var module_global_data : Dictionary = {}
 
+var _mods_loaded : bool = false
+
 func _process(_delta):
 	_set_process_order()
 
@@ -59,9 +61,9 @@ func set_background_transparency(transparent : bool):
 func get_background_transparency() -> bool:
 	return not get_node("BackgroundLayer").visible
 
-
-var _mods_loaded = false
-func _load_mods():
+## Load the mods at runtime. This function just adds the zip files to the
+## project tree.
+func _load_mods() -> void:
 
 	if _mods_loaded:
 		return

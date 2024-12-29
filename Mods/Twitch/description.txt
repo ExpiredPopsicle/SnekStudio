@@ -1,0 +1,3 @@
+A module that provides Twitch functionality.
+
+Must be used in conjuction with other modules that handle redeems, chat messages, and other events.

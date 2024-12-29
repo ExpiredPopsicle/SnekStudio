@@ -1,0 +1,1 @@
+A simple lighting setup consisting of one directional light and an ambient light or reflection map.

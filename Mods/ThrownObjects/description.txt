@@ -1,0 +1,3 @@
+A module that allows objects to be thrown at the VTuber model.
+
+Use in conjuction with the TwitchIntegration module to quickly set up thrown object redeems.

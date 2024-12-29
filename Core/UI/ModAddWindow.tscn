@@ -4,14 +4,17 @@
 [ext_resource type="Script" path="res://Core/UI/ModAddWindow.gd" id="2_aj25v"]
 
 [node name="ModAddWindow" instance=ExtResource("1_m4xge")]
+offset_right = 389.0
+offset_bottom = 251.0
 script = ExtResource("2_aj25v")
-close_button_visible = null
-label_text = "Add Mod"
+
+[node name="WindowTitlePanel" parent="." index="1"]
+offset_right = 389.0
 
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
-text = "Add Mod"
+offset_right = 357.0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." index="2"]
+[node name="HSplitContainer" type="HSplitContainer" parent="." index="2"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,24 +22,35 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Mods_List" type="ItemList" parent="VBoxContainer" index="0"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer" index="0"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Mods_List" type="ItemList" parent="HSplitContainer/VBoxContainer" index="0"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" index="1"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/VBoxContainer" index="1"]
 layout_mode = 2
 size_flags_vertical = 8
 
-[node name="Button_AddMod" type="Button" parent="VBoxContainer/HBoxContainer" index="0"]
+[node name="Button_AddMod" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="0"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Add"
 
-[node name="Button_Cancel" type="Button" parent="VBoxContainer/HBoxContainer" index="1"]
+[node name="Button_Cancel" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="1"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Cancel"
 
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/Button_AddMod" to="." method="_on_button_add_mod_pressed"]
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/Button_Cancel" to="." method="_on_button_cancel_pressed"]
+[node name="ModDescription" type="RichTextLabel" parent="HSplitContainer" index="1"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
+
+[connection signal="item_selected" from="HSplitContainer/VBoxContainer/Mods_List" to="." method="_on_mods_list_item_selected"]
+[connection signal="pressed" from="HSplitContainer/VBoxContainer/HBoxContainer/Button_AddMod" to="." method="_on_button_add_mod_pressed"]
+[connection signal="pressed" from="HSplitContainer/VBoxContainer/HBoxContainer/Button_Cancel" to="." method="_on_button_cancel_pressed"]

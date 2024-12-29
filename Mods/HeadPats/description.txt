@@ -1,0 +1,3 @@
+A module that gives you headpats.
+
+Use with the TwitchIntegration module to make a Twitch redeem out of it.

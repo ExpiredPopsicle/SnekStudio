@@ -1,0 +1,3 @@
+A module that simply shows a checkerboard background image.
+
+"Transparent background" must be enabled in the Window Settings for this to work.

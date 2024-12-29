@@ -1,0 +1,11 @@
+A MediaPipe-based camera-only tracking system.
+
+If you're new to SnekStudio, or using it as the only application to run your VTuber model, you probably want to add this module first.
+
+For importing tracking data from another application, see the VMCController.
+
+Supports:
+- Hand tracking
+- 50 blend shapes
+- Standard VRM blend shapes
+- Various tuning parameters
