@@ -149,46 +149,103 @@ static func apply_smoothing(shape_dict_last_frame, shape_dict_from_tracker, delt
 
 	return shape_dict_new
 
-static func fixup_eyes(shape_dict_new : Dictionary):
+static func fixup_eyes(
+	shape_dict_new : Dictionary,
+	eyes_prevent_opposite_directions : bool,
+	eyes_link_vertical : bool,
+	eyes_link_horizontal : bool,
+	eyes_link_blink : bool) -> Dictionary:
 
 	shape_dict_new = shape_dict_new.duplicate()
 
-	# Prevent eyes from pointing in opposite directions.
-	if ("eyeLookOutLeft" in shape_dict_new) and \
-		("eyeLookOutRight" in shape_dict_new) and \
-		("eyeLookInLeft" in shape_dict_new) and \
-		("eyeLookInRight" in shape_dict_new):
+	# Prevent eyes from pointing in opposite directions, horizontally.
+	if eyes_prevent_opposite_directions:
+		if ("eyeLookOutLeft" in shape_dict_new) and \
+			("eyeLookOutRight" in shape_dict_new) and \
+			("eyeLookInLeft" in shape_dict_new) and \
+			("eyeLookInRight" in shape_dict_new):
 
-		var out_left = shape_dict_new["eyeLookOutLeft"]
-		var out_right = shape_dict_new["eyeLookOutRight"]
-		var in_left = shape_dict_new["eyeLookInLeft"]
-		var in_right = shape_dict_new["eyeLookInRight"]
+			var out_left : float = shape_dict_new["eyeLookOutLeft"]
+			var out_right : float = shape_dict_new["eyeLookOutRight"]
+			var in_left : float = shape_dict_new["eyeLookInLeft"]
+			var in_right : float = shape_dict_new["eyeLookInRight"]
 
-		var eye_pos_left = out_left - in_left
-		var eye_pos_right = in_right - out_right
+			var eye_pos_left : float = out_left - in_left
+			var eye_pos_right : float = in_right - out_right
 
-		var eye_apart_amount = eye_pos_left - eye_pos_right
+			var eye_apart_amount : float = eye_pos_left - eye_pos_right
 
-		if eye_apart_amount > 0.0:
-			var eye_avg = (eye_pos_left + eye_pos_right) / 2.0
-			shape_dict_new["eyeLookOutLeft"] = (eye_avg + in_left)
-			shape_dict_new["eyeLookOutRight"] = -(eye_avg - in_right)
+			if eye_apart_amount > 0.0:
+				var eye_avg : float = (eye_pos_left + eye_pos_right) / 2.0
+				shape_dict_new["eyeLookOutLeft"] = (eye_avg + in_left)
+				shape_dict_new["eyeLookOutRight"] = -(eye_avg - in_right)
 
-#	# Prevent eyes from pointing in opposite directions, vertically.
-#	if ("eyeLookUpLeft" in blend_shape_last_values) and \
-#		("eyeLookUpRight" in blend_shape_last_values) and \
-#		("eyeLookDownLeft" in blend_shape_last_values) and \
-#		("eyeLookDownRight" in blend_shape_last_values):
-#
-#		var up_avg = (blend_shape_last_values["eyeLookUpLeft"] + blend_shape_last_values["eyeLookUpRight"])
-#		var down_avg = (blend_shape_last_values["eyeLookDownLeft"] + blend_shape_last_values["eyeLookDownRight"])
-#		blend_shape_last_values["eyeLookDownLeft"] = down_avg
-#		blend_shape_last_values["eyeLookDownRight"] = down_avg
-#		blend_shape_last_values["eyeLookUpLeft"] = up_avg
-#		blend_shape_last_values["eyeLookUpRight"] = up_avg
+	# Link eye vertical movement.
+	if eyes_link_vertical:
+		if ("eyeLookUpLeft" in shape_dict_new) and \
+			("eyeLookUpRight" in shape_dict_new) and \
+			("eyeLookDownLeft" in shape_dict_new) and \
+			("eyeLookDownRight" in shape_dict_new):
+
+			var up_avg : float = (shape_dict_new["eyeLookUpLeft"] + shape_dict_new["eyeLookUpRight"]) / 2.0
+			var down_avg : float = (shape_dict_new["eyeLookDownLeft"] + shape_dict_new["eyeLookDownRight"]) / 2.0
+			shape_dict_new["eyeLookUpLeft"] = up_avg
+			shape_dict_new["eyeLookUpRight"] = up_avg
+			shape_dict_new["eyeLookDownLeft"] = down_avg
+			shape_dict_new["eyeLookDownRight"] = down_avg
+
+	# Link eye horizontal movement.
+	if eyes_link_horizontal:
+		if ("eyeLookOutLeft" in shape_dict_new) and \
+			("eyeLookOutRight" in shape_dict_new) and \
+			("eyeLookInLeft" in shape_dict_new) and \
+			("eyeLookInRight" in shape_dict_new):
+
+			var left_avg : float = (shape_dict_new["eyeLookOutLeft"] + shape_dict_new["eyeLookInRight"]) / 2.0
+			var right_avg : float = (shape_dict_new["eyeLookInLeft"] + shape_dict_new["eyeLookOutRight"]) / 2.0
+			shape_dict_new["eyeLookOutLeft"] = left_avg
+			shape_dict_new["eyeLookInLeft"] = right_avg
+			shape_dict_new["eyeLookInRight"] = left_avg
+			shape_dict_new["eyeLookOutRight"] = right_avg
+
+	# Link eyes blinking.
+	if eyes_link_blink:
+		if ("eyeBlinkLeft" in shape_dict_new) and \
+			("eyeBlinkRight" in shape_dict_new):
+
+			# We can't just use the average value between the eyes here, because
+			# the common situation where one eye doesn't fully close would then
+			# just cause *both* eyes to never fully close.
+			#
+			# So instead we're going to try to guess whether the eyes are more
+			# open or closed, and then go with the more-open or more-closed
+			# value based on that.
+			#
+			# This will end up with a distribution where eye blink states end up
+			# leaning more fully open or fully closed, where the average would
+			# just have it looking partially-clased all the time.
+
+			var eye_blink_new : float = 0.5
+
+			# First we need to see if we're mostly-blinking or mostly-open.
+			var eye_blink_avg : float = \
+				(shape_dict_new["eyeBlinkLeft"] +
+				shape_dict_new["eyeBlinkRight"]) / 2.0
+
+			# If we're mostly-open, then take the blink value from the
+			# more-open eye and use that. Otherwise, if we're mostly-closed,
+			# take the blink value from the mostly-closed eye and use that.
+			if eye_blink_avg < 0.5:
+				eye_blink_new = min(shape_dict_new["eyeBlinkLeft"], shape_dict_new["eyeBlinkRight"])
+			else:
+				eye_blink_new = max(shape_dict_new["eyeBlinkLeft"], shape_dict_new["eyeBlinkRight"])
+
+			# Finally, override our blink values with the ones we calculated.
+			shape_dict_new["eyeBlinkRight"] = eye_blink_new
+			shape_dict_new["eyeBlinkLeft"] = eye_blink_new
 
 	# Clamp some eye values now that we've messed with them.
-	for shape in [
+	for shape : String in [
 		"eyeLookUpRight",   "eyeLookUpLeft",
 		"eyeLookDownRight", "eyeLookDownLeft",
 		"eyeLookInRight",   "eyeLookInLeft",

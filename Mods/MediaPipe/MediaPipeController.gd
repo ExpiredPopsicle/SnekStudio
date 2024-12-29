@@ -149,6 +149,11 @@ var blendshape_offsets : Dictionary = {}
 var blendshape_progressbars : Dictionary = {}
 var blendshape_progressbar_update_index : int = 0
 
+var eyes_link_vertical : bool = false
+var eyes_link_horizontal : bool = false
+var eyes_link_blink : bool = false
+var eyes_prevent_opposite_directions : bool = true
+
 func _get_property_list() -> Array[Dictionary]:
 
 	var properties : Array[Dictionary] = []
@@ -251,6 +256,19 @@ func _ready():
 	add_tracked_setting("tracking_pause", "Pause tracking")
 
 	add_setting_group("advanced", "Advanced")
+
+	add_tracked_setting(
+		"eyes_prevent_opposite_directions", "Prevent eyes looking outwards", {},
+		"advanced")
+	add_tracked_setting(
+		"eyes_link_vertical", "Link eyes vertical direction", {},
+		"advanced")
+	add_tracked_setting(
+		"eyes_link_horizontal", "Link eyes horizontal direction", {},
+		"advanced")
+	add_tracked_setting(
+		"eyes_link_blink", "Link eyes blinking", {},
+		"advanced")
 
 	add_tracked_setting(
 		"hand_confidence_time_threshold", "Hand confidence time",
@@ -950,10 +968,15 @@ func process_new_packets(model, delta):
 						if blendshape_calibration[blendshape]:
 							last_parsed_data["blendshapes"][blendshape] -= blendshape_calibration[blendshape]
 
- 				#blend_shape_last_values.duplicate()
-	
 				var shape_dict_new = {}
-				
+
+				# Eye fixups. We want to apply this before it gets sent into the
+				# VRM conversion so it'll affect that.
+				last_parsed_data["blendshapes"] = functions_blendshapes.fixup_eyes(
+					last_parsed_data["blendshapes"], eyes_prevent_opposite_directions,
+					eyes_link_vertical, eyes_link_horizontal,
+					eyes_link_blink)
+
 				# Merge in MediaPipe or basic VRM blendshapes per options.
 				if use_vrm_basic_shapes:
 					var vrm_shapes : Dictionary = functions_blendshapes.convert_mediapipe_shapes_to_vrm_standard( \
@@ -987,16 +1010,11 @@ func process_new_packets(model, delta):
 					blendshape_progressbar_update_index += 1
 					blendshape_progressbar_update_index %= len(shape_keys)
 
-
 				# Apply smoothing.
 				# FIXME: Parameterize.
 				shape_dict_new = functions_blendshapes.apply_smoothing(
 					blend_shape_last_values, shape_dict_new,
 					delta)
-				
-				# Eye fixups.
-				# FIXME: Make optional.
-				shape_dict_new = functions_blendshapes.fixup_eyes(shape_dict_new)
 
 				# Blend back to a rest position if we have lost tracking.
 				if frames_missing_before_spine_reset < last_parsed_data["head_missing_time"]:

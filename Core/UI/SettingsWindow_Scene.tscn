@@ -9,6 +9,9 @@ offset_bottom = 291.0
 script = ExtResource("2_d1a2w")
 label_text = "Scene Settings"
 
+[node name="WindowTitlePanel" parent="." index="1"]
+grow_horizontal = 2
+
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
 text = "Scene Settings"
 
