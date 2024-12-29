@@ -5,13 +5,13 @@
 [ext_resource type="PackedScene" uid="uid://cwt2oqwri2i5y" path="res://Core/UI/BasicSliderWithNumber.tscn" id="3_nw828"]
 
 [node name="SettingsWindow_General" instance=ExtResource("1_fb5na")]
-offset_right = 675.0
-offset_bottom = 284.0
+offset_right = 502.0
+offset_bottom = 279.0
 script = ExtResource("2_1jk3i")
 label_text = "General Settings"
 
 [node name="WindowTitlePanel" parent="." index="1"]
-offset_right = 676.0
+grow_horizontal = 2
 
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
 offset_right = 644.0
