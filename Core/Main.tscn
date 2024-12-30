@@ -49,7 +49,7 @@ grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_nh3ai")
 
 [node name="CameraBoom" parent="." instance=ExtResource("3_ur4kn")]
-transform = Transform3D(1, 0, 0, 0, 0.994522, 0.104528, 0, -0.104528, 0.994522, 0, 1.7, 0)
+transform = Transform3D(1, 0, 0, 0, 0.994522, 0.104528, 0, -0.104528, 0.994522, 0, 1.45, 0)
 
 [node name="Mods" type="Node" parent="."]
 

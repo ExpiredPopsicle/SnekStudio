@@ -30,7 +30,7 @@ var _ikchains = []
 
 # Settings stuff
 @export var mirror_mode : bool = true
-@export var arm_rest_angle : float = 70
+@export var arm_rest_angle : float = 60
 @export var arm_reset_time : float = 0.5
 @export var arm_reset_speed : float = 0.1
 @export var hand_tracking_enabed : bool = true

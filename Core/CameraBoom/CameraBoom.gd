@@ -76,7 +76,7 @@ func load_settings(settings_dict):
 		set_camera_fov(settings_dict["fov"])
 
 func reset_to_default():
-	transform = Transform3D(Basis(), Vector3(0.0, 1.7, 0.0))
+	transform = Transform3D(Basis(), Vector3(0.0, 1.45, 0.0))
 	set_camera_distance(4.5)
 	
 	

@@ -245,28 +245,27 @@ func set_colliders(colliders_list=null) -> void:
 
 		_save_colliders_for_current_model()
 
-func reset_settings_to_default():
-	
+func reset_settings_to_default() -> void:
+
 	# Reset all collider data.
 	colliders_by_model_name = {}
-	
+
 	# Reset model to default.
-	# FIXME: Add a real stand-in.
-	load_vrm("res://SampleModels/VRM/kirisuntexturedfloatinghead.vrm")
-	
+	load_vrm("res://SampleModels/VRM/samplesnek15b.vrm")
+
 	# Clear mods list.
 	var mods_to_delete = $Mods.get_children()
 	for child in mods_to_delete:
 		child.scene_shutdown()
 		$Mods.remove_child(child)
 		child.queue_free()
-	
+
 	# Reset camera.
 	$CameraBoom.reset_to_default()
-	
+
 	# Reset transparency.	
 	set_background_transparency(false)
-	
+
 	# Reset background color.
 	set_background_color(Color(1.0, 0.0, 1.0, 1.0))
 
@@ -274,7 +273,7 @@ func reset_settings_to_default():
 
 	# Audio volume.
 	AudioServer.set_bus_volume_db(AudioServer.get_bus_index("Master"), 0.0)
-	
+
 	# Window size.
 	var viewport_default_size = Vector2i(
 		ProjectSettings.get_setting("display/window/size/viewport_width"),
@@ -534,7 +533,7 @@ func load_settings(path : String = ""):
 				"name": "MediaPipeController",
 				"scene_path": "res://Mods/MediaPipe/MediaPipeController.tscn",
 				"settings": {
-				"arm_rest_angle": 45,
+				"arm_rest_angle": 60,
 				"debug_visible_hand_trackers": false,
 				"frame_rate_limit": 60,
 				"hand_confidence_time_threshold": 1,
