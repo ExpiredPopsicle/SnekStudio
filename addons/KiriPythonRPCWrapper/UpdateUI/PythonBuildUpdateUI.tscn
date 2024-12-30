@@ -79,7 +79,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "mediapipe==0.10.14
 psutil==6.0.0
-cv2-enumerate-cameras==1.1.10
+cv2-enumerate-cameras==1.1.18.2
 numpy==1.26.0
 
 "
