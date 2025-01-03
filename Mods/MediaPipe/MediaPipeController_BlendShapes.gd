@@ -111,7 +111,9 @@ static func apply_blendshape_scale_offset_dict(
 		# FIXME: Should we be doing this here? Where's it normally done?
 		shape_dict[shape] = clampf(shape_dict[shape], 0.0, 1.0)
 
-static func apply_smoothing(shape_dict_last_frame, shape_dict_from_tracker, delta):
+static func apply_smoothing(
+	shape_dict_last_frame : Dictionary, shape_dict_from_tracker : Dictionary, delta : float,
+	blendshape_smoothing_scale : float, blendshape_smoothing : Dictionary):
 
 	var shape_dict_new = shape_dict_last_frame.duplicate()
 
@@ -122,24 +124,22 @@ static func apply_smoothing(shape_dict_last_frame, shape_dict_from_tracker, delt
 		if shape_name in shape_dict_last_frame:
 
 			# This shape existed last frame. LERP to the new value, if necessary.
-			
+
 			var old = shape_dict_last_frame[shape_name]
 			var new = shape_dict_from_tracker[shape_name]
-			
-			# Update at higher rate for mouth shapes, so we can maybe get some
-			# better lip syncing.
-			# FIXME: Make which bones this applies to configurable.
-			var basic_vrm_mouth_shape_names = ["ou", "oh", "aa", "ih", "ee"]
-			if shape_name.begins_with("mouth") or shape_name in basic_vrm_mouth_shape_names:
-				# Exaggerate mouth shapes other than "close".
-				# FIXME: Make scale amount configurable!!!!!
-				if shape_name != "mouthClose":
-					new = clamp(new * 2.0, 0.0, 1.0)
+
+			var total_scale : float = blendshape_smoothing_scale
+
+			if shape_name in blendshape_smoothing:
+				total_scale *= blendshape_smoothing[shape_name]
+			else:
+				total_scale = 0.0
+
+			if total_scale <= 0.0:
 				shape_dict_new[shape_name] = new
 			else:
-				# FIXME: Don't use a hardcoded blend speed!
 				shape_dict_new[shape_name] = lerp(old, new,
-					clamp(delta * 30.0, 0.0, 1.0))
+					clamp(delta / blendshape_smoothing_scale, 0.0, 1.0))
 
 		else:
 			# This shape didn't exist last frame at all. Just snap directly to

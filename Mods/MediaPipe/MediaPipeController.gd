@@ -36,7 +36,6 @@ var _ikchains = []
 @export var hand_tracking_enabed : bool = true
 var use_vrm_basic_shapes = false
 var use_mediapipe_shapes = true
-var frame_rate_limit = 60
 var video_device = Array() # It's an array that we only ever put one thing in.
 
 var blendshape_calibration = {}
@@ -67,10 +66,11 @@ var hand_count_change_time_threshold = 1.0
 var hand_rotation_smoothing : float = 2.0
 var hand_position_smoothing : float = 4.0
 var chest_yaw_scale : float = 0.25
-var lean_scale : float = 1.0
+var lean_scale : float = 2.0
 var hip_adjustment_speed : float = 1.0
 
 var blendshape_scale : float = 1.2
+var blendshape_smoothing_scale : float = 0.05
 
 var hand_position_scale : Vector3 = Vector3(7.0, 7.0, 3.5)
 var hand_position_offset : Vector3 = Vector3(0.0, -0.14, 0.0)
@@ -146,6 +146,7 @@ const blendshape_names_all : PackedStringArray = \
 
 var blendshape_scales : Dictionary = {}
 var blendshape_offsets : Dictionary = {}
+var blendshape_smoothing : Dictionary = {}
 var blendshape_progressbars : Dictionary = {}
 var blendshape_progressbar_update_index : int = 0
 
@@ -153,6 +154,10 @@ var eyes_link_vertical : bool = false
 var eyes_link_horizontal : bool = false
 var eyes_link_blink : bool = false
 var eyes_prevent_opposite_directions : bool = true
+
+# Last packet we got, in case we need to process it again on a frame that
+# received no data. (FIXME: hack)
+var last_packet_received = null
 
 func _get_property_list() -> Array[Dictionary]:
 
@@ -167,8 +172,13 @@ func _get_property_list() -> Array[Dictionary]:
 			"name" : "blendshape_offset_" + blend_shape,
 			"type" : TYPE_FLOAT
 		}
+		var new_entry_smoothing : Dictionary = {
+			"name" : "blendshape_smoothing_" + blend_shape,
+			"type" : TYPE_FLOAT
+		}
 		properties.append(new_entry_scale)
 		properties.append(new_entry_offset)
+		properties.append(new_entry_smoothing)
 
 	return properties
 
@@ -194,9 +204,30 @@ func _get(property: StringName) -> Variant:
 		else:
 			return null
 
+	if property.begins_with("blendshape_smoothing_"):
+		var blendshape_name : String = property.substr(len("blendshape_smoothing_"))
+		if blendshape_name in blendshape_names_all:
+			if blendshape_name in blendshape_smoothing:
+				return blendshape_smoothing[blendshape_name]
+			else:
+				return 0.0
+		else:
+			return null
+
 	return null
 
 func _set(property: StringName, value: Variant) -> bool:
+
+	if property.begins_with("blendshape_smoothing_"):
+		var blendshape_name : String = property.substr(len("blendshape_smoothing_"))
+		if blendshape_name in blendshape_names_all:
+			if value == 1.0:
+				blendshape_smoothing.erase(blendshape_name)
+			else:
+				blendshape_smoothing[blendshape_name] = value
+			return true
+		else:
+			return false
 
 	if property.begins_with("blendshape_scale_"):
 		var blendshape_name : String = property.substr(len("blendshape_scale_"))
@@ -250,7 +281,6 @@ func _ready():
 	add_tracked_setting("use_vrm_basic_shapes", "Use basic VRM shapes")
 	add_tracked_setting("use_mediapipe_shapes", "Use MediaPipe shapes")
 	add_tracked_setting("mirror_mode", "Mirror mode")
-	add_tracked_setting("frame_rate_limit", "Frame rate limit", { "min" : 1.0, "max" : 240.0 })
 	add_tracked_setting("arm_rest_angle", "Arm rest angle", { "min" : 0.0, "max" : 180.0 })
 
 	add_tracked_setting("tracking_pause", "Pause tracking")
@@ -323,6 +353,12 @@ func _ready():
 	add_tracked_setting(
 		"blendshape_scale", "Blend Shape Scale", { "min" : 0.0, "max" : 10.0 },
 		"advanced")
+	# FIXME: Setting disabled because it doesn't do anything until you actually
+	#   set the per-shape smoothing scale, which doesn't make sense from a UI
+	#   standpoint.
+	#add_tracked_setting(
+		#"blendshape_smoothing_scale", "Blend Shape Smoothing", { "min" : 0.0, "max" : 100.0 },
+		#"advanced")
 
 	add_tracked_setting(
 		"hand_position_scale", "Hand Position Scale", {},
@@ -344,7 +380,7 @@ func _ready():
 
 		var label : Label = Label.new()
 		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		label.text = blendshape_name + " scale/offset"
+		label.text = blendshape_name + " scale/offset/smoothing"
 		# FIXME: Direct use of internal (indented private, not protected) variables.
 		_settings_groups["blendshapes_scale_offset"].add_setting_control(label)
 
@@ -358,11 +394,18 @@ func _ready():
 		# FIXME: Direct use of internal variables.
 		_settings_groups["blendshapes_scale_offset"].add_setting_control(progressbar)
 
+		# Mouth shapes start with scale doubled by default.
+		if blendshape_name.begins_with("mouth") or blendshape_name.begins_with("jaw"):
+			blendshape_scales[blendshape_name] = 2.0
+
 		add_tracked_setting(
-			"blendshape_scale_" + blendshape_name, "",  { "min" : 0.0, "max" : 2.0 },
+			"blendshape_scale_" + blendshape_name, "",  { "min" : 0.0, "max" : 5.0 },
 			"blendshapes_scale_offset")
 		add_tracked_setting(
 			"blendshape_offset_" + blendshape_name, "",  { "min" : -2.0, "max" : 2.0 },
+			"blendshapes_scale_offset")
+		add_tracked_setting(
+			"blendshape_smoothing_" + blendshape_name, "",  { "min" : 0.0, "max" : 10.0 },
 			"blendshapes_scale_offset")
 
 		blendshape_progressbars[blendshape_name] = progressbar
@@ -892,11 +935,127 @@ func mirror_parsed_data(parsed_data : Dictionary) -> Dictionary:
 
 	return new_parsed_data
 
+func _process_single_packet(model : Node3D, delta : float, parsed_data : Dictionary):
 
+	if "status" in parsed_data:
+		set_status(parsed_data["status"])
+		return
+
+	if "error" in parsed_data:
+		set_status("Error: " + parsed_data["error"])
+		return
+
+	set_status("Receiving tracker data")
+
+	# -----------------
+	if mirror_mode:
+		parsed_data = mirror_parsed_data(parsed_data)
+
+	if parsed_data.has("blendshapes"):
+		functions_blendshapes.apply_blendshape_scale(parsed_data["blendshapes"], blendshape_scale)
+
+		# Apply blendshape scales to MediaPipe shapes.
+		functions_blendshapes.apply_blendshape_scale_offset_dict(
+			parsed_data["blendshapes"],
+			blendshape_scales, blendshape_offsets)
+
+	last_parsed_data["head_quat"] = parsed_data["head_quat"]
+	last_parsed_data["head_origin"] = parsed_data["head_origin"]
+	last_parsed_data["head_missing_time"] = parsed_data["head_missing_time"]
+
+	for hand_name in [ "left", "right" ]:
+		var hand_score_str = "hand_" + hand_name + "_score"
+		var hand_rotation_str = "hand_" + hand_name + "_rotation"
+		var hand_origin_str = "hand_" + hand_name + "_origin"
+		var hand_landmark_str = "hand_landmarks_" + hand_name # FIXME: Make this consistent.
+		# FIXME: Put all the hand stuff under one dictionary entry.
+
+		if hand_score_str in parsed_data:
+
+			var override_val : bool = false
+			if not (hand_score_str in last_parsed_data):
+				override_val = true
+			elif last_parsed_data[hand_score_str] < parsed_data[hand_score_str]:
+				override_val = true
+
+			if override_val:
+				last_parsed_data[hand_score_str] = parsed_data[hand_score_str]
+				last_parsed_data[hand_rotation_str] = parsed_data[hand_rotation_str]
+				last_parsed_data[hand_origin_str] = parsed_data[hand_origin_str]
+				last_parsed_data[hand_landmark_str] = parsed_data[hand_landmark_str]
+
+	if "blendshapes" in parsed_data:
+
+		# Save the parsed data.
+		last_parsed_data["blendshapes"] = parsed_data["blendshapes"]
+
+		if blendshape_calibration != {}:
+			for blendshape in last_parsed_data["blendshapes"]:
+				if blendshape_calibration[blendshape]:
+					last_parsed_data["blendshapes"][blendshape] -= blendshape_calibration[blendshape]
+
+		var shape_dict_new = {}
+
+		# Eye fixups. We want to apply this before it gets sent into the
+		# VRM conversion so it'll affect that.
+		last_parsed_data["blendshapes"] = functions_blendshapes.fixup_eyes(
+			last_parsed_data["blendshapes"], eyes_prevent_opposite_directions,
+			eyes_link_vertical, eyes_link_horizontal,
+			eyes_link_blink)
+
+		# Merge in MediaPipe or basic VRM blendshapes per options.
+		if use_vrm_basic_shapes:
+			var vrm_shapes : Dictionary = functions_blendshapes.convert_mediapipe_shapes_to_vrm_standard( \
+				last_parsed_data["blendshapes"])
+
+			# Apply blendshape scales to basic VRM shapes.
+			functions_blendshapes.apply_blendshape_scale_offset_dict(
+				vrm_shapes, blendshape_scales, blendshape_offsets)
+			shape_dict_new.merge(
+				vrm_shapes,
+				true)
+
+		if use_mediapipe_shapes:
+			shape_dict_new.merge(
+				last_parsed_data["blendshapes"],
+				true)
+
+		# Update a few of the progress bars.
+		var shape_keys : Array = blendshape_progressbars.keys()
+		for i in range(0, 5):
+
+			var shape_name : String = \
+				shape_keys[blendshape_progressbar_update_index]
+
+			if shape_name in shape_dict_new:
+				blendshape_progressbars[shape_name].value = \
+					shape_dict_new[shape_name]
+			else:
+				blendshape_progressbars[shape_name].value = 0.0
+
+			blendshape_progressbar_update_index += 1
+			blendshape_progressbar_update_index %= len(shape_keys)
+
+		# Apply smoothing.
+		# FIXME: Parameterize.
+		shape_dict_new = functions_blendshapes.apply_smoothing(
+			blend_shape_last_values, shape_dict_new,
+			delta, blendshape_smoothing_scale, blendshape_smoothing)
+
+		# Blend back to a rest position if we have lost tracking.
+		if frames_missing_before_spine_reset < last_parsed_data["head_missing_time"]:
+			shape_dict_new = functions_blendshapes.apply_rest_shapes(
+				blend_shape_last_values, delta, blend_to_rest_speed)
+
+		functions_blendshapes.apply_animations(
+			model, shape_dict_new)
+
+		blend_shape_last_values = shape_dict_new
 
 func process_new_packets(model, delta):
 	var most_recent_packet = null
 	var dropped_packets = 0
+
 	while true:
 		var packet = udp_server.get_packet()
 		
@@ -909,123 +1068,8 @@ func process_new_packets(model, delta):
 		var parsed_data = json.data
 
 		if parsed_data:
-			
-			if "status" in parsed_data:
-				set_status(parsed_data["status"])
-				continue
-
-			if "error" in parsed_data:
-				set_status("Error: " + parsed_data["error"])
-				continue
-
-			set_status("Receiving tracker data")
-
-
-			# -----------------
-			if mirror_mode:
-				parsed_data = mirror_parsed_data(parsed_data)
-
-			if parsed_data.has("blendshapes"):
-				functions_blendshapes.apply_blendshape_scale(parsed_data["blendshapes"], blendshape_scale)
-
-				# Apply blendshape scales to MediaPipe shapes.
-				functions_blendshapes.apply_blendshape_scale_offset_dict(
-					parsed_data["blendshapes"],
-					blendshape_scales, blendshape_offsets)
-
-			last_parsed_data["head_quat"] = parsed_data["head_quat"]
-			last_parsed_data["head_origin"] = parsed_data["head_origin"]
-			last_parsed_data["head_missing_time"] = parsed_data["head_missing_time"]
-			
-			for hand_name in [ "left", "right" ]:
-				var hand_score_str = "hand_" + hand_name + "_score"
-				var hand_rotation_str = "hand_" + hand_name + "_rotation"
-				var hand_origin_str = "hand_" + hand_name + "_origin"
-				var hand_landmark_str = "hand_landmarks_" + hand_name # FIXME: Make this consistent.
-				# FIXME: Put all the hand stuff under one dictionary entry.
-				
-				if hand_score_str in parsed_data:
-
-					var override_val : bool = false
-					if not (hand_score_str in last_parsed_data):
-						override_val = true
-					elif last_parsed_data[hand_score_str] < parsed_data[hand_score_str]:
-						override_val = true
-					
-					if override_val:
-						last_parsed_data[hand_score_str] = parsed_data[hand_score_str]
-						last_parsed_data[hand_rotation_str] = parsed_data[hand_rotation_str]
-						last_parsed_data[hand_origin_str] = parsed_data[hand_origin_str]
-						last_parsed_data[hand_landmark_str] = parsed_data[hand_landmark_str]
-						
-			if "blendshapes" in parsed_data:
-
-				# Save the parsed data.
-				last_parsed_data["blendshapes"] = parsed_data["blendshapes"]
-
-				if blendshape_calibration != {}:
-					for blendshape in last_parsed_data["blendshapes"]:
-						if blendshape_calibration[blendshape]:
-							last_parsed_data["blendshapes"][blendshape] -= blendshape_calibration[blendshape]
-
-				var shape_dict_new = {}
-
-				# Eye fixups. We want to apply this before it gets sent into the
-				# VRM conversion so it'll affect that.
-				last_parsed_data["blendshapes"] = functions_blendshapes.fixup_eyes(
-					last_parsed_data["blendshapes"], eyes_prevent_opposite_directions,
-					eyes_link_vertical, eyes_link_horizontal,
-					eyes_link_blink)
-
-				# Merge in MediaPipe or basic VRM blendshapes per options.
-				if use_vrm_basic_shapes:
-					var vrm_shapes : Dictionary = functions_blendshapes.convert_mediapipe_shapes_to_vrm_standard( \
-						last_parsed_data["blendshapes"])
-
-					# Apply blendshape scales to basic VRM shapes.
-					functions_blendshapes.apply_blendshape_scale_offset_dict(
-						vrm_shapes, blendshape_scales, blendshape_offsets)
-					shape_dict_new.merge(
-						vrm_shapes,
-						true)
-
-				if use_mediapipe_shapes:
-					shape_dict_new.merge(
-						last_parsed_data["blendshapes"],
-						true)
-
-				# Update a few of the progress bars.
-				var shape_keys : Array = blendshape_progressbars.keys()
-				for i in range(0, 5):
-
-					var shape_name : String = \
-						shape_keys[blendshape_progressbar_update_index]
-
-					if shape_name in shape_dict_new:
-						blendshape_progressbars[shape_name].value = \
-							shape_dict_new[shape_name]
-					else:
-						blendshape_progressbars[shape_name].value = 0.0
-
-					blendshape_progressbar_update_index += 1
-					blendshape_progressbar_update_index %= len(shape_keys)
-
-				# Apply smoothing.
-				# FIXME: Parameterize.
-				shape_dict_new = functions_blendshapes.apply_smoothing(
-					blend_shape_last_values, shape_dict_new,
-					delta)
-
-				# Blend back to a rest position if we have lost tracking.
-				if frames_missing_before_spine_reset < last_parsed_data["head_missing_time"]:
-					shape_dict_new = functions_blendshapes.apply_rest_shapes(
-						blend_shape_last_values, delta, blend_to_rest_speed)
-
-				functions_blendshapes.apply_animations(
-					model, shape_dict_new)
-				
-				blend_shape_last_values = shape_dict_new
-				
+			last_packet_received = parsed_data.duplicate(true)
+			_process_single_packet(model, delta, parsed_data)
 
 		if len(packet) > 0:
 			if most_recent_packet != null:
@@ -1033,7 +1077,12 @@ func process_new_packets(model, delta):
 			most_recent_packet = packet
 		else:
 			break
-	
+
+	# FIXME: Kind of a hack. Reprocess last parsed data again so that smoothing
+	#   can continue even in the lack of actual input.
+	if not most_recent_packet and last_packet_received:
+		_process_single_packet(model, delta, last_packet_received.duplicate(true))
+
 	if dropped_packets > 0:
 		if dropped_packets <= 2:
 			print_log(["Dropped packets (within tolerance): ", dropped_packets])

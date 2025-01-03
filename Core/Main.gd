@@ -535,7 +535,6 @@ func load_settings(path : String = ""):
 				"settings": {
 				"arm_rest_angle": 60,
 				"debug_visible_hand_trackers": false,
-				"frame_rate_limit": 60,
 				"hand_confidence_time_threshold": 1,
 				"hand_count_change_time_threshold": 1,
 				"hand_tracking_enabed": true,
