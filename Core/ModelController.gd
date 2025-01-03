@@ -88,7 +88,14 @@ func get_skeleton() -> Skeleton3D:
 
 	# Buggy fallback.
 	var skeleton = get_model().find_child("GeneralSkeleton", true, false)
-	return skeleton
+	if skeleton:
+		return skeleton
+
+	skeleton = get_model().find_child("Skeleton3D", true, false)
+	if skeleton:
+		return skeleton
+
+	return null
 
 # Find a bone index based on the VRM bone name. This can be different from the
 # bone name on the model itself. These names match the Unity humanoid.
