@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b425qbofhc1eg"]
+
+[ext_resource type="Script" path="res://Mods/BlendShapeOverride/BlendShapeOverride.gd" id="1_8wc52"]
+
+[node name="BlendShapeOverride" type="Node"]
+script = ExtResource("1_8wc52")
