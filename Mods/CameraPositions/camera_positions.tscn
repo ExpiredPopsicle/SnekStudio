@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cfocpa8me6kp8"]
+
+[ext_resource type="Script" path="res://Mods/CameraPositions/camera_positions.gd" id="1_7ofvo"]
+
+[node name="CameraPositions" type="Node"]
+script = ExtResource("1_7ofvo")
