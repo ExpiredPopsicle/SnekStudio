@@ -271,6 +271,7 @@ func _ready():
 	# devices. We won't be starting "for real" until we get to scene_init.
 	tracker_python_process.start_process(false)
 	_scan_video_devices()
+	video_device = ["None"]
 	add_tracked_setting(
 		"video_device", "Video Device",
 		{"values" : _devices_list,
