@@ -529,6 +529,21 @@ func _create_animation_player(animplayer: AnimationPlayer, vrm_extension: Dictio
 				else:
 					printerr("Unknown type for parameter " + matbind["propertyName"] + " surface " + node.name + "/" + str(surface_idx))
 
+			elif mat is BaseMaterial3D:
+				var bmat: BaseMaterial3D = mat
+				if matbind["propertyName"] == "_Color":
+					paramprop = "albedo_color"
+				if matbind["propertyName"] == "_EmissionColor":
+					paramprop = "emission_color"
+				var param = bmat.get(paramprop)
+				if param is Color:
+					origvalue = param
+					if len(tv) >= 4:
+						newvalue = Color(tv[0], tv[1], tv[2], tv[3])
+					else:
+						printerr("Expected 4 values but got " + str(len(tv)) + " for parameter " + matbind["propertyName"] + " surface " + node.name + "/" + str(surface_idx))
+						newvalue = origvalue # Filler value for consistency.
+
 			if origvalue != null:
 				var animtrack: int = anim.add_track(Animation.TYPE_VALUE)
 				anim.track_set_path(animtrack, str(animplayer.get_parent().get_path_to(node)) + ":mesh:surface_" + str(surface_idx) + "/material:" + paramprop)
