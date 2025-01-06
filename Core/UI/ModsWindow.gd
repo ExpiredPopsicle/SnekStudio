@@ -6,31 +6,46 @@ func show_window():
 	super.show_window()
 	_update_log_text()
 
+# FIXME: Kind of a hack until we figure out how to correctly update the pointer
+#   when mods are removed.
+func _get_selected_mod() -> Node:
+	var mods_node : Node = _get_mods_node()
+	if mods_node:
+		if _selected_mod in mods_node.get_children():
+			if is_instance_valid(_selected_mod):
+				return _selected_mod
+	return null
+
 func _update_status_text_for_mod(mod):
-	if _selected_mod != mod:
+	var selected : Node = _get_selected_mod()
+	if selected != mod:
 		return
 	_update_status_text()
 	
 func _update_status_text():
-	if _selected_mod:
-		%LineEdit_ModStatus.text = _selected_mod._mod_status
+	var selected : Node = _get_selected_mod()
+	if selected:
+		%LineEdit_ModStatus.text = selected._mod_status
 	else:
 		%LineEdit_ModStatus.text = ""
 
 func _update_log_text_for_mod(mod):
-	if _selected_mod != mod:
+	var selected : Node = _get_selected_mod()
+	if selected != mod:
 		return
 	_update_log_text()
 	
 func _update_log_text():
+	var selected : Node = _get_selected_mod()
+
 	var old_scroll_vertical = \
 		%TextEdit_ModLog.scroll_vertical
 	var old_scroll_vertical_with_lines = old_scroll_vertical + \
 		%TextEdit_ModLog.get_visible_line_count()
 	var old_line_count = %TextEdit_ModLog.get_line_count()
 	
-	if is_instance_valid(_selected_mod):
-		%TextEdit_ModLog.text = "\n".join(_selected_mod._mod_log)
+	if is_instance_valid(selected):
+		%TextEdit_ModLog.text = "\n".join(selected._mod_log)
 	else:
 		%TextEdit_ModLog.text = ""
 	
@@ -50,7 +65,7 @@ func _handle_selection_change():
 		if selected[0] < _get_mods_node().get_child_count():
 			newly_selected_mod = _get_mods_node().get_child(selected[0])
 
-		if newly_selected_mod != _selected_mod:
+		if newly_selected_mod != _get_selected_mod():
 			_selected_mod = newly_selected_mod
 			
 			# Clear out old mods window.

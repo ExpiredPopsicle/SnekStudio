@@ -93,12 +93,20 @@ func save_settings():
 			ret[prop["name"]] = get(prop["name"]).to_html()
 		else:
 			ret[prop["name"]] = get(prop["name"])
-			
 
 	save_before(ret)
 
 	return ret
-	
+
+func _parse_string_vec3(s : String) -> Vector3:
+	if s.begins_with("("):
+		s = s.substr(1)
+	if s.ends_with(")"):
+		s = s.substr(0, len(s) - 1)
+	s = s.replace(" ", "")
+	var floats : PackedFloat64Array = s.split_floats(",")
+	return Vector3(floats[0], floats[1], floats[2])
+
 # FIXME: We don't really want this to be virtual anymore.
 func load_settings(_settings_dict):
 	
@@ -108,14 +116,19 @@ func load_settings(_settings_dict):
 	# new settings into it.
 	var new_settings = old_settings.duplicate()
 	new_settings.merge(_settings_dict, true)
-	
+
 	load_before(old_settings, new_settings)
-	
+
 	for prop in _settings_properties:
+		# FIXME: Should we just deduce is_color from the type of the property?
 		if "is_color" in prop["args"] and prop["args"]["is_color"]:
 			set(prop["name"], Color(new_settings[prop["name"]]))
 		else:
-			set(prop["name"], new_settings[prop["name"]])
+			var prop_val : Variant = new_settings[prop["name"]]
+			if get(prop["name"]) is Vector3 and prop_val is String:
+				set(prop["name"], _parse_string_vec3(prop_val))
+			else:
+				set(prop["name"], prop_val)
 
 	load_after(old_settings, new_settings)
 
