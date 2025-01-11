@@ -51,6 +51,7 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_top = -24.0
+grow_horizontal = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_aj8ap")
 
 [node name="WindowTitle" type="Label" parent="WindowTitlePanel"]
@@ -61,6 +62,21 @@ offset_right = 246.0
 offset_bottom = 26.0
 text = "Window"
 clip_text = true
+
+[node name="PopoutButton" type="Button" parent="WindowTitlePanel"]
+visible = false
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -48.0
+offset_right = -24.0
+grow_horizontal = 0
+grow_vertical = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 10
+text = "p"
 
 [node name="CloseButton" type="Button" parent="WindowTitlePanel"]
 layout_mode = 1
@@ -80,4 +96,5 @@ text = "x"
 [connection signal="mouse_entered" from="WindowBorder" to="." method="_on_window_border_mouse_entered"]
 [connection signal="mouse_exited" from="WindowBorder" to="." method="_on_window_border_mouse_exited"]
 [connection signal="gui_input" from="WindowTitlePanel" to="." method="_on_window_title_panel_gui_input"]
+[connection signal="pressed" from="WindowTitlePanel/PopoutButton" to="." method="_on_popout_button_pressed"]
 [connection signal="pressed" from="WindowTitlePanel/CloseButton" to="." method="_on_close_button_pressed"]

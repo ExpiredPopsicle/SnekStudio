@@ -9,9 +9,6 @@ offset_bottom = 189.0
 script = ExtResource("2_v2kbv")
 label_text = "Window Settings"
 
-[node name="WindowTitlePanel" parent="." index="1"]
-grow_horizontal = 2
-
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
 text = "Window Settings"
 

@@ -32,6 +32,7 @@ settings/stdout/print_fps=true
 [display]
 
 window/size/transparent=true
+window/subwindows/embed_subwindows=false
 window/per_pixel_transparency/allowed=true
 window/vsync/vsync_mode=0
 
