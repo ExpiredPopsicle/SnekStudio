@@ -326,7 +326,7 @@ func _handle_global_mod_message(key : String, values : Dictionary):
 
 func _update_log_ui(update_log = true, update_status = true):
 	# FIXME: This is a really gross way to do this thing.
-	var mods_window = get_app()._get_ui_root().get_node("ModsWindow")
+	var mods_window = get_app().get_node("%UI_Root/%ModsWindow")
 	if mods_window.visible:
 		if update_log:
 			mods_window._update_log_text_for_mod(self)

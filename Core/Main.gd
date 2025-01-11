@@ -152,14 +152,14 @@ func _get_ui_root():
 func _force_update_ui():
 	
 	# Update mods list.
-	_get_ui_root().get_node("ModsWindow").update_mods_list()
+	get_node("%UI_Root/%ModsWindow").update_mods_list()
 	
 	# Update settings window.
-	%UI_Root/SettingsWindow_General.settings_changed_from_app()
-	%UI_Root/SettingsWindow_Sound.settings_changed_from_app()
-	%UI_Root/SettingsWindow_Scene.settings_changed_from_app()
-	%UI_Root/SettingsWindow_Window.settings_changed_from_app()
-	%UI_Root/SettingsWindow_Colliders.update_from_app()
+	%UI_Root/%SettingsWindow_General.settings_changed_from_app()
+	%UI_Root/%SettingsWindow_Sound.settings_changed_from_app()
+	%UI_Root/%SettingsWindow_Scene.settings_changed_from_app()
+	%UI_Root/%SettingsWindow_Window.settings_changed_from_app()
+	%UI_Root/%SettingsWindow_Colliders.update_from_app()
 
 func _get_current_model_base_name():
 	var last_vrm_path = $ModelController.get_last_loaded_vrm()
@@ -651,7 +651,7 @@ func load_vrm(path) -> bool:
 
 	# FIXME: Hack to make collider visibility match collider window.
 	var ui_root = _get_ui_root()
-	var ui_collider_window = ui_root.get_node_or_null("SettingsWindow_Colliders")
+	var ui_collider_window = ui_root.get_node_or_null("%SettingsWindow_Colliders")
 	for k in collider_data:
 		k["visible"] = ui_collider_window.visible
 
