@@ -1,7 +1,5 @@
 extends BasicSubWindow
 
-func _get_app_root():
-	return get_node("../../..")
 
 func settings_changed_from_app() -> void:
 	var settings : Dictionary = _get_app_root().serialize_settings(true, false)

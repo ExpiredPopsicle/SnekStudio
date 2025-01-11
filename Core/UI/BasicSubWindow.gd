@@ -270,5 +270,4 @@ func show_window():
 	_on_focus_entered()
 
 func _get_app_root():
-	# FIXME: DO NOT HARDCODE THIS PATH!!!!!@!@#$!@%#$^
-	return get_node("../../..")
+	return find_parent("SnekStudio_Main")

@@ -3,9 +3,6 @@ extends BasicSubWindow
 var _tree_items_by_bone = {}
 var _root_item = null
 
-func _get_app_root():
-	return get_node("../../..")
-
 func _add_collider(collider):
 	var bone_name = collider["bone_name"]
 	if bone_name in _tree_items_by_bone:

@@ -52,6 +52,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_nh3ai")
 transform = Transform3D(1, 0, 0, 0, 0.994522, 0.104528, 0, -0.104528, 0.994522, 0, 1.45, 0)
 
 [node name="Mods" type="Node" parent="."]
+unique_name_in_owner = true
 
 [node name="ModelController" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 3.49691e-07, 0, 1, 0, -3.49691e-07, 0, 1, 0, 0, 0)

@@ -97,8 +97,7 @@ func _on_mods_list_item_selected(_index):
 	_handle_selection_change()
 	
 func _get_mods_node():
-	# FIXME: Make a better way to get this data.
-	return get_node("../../../Mods")
+	return _get_app_root().get_node("%Mods")
 
 func update_mods_list():
 	var mods_node = _get_mods_node()
