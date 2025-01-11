@@ -2,6 +2,10 @@ extends BasicSubWindow
 
 var _selected_mod = null
 
+# Saved splitter offsets
+var embed_mod_list_offset: int = 0
+var embed_mod_status_offset: int = 0
+
 func show_window():
 	super.show_window()
 	_update_log_text()
@@ -120,6 +124,10 @@ func update_mods_list():
 	_handle_selection_change()
 
 func _ready():
+	# Save default values for splitter offsets
+	embed_mod_list_offset = $HSplitContainer.split_offset
+	embed_mod_status_offset = $HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
+
 	register_serializable_subwindow()
 	update_mods_list()
 
@@ -203,3 +211,27 @@ func _on_text_edit_mod_name_gui_input(event):
 
 func _on_text_edit_mod_name_focus_exited():
 	_update_currently_selected_name()
+
+func save_current_splitter_offsets() -> void:
+	embed_mod_list_offset = $HSplitContainer.split_offset
+	embed_mod_status_offset = $HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
+
+func load_splitter_offsets() -> void:
+	$HSplitContainer.split_offset = embed_mod_list_offset
+	$HSplitContainer/VBoxContainer2/VSplitContainer.split_offset = embed_mod_status_offset
+
+func serialize_window() -> Dictionary:
+	save_current_splitter_offsets()
+
+	return {"embed_mod_list_offset": embed_mod_list_offset,
+			"embed_mod_status_offset": embed_mod_status_offset}
+
+func deserialize_window(dict: Dictionary) -> void:
+	embed_mod_list_offset = dict["embed_mod_list_offset"]
+	embed_mod_status_offset = dict["embed_mod_status_offset"]
+
+	load_splitter_offsets(popped_out)
+
+func close_window() -> void:
+	save_current_splitter_offsets()
+	super.close_window()
