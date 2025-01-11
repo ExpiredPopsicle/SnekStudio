@@ -10,6 +10,10 @@ var is_size_dragging = false
 var size_dragging_vertical_edge = 0 # -1, 0, 1 for top, middle, bottom
 var size_dragging_horizontal_edge = 0 # -1, 0, 1 for left, middle, right
 
+# Serializable dimensions
+var embed_window_pos: Vector2 = Vector2(0, 0)
+var embed_window_size: Vector2 = Vector2(0, 0)
+
 # Position in parent.
 var _drag_start_position = position
 var _drag_start_size = size
@@ -27,6 +31,12 @@ func _ready():
 	if not close_button_visible:
 		_set_close_button_visible(close_button_visible)
 	$WindowTitlePanel/WindowTitle.text = label_text
+
+# Used to optionally add this subwindow to the list of
+# savable subwindows in SnekStudio_Main. Dimensions
+# and other state will be saved and restored.
+func register_serializable_subwindow():
+	_get_app_root().subwindows.push_back(self)
 
 func _process(_delta):
 	
@@ -261,6 +271,7 @@ func _on_close_button_pressed():
 		close_window()
 
 func close_window():
+	_save_current_window_state()
 	hide()
 
 func show_window():
@@ -271,3 +282,65 @@ func show_window():
 
 func _get_app_root():
 	return find_parent("SnekStudio_Main")
+
+# -----------------------------------------------------------------------------
+# Virtual functions
+
+#region Virtual functions
+
+func serialize_window() -> Dictionary:
+	return {}
+
+func deserialize_window(dict: Dictionary) -> void:
+	pass
+
+#endregion
+
+# -----------------------------------------------------------------------------
+# Window serialization
+
+#region Window state serialization
+
+# Internal serialization called by SnekStudio_Main when saving subwindows
+func _serialize_window() -> Dictionary:
+	_save_current_window_state()
+
+	var subwindow: Dictionary = {
+		"embed_window_pos": [embed_window_pos.x, embed_window_pos.y],
+		"embed_window_size": [embed_window_size.x, embed_window_size.y]
+	}
+
+	var window_settings: Dictionary = serialize_window()
+	if window_settings.size() != 0:
+		subwindow["settings"] = window_settings
+
+	return subwindow
+
+# Internal deserialization called by SnekStudio_Main when loading subwindows
+func _deserialize_window(subwindow_dict: Dictionary) -> void:
+	embed_window_pos = Vector2(subwindow_dict["embed_window_pos"][0],
+							   subwindow_dict["embed_window_pos"][1])
+	embed_window_size = Vector2(subwindow_dict["embed_window_size"][0],
+								subwindow_dict["embed_window_size"][1])
+	_load_window_state()
+
+	var settings = subwindow_dict.get("settings")
+	if settings is Dictionary:
+		deserialize_window(settings)
+
+#endregion
+
+# -----------------------------------------------------------------------------
+# Window state
+
+#region Window state
+
+func _save_current_window_state() -> void:
+	embed_window_pos = position
+	embed_window_size = size
+
+func _load_window_state() -> void:
+	position = embed_window_pos
+	size = embed_window_size
+
+#endregion

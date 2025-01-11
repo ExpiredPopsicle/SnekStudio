@@ -10,6 +10,9 @@ var module_global_data : Dictionary = {}
 
 var _mods_loaded : bool = false
 
+# Array of all serializable BasicSubWindows
+var subwindows : Array[BasicSubWindow] = []
+
 func _process(_delta):
 	_set_process_order()
 
@@ -339,6 +342,11 @@ func serialize_settings(do_settings=true, do_mods=true):
 			mod_definition["settings"] = mod.save_settings()
 			settings_to_save["mods"].append(mod_definition)
 
+	# Save state of all serializable subwindows (dimensions/popout/etc)
+	var subwindows_dict = settings_to_save.get_or_add("subwindows", {})
+	for subwindow in subwindows:
+		subwindows_dict[subwindow.name] = subwindow._serialize_window()
+
 	return settings_to_save
 
 func _compare_values(a, b):
@@ -498,7 +506,13 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 					scene.update_settings_ui()
 			reinit_mods()
 
-
+	# Restore state of all serializable subwindows (dimensions/popout/etc)
+	var subwindows_dict = settings_dict.get("subwindows")
+	if subwindows_dict is Dictionary:
+		for subwindow in subwindows:
+			var subwindow_dict = subwindows_dict.get(subwindow.name)
+			if subwindow_dict is Dictionary:
+				subwindow._deserialize_window(subwindow_dict)
 
 func save_settings(path : String = ""):
 	

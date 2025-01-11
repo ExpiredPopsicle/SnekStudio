@@ -58,6 +58,7 @@ func _update_colliders_to_app(colliders):
 	app.set_colliders(colliders)
 
 func _ready():
+	register_serializable_subwindow()
 	_update_sliders()
 
 func _get_selected_bone():

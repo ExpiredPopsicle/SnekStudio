@@ -1,5 +1,8 @@
 extends BasicSubWindow
 
+func _ready() -> void:
+	register_serializable_subwindow()
+	super._ready()
 
 func settings_changed_from_app() -> void:
 	var settings : Dictionary = _get_app_root().serialize_settings(true, false)

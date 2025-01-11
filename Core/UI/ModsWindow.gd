@@ -120,6 +120,7 @@ func update_mods_list():
 	_handle_selection_change()
 
 func _ready():
+	register_serializable_subwindow()
 	update_mods_list()
 
 func _swap_adjacent_mods(index1, index2):

@@ -1,5 +1,9 @@
 extends BasicSubWindow
 
+func _ready() -> void:
+	register_serializable_subwindow()
+	super._ready()
+
 func settings_changed_from_app():
 	pass
 
