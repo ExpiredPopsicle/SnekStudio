@@ -264,6 +264,11 @@ func get_extra_scripts_list(platform_list : Array = []) -> Array:
 		var current_dir : String = scan_dir_list.pop_front()
 		var da : DirAccess = DirAccess.open(current_dir)
 
+		# Skip .gdignore directories so we don't do something silly like adding
+		# already-unpacked data in the Saved/ directory.
+		if da.file_exists(".gdignore"):
+			continue
+
 		if da.file_exists(".kiri_export_python"):
 			verified_script_bundles.append(current_dir)
 		else:
