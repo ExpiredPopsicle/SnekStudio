@@ -11,6 +11,7 @@ func _input_index_selected(index):
 	update_to_app()
 
 func _ready():
+	register_serializable_subwindow()
 	%MenuButton_OutputDevice.get_popup().index_pressed.connect(_output_index_selected)
 	%MenuButton_InputDevice.get_popup().index_pressed.connect(_input_index_selected)
 

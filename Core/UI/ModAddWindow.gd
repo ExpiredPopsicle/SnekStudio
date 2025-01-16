@@ -53,7 +53,7 @@ func _on_button_add_mod_pressed() -> void:
 		var mod = mod_script.instantiate()
 		_get_mods_node().add_child(mod)
 		mod.scene_init()
-		get_node("../ModsWindow").update_mods_list()
+		%ModsWindow.update_mods_list()
 
 func _on_button_cancel_pressed():
 	hide()

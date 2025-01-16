@@ -11,7 +11,6 @@ label_text = "Mods"
 
 [node name="WindowTitlePanel" parent="." index="1"]
 offset_right = 563.0
-grow_horizontal = 2
 
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
 offset_right = 531.0
@@ -103,8 +102,8 @@ text = "sdcsdasdvdfdfvsdfnvdsfmkvdfjvkmdfv
 "
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/VBoxContainer2/VSplitContainer" index="1"]
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
-size_flags_vertical = 3
 
 [node name="LineEdit_ModStatus" type="LineEdit" parent="HSplitContainer/VBoxContainer2/VSplitContainer/VBoxContainer" index="0"]
 unique_name_in_owner = true

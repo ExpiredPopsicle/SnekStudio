@@ -1,7 +1,8 @@
 extends BasicSubWindow
 
-func _get_app_root():
-	return get_node("../../..")
+func _ready() -> void:
+	register_serializable_subwindow()
+	super._ready()
 
 func _on_button_fake_chat_message_pressed():
 	_get_app_root()._on_handle_channel_chat_message(

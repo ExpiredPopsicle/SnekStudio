@@ -134,21 +134,21 @@ func _on_file_id_pressed(id):
 
 func _on_settings_id_pressed(id):
 	if id == 0:
-		$SettingsWindow_General.show_window()
+		%SettingsWindow_General.show_window()
 	if id == 1:
-		$SettingsWindow_Colliders.show_window()
+		%SettingsWindow_Colliders.show_window()
 	if id == 2:
-		$SettingsWindow_Sound.show_window()
+		%SettingsWindow_Sound.show_window()
 	if id == 3:
-		$SettingsWindow_Scene.show_window()
+		%SettingsWindow_Scene.show_window()
 	if id == 4:
-		$SettingsWindow_Window.show_window()
+		%SettingsWindow_Window.show_window()
 
 func _on_mods_id_pressed(id):
 	if id == 0:
-		$ModsWindow.show_window()
+		%ModsWindow.show_window()
 	if id == 1:
-		$ChannelEvents.show_window()
+		%ChannelEvents.show_window()
 
 func _on_settings_save_dialog_file_selected(path):
 	_get_root().save_settings(path)

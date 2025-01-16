@@ -10,6 +10,9 @@ var module_global_data : Dictionary = {}
 
 var _mods_loaded : bool = false
 
+# Array of all serializable BasicSubWindows
+var subwindows : Array[BasicSubWindow] = []
+
 func _process(_delta):
 	_set_process_order()
 
@@ -152,14 +155,14 @@ func _get_ui_root():
 func _force_update_ui():
 	
 	# Update mods list.
-	_get_ui_root().get_node("ModsWindow").update_mods_list()
+	get_node("%UI_Root/%ModsWindow").update_mods_list()
 	
 	# Update settings window.
-	%UI_Root/SettingsWindow_General.settings_changed_from_app()
-	%UI_Root/SettingsWindow_Sound.settings_changed_from_app()
-	%UI_Root/SettingsWindow_Scene.settings_changed_from_app()
-	%UI_Root/SettingsWindow_Window.settings_changed_from_app()
-	%UI_Root/SettingsWindow_Colliders.update_from_app()
+	%UI_Root/%SettingsWindow_General.settings_changed_from_app()
+	%UI_Root/%SettingsWindow_Sound.settings_changed_from_app()
+	%UI_Root/%SettingsWindow_Scene.settings_changed_from_app()
+	%UI_Root/%SettingsWindow_Window.settings_changed_from_app()
+	%UI_Root/%SettingsWindow_Colliders.update_from_app()
 
 func _get_current_model_base_name():
 	var last_vrm_path = $ModelController.get_last_loaded_vrm()
@@ -339,6 +342,11 @@ func serialize_settings(do_settings=true, do_mods=true):
 			mod_definition["settings"] = mod.save_settings()
 			settings_to_save["mods"].append(mod_definition)
 
+	# Save state of all serializable subwindows (dimensions/popout/etc)
+	var subwindows_dict = settings_to_save.get_or_add("subwindows", {})
+	for subwindow in subwindows:
+		subwindows_dict[subwindow.name] = subwindow._serialize_window()
+
 	return settings_to_save
 
 func _compare_values(a, b):
@@ -498,7 +506,13 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 					scene.update_settings_ui()
 			reinit_mods()
 
-
+	# Restore state of all serializable subwindows (dimensions/popout/etc)
+	var subwindows_dict = settings_dict.get("subwindows")
+	if subwindows_dict is Dictionary:
+		for subwindow in subwindows:
+			var subwindow_dict = subwindows_dict.get(subwindow.name)
+			if subwindow_dict is Dictionary:
+				subwindow._deserialize_window(subwindow_dict)
 
 func save_settings(path : String = ""):
 	
@@ -651,7 +665,7 @@ func load_vrm(path) -> bool:
 
 	# FIXME: Hack to make collider visibility match collider window.
 	var ui_root = _get_ui_root()
-	var ui_collider_window = ui_root.get_node_or_null("SettingsWindow_Colliders")
+	var ui_collider_window = ui_root.get_node_or_null("%SettingsWindow_Colliders")
 	for k in collider_data:
 		k["visible"] = ui_collider_window.visible
 

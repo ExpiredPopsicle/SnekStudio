@@ -2,6 +2,12 @@ extends BasicSubWindow
 
 var _selected_mod = null
 
+# Saved splitter offsets for both embedded and popout mode
+var embed_mod_list_offset: int = 0
+var embed_mod_status_offset: int = 0
+var popout_mod_list_offset: int = 0
+var popout_mod_status_offset: int = 0
+
 func show_window():
 	super.show_window()
 	_update_log_text()
@@ -97,8 +103,7 @@ func _on_mods_list_item_selected(_index):
 	_handle_selection_change()
 	
 func _get_mods_node():
-	# FIXME: Make a better way to get this data.
-	return get_node("../../../Mods")
+	return _get_app_root().get_node("%Mods")
 
 func update_mods_list():
 	var mods_node = _get_mods_node()
@@ -121,6 +126,13 @@ func update_mods_list():
 	_handle_selection_change()
 
 func _ready():
+	# Save default values for both popout and embedded splitter offsets
+	popout_mod_list_offset = $HSplitContainer.split_offset
+	popout_mod_status_offset = $HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
+	embed_mod_list_offset = $HSplitContainer.split_offset
+	embed_mod_status_offset = $HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
+
+	register_serializable_subwindow()
 	update_mods_list()
 
 func _swap_adjacent_mods(index1, index2):
@@ -203,3 +215,44 @@ func _on_text_edit_mod_name_gui_input(event):
 
 func _on_text_edit_mod_name_focus_exited():
 	_update_currently_selected_name()
+
+func save_current_splitter_offsets() -> void:
+	if popped_out:
+		popout_mod_list_offset = $HSplitContainer.split_offset
+		popout_mod_status_offset = $HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
+	else:
+		embed_mod_list_offset = $HSplitContainer.split_offset
+		embed_mod_status_offset = $HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
+
+func load_splitter_offsets(pop_out: bool) -> void:
+	if pop_out:
+		$HSplitContainer.split_offset = popout_mod_list_offset
+		$HSplitContainer/VBoxContainer2/VSplitContainer.split_offset = popout_mod_status_offset
+	else:
+		$HSplitContainer.split_offset = embed_mod_list_offset
+		$HSplitContainer/VBoxContainer2/VSplitContainer.split_offset = embed_mod_status_offset
+
+func popout_state_changing(pop_out: bool) -> void:
+	if pop_out != popped_out:
+		save_current_splitter_offsets()
+	load_splitter_offsets(pop_out)
+
+func serialize_window() -> Dictionary:
+	save_current_splitter_offsets()
+
+	return {"popout_mod_list_offset": popout_mod_list_offset,
+			"popout_mod_status_offset": popout_mod_status_offset,
+			"embed_mod_list_offset": embed_mod_list_offset,
+			"embed_mod_status_offset": embed_mod_status_offset}
+
+func deserialize_window(dict: Dictionary) -> void:
+	embed_mod_list_offset = dict["embed_mod_list_offset"]
+	embed_mod_status_offset = dict["embed_mod_status_offset"]
+	popout_mod_list_offset = dict["popout_mod_list_offset"]
+	popout_mod_status_offset = dict["popout_mod_status_offset"]
+
+	load_splitter_offsets(popped_out)
+
+func close_window() -> void:
+	save_current_splitter_offsets()
+	super.close_window()
