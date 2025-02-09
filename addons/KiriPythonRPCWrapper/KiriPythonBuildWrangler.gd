@@ -127,6 +127,13 @@ func needs_to_unpack_python() -> bool:
 	var err : Error = reader.open(python_archive_path)
 
 	if err != OK:
+		if not DirAccess.dir_exists_absolute(python_archive_path):
+			var found_files = DirAccess.get_files_at(python_archive_path.get_base_dir())
+			var gz_files = Array(found_files).filter(func(x): return x.ends_with(".tar.gz"))
+			if gz_files.size() > 0:
+				OS.alert("Expected to find file at %s based on detected architecture '%s', your \"Python Builds\" directory has: %s"
+					% [python_archive_path, Engine.get_architecture_name(), gz_files])
+
 		OS.alert("There was a problem loading the Python archive. Did you download it in the \"Python Builds\" tab?")
 	
 	# If you hit this assert, you probably need to download the right Python
