@@ -191,8 +191,15 @@ func _on_button_remove_mod_pressed():
 	update_mods_list()
 
 func _on_button_add_mod_pressed():
-	get_node("../ModAddWindow").show_window()
-
+	var add_window = _get_app_root().get_node("%UI_Root/%ModAddWindow")
+	add_window._save_current_window_state()
+	add_window.show_window()
+	add_window._set_popped_out(popped_out)
+	if popped_out:
+		var last_owner = add_window.owner
+		add_window.popout_window.reparent(self)
+		add_window.owner = last_owner
+		add_window.popout_window.exclusive = true
 
 func _update_currently_selected_name():
 	var mods_list_node : ItemList = %ModsList
