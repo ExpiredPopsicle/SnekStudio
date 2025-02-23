@@ -144,8 +144,8 @@ focus_mode = 0
 visible = false
 offset_left = 363.0
 offset_top = 255.0
-offset_right = 641.0
-offset_bottom = 512.0
+offset_right = 841.0
+offset_bottom = 612.0
 
 [node name="ChannelEvents" parent="." instance=ExtResource("7_0a1sx")]
 unique_name_in_owner = true
