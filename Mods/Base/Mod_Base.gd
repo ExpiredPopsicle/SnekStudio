@@ -314,7 +314,7 @@ func update_settings_ui(_ui_window = null):
 			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
 
 ## Override to receive messages from the global mod message API.
-func _handle_global_mod_message(key : String, values : Dictionary):
+func _handle_global_mod_message(_key : String, _values : Dictionary):
 	return
 
 #endregion
@@ -485,9 +485,9 @@ func settings_window_add_boolean(setting_label, setting_name) -> Control:
 	var default_value = get(setting_name)
 
 	var reset_default = Button.new()
-	var reset_default_action = func(default_value):
-		modify_setting(setting_name, default_value)
-		checkbox_widget.set_pressed_no_signal(default_value)
+	var reset_default_action = func(val):
+		modify_setting(setting_name, val)
+		checkbox_widget.set_pressed_no_signal(val)
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
 	reset_default.pressed.connect(
@@ -532,9 +532,9 @@ func settings_window_add_spinbox(
 	var default_value = get(setting_name)
 	
 	var reset_default = Button.new()
-	var reset_default_action = func(default_value):
-		modify_setting(setting_name, default_value)
-		spinbox_widget.set_value_no_signal(default_value)
+	var reset_default_action = func(val):
+		modify_setting(setting_name, val)
+		spinbox_widget.set_value_no_signal(val)
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
 	reset_default.disabled = true
@@ -606,9 +606,9 @@ func settings_window_add_lineedit(
 	var default_value = get(setting_name)
 	
 	var reset_default = Button.new()
-	var reset_default_action = func(default_value):
-		modify_setting(setting_name, default_value)
-		lineedit_widget.set_text(default_value)
+	var reset_default_action = func(val):
+		modify_setting(setting_name, val)
+		lineedit_widget.set_text(val)
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
 	reset_default.pressed.connect(
@@ -658,9 +658,9 @@ func settings_window_add_slider_with_number(
 	default_value = roundf((default_value - min_value) / step) * step + min_value
 	
 	var reset_default = Button.new()
-	var reset_default_action = func(default_value):
-		modify_setting(setting_name, default_value)
-		slider_widget.set_value_no_signal(default_value)
+	var reset_default_action = func(val):
+		modify_setting(setting_name, val)
+		slider_widget.set_value_no_signal(val)
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
 	reset_default.pressed.connect(
@@ -730,9 +730,9 @@ func settings_window_add_selector(
 		selection_widget.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		selection_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		
-		reset_default_action = func(default_value):
-			modify_setting(setting_name, default_value)
-			for value in default_value:
+		reset_default_action = func(val):
+			modify_setting(setting_name, val)
+			for value in val:
 				for idx in selection_widget.item_count:
 					if selection_widget.get_item_text(idx) == value:
 						selection_widget.select(idx)
@@ -745,12 +745,12 @@ func settings_window_add_selector(
 		if allow_multiple:
 			selection_widget.select_mode = ItemList.SELECT_MULTI
 		
-		reset_default_action = func(default_value):
+		reset_default_action = func(val):
 			var single = selection_widget.select_mode != ItemList.SELECT_MULTI
-			modify_setting(setting_name, default_value)
+			modify_setting(setting_name, val)
 			if !single:
 				selection_widget.deselect_all()
-			for value in default_value:
+			for value in val:
 				for idx in selection_widget.item_count:
 					if selection_widget.get_item_text(idx) == value:
 						selection_widget.select(idx, single)
@@ -798,9 +798,9 @@ func settings_window_add_colorpicker(
 	var default_value = get(setting_name)
 	
 	var reset_default = Button.new()
-	var reset_default_action = func(default_value):
-		modify_setting(setting_name, default_value)
-		colorpicker_widget.set_pick_color(default_value)
+	var reset_default_action = func(val):
+		modify_setting(setting_name, val)
+		colorpicker_widget.set_pick_color(val)
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
 	reset_default.pressed.connect(
@@ -847,9 +847,9 @@ func settings_window_add_vector3(
 	var default_value = get(setting_name)
 	
 	var reset_default = Button.new()
-	var reset_default_action = func(default_value):
-		modify_setting(setting_name, default_value)
-		vec3_widget.set_value_no_signal(default_value)
+	var reset_default_action = func(val):
+		modify_setting(setting_name, val)
+		vec3_widget.set_value_no_signal(val)
 	reset_default.text = defaults_text_get_rid_of_me
 	reset_default.flat = true
 	reset_default.pressed.connect(

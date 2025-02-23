@@ -83,8 +83,8 @@ func get_skeleton() -> Skeleton3D:
 	var secondary = $Model.get_node("secondary")
 	if secondary:
 		if secondary is VRMSecondary:
-			var skeleton : Skeleton3D = secondary.get_node(secondary.skeleton)
-			return skeleton
+			var skeleton2 : Skeleton3D = secondary.get_node(secondary.skeleton)
+			return skeleton2
 
 	# Buggy fallback.
 	var skeleton = get_model().find_child("GeneralSkeleton", true, false)
@@ -162,8 +162,6 @@ func reset_skeleton_to_rest_pose() -> void:
 ## Reset all the blend shapes to their neutral state.
 func reset_blend_shapes() -> void:
 	var anim_player : AnimationPlayer = $Model.find_child("AnimationPlayer", false, false)
-	var anim_list : PackedStringArray = anim_player.get_animation_list()
-	var anim_root = anim_player.get_node(anim_player.root_node)
 
 	anim_player.play("RESET")
 	anim_player.advance(0)

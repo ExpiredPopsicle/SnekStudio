@@ -22,5 +22,5 @@ func settings_changed_from_ui() -> void:
 # ------------------------------------------------------------------------------
 # Signals from various widgets indicating something has changed
 
-func _on_basic_slider_with_number_camera_fov_value_changed(value: Variant) -> void:
+func _on_basic_slider_with_number_camera_fov_value_changed(_value: Variant) -> void:
 	settings_changed_from_ui()

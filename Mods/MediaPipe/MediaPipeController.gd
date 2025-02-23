@@ -715,7 +715,6 @@ func _setup_ik_chains():
 			
 			# Keep looking and see if we can find something beyond the most
 			# distant bone.
-			var search_past_finger_tips_for_bones : bool = true
 			while true:
 				var child_bones : PackedInt32Array = chain_finger.skeleton.get_bone_children(
 					chain_finger.skeleton.find_bone(chain_finger.tip_bone))
@@ -892,7 +891,6 @@ func mirror_parsed_data(parsed_data : Dictionary) -> Dictionary:
 	# Now, swap the values.
 	for hand_name in [ "left", "right" ]:
 		
-		var hand_score_str = "hand_" + hand_name + "_score"
 		var hand_rotation_str = "hand_" + hand_name + "_rotation"
 		var hand_origin_str = "hand_" + hand_name + "_origin"
 		var hand_landmark_str = "hand_landmarks_" + hand_name 
