@@ -7,6 +7,7 @@
 offset_right = 389.0
 offset_bottom = 251.0
 script = ExtResource("2_aj25v")
+label_text = "Add Mod"
 
 [node name="WindowTitlePanel" parent="." index="1"]
 grow_horizontal = 2
