@@ -70,7 +70,7 @@ func _find_child():
 
 func _on_resized() -> void:
 	var current_title_size = $WindowTitlePanel.size
-	$WindowTitlePanel.size = Vector2(size[0], current_title_size[1])
+	$WindowTitlePanel.set_deferred("size", Vector2(size[0], current_title_size[1]))
 	$WindowTitlePanel/WindowTitle.size.x = \
 		$WindowTitlePanel.size.x - \
 		2 * $WindowTitlePanel/WindowTitle.position.x
@@ -309,10 +309,10 @@ func _get_app_root():
 func serialize_window() -> Dictionary:
 	return {}
 
-func deserialize_window(dict: Dictionary) -> void:
+func deserialize_window(_dict: Dictionary) -> void:
 	pass
 
-func popout_state_changing(pop_out: bool) -> void:
+func popout_state_changing(_pop_out: bool) -> void:
 	pass
 
 #endregion

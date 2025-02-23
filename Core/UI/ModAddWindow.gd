@@ -58,7 +58,7 @@ func _on_button_add_mod_pressed() -> void:
 func _on_button_cancel_pressed():
 	hide()
 
-func _on_mods_list_item_selected(index: int) -> void:
+func _on_mods_list_item_selected(_index: int) -> void:
 
 	# Fill in the description field for the selection, or leave it blank if
 	# nothing is selected.

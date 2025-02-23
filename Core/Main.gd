@@ -601,7 +601,6 @@ func load_vrm(path) -> bool:
 		return false
 
 	# Load colliders list
-	var model_base_name : String = _get_current_model_base_name()
 	var collider_data : Array = get_colliders(true)
 
 	# Clear "from_vrm" from everything loaded because we'll correlate
