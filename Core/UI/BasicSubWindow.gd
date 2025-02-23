@@ -507,13 +507,15 @@ func _set_popped_out(pop_out: bool) -> void:
 		set_offset(SIDE_TOP, 0)
 		set_offset(SIDE_BOTTOM, 0)
 		set_offset(SIDE_RIGHT, 0)
-		position = embed_window_pos
-		size = embed_window_size
 
 		# ---------------------------------------
 		# Reparent to UI root
 
 		reparent(ui_root)
+
+		if embed_window_pos != Vector2(0, 0) && embed_window_size != Vector2(0, 0):
+			position = embed_window_pos
+			size = embed_window_size
 
 		# ---------------------------------------
 		# Free popout window
