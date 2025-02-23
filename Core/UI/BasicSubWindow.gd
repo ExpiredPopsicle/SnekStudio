@@ -16,6 +16,7 @@ var embed_window_pos: Vector2 = Vector2(0, 0)
 var embed_window_size: Vector2 = Vector2(0, 0)
 var popout_window_pos: Vector2i = Vector2i(0, 0)
 var popout_window_size: Vector2i = Vector2i(0, 0)
+var popout_modal: bool = false
 
 # Native window if popped out
 var popout_window: Window = null
@@ -398,22 +399,25 @@ func _set_popped_out(pop_out: bool) -> void:
 	popped_out = pop_out
 
 	if pop_out:
+		var colorrect: ColorRect = null
+
 		# ---------------------------------------
 		# Create menu bar
 
-		var colorrect = ColorRect.new()
-		colorrect.color = Color.BLACK
-		colorrect.custom_minimum_size = Vector2(0, 32)
+		if !popout_modal:
+			colorrect = ColorRect.new()
+			colorrect.color = Color.BLACK
+			colorrect.custom_minimum_size = Vector2(0, 32)
 
-		var hboxcontainer = HBoxContainer.new()
-		var popin_button = Button.new()
-		popin_button.text = "Pop in"
-		popin_button.focus_mode = Control.FOCUS_NONE
-		popin_button.flat = true
-		popin_button.pressed.connect(_on_popin_button_pressed)
+			var hboxcontainer = HBoxContainer.new()
+			var popin_button = Button.new()
+			popin_button.text = "Pop in"
+			popin_button.focus_mode = Control.FOCUS_NONE
+			popin_button.flat = true
+			popin_button.pressed.connect(_on_popin_button_pressed)
 
-		hboxcontainer.add_child(popin_button)
-		colorrect.add_child(hboxcontainer)
+			hboxcontainer.add_child(popin_button)
+			colorrect.add_child(hboxcontainer)
 
 		# ---------------------------------------
 		# Create native window
@@ -465,7 +469,8 @@ func _set_popped_out(pop_out: bool) -> void:
 
 		var container = VBoxContainer.new()
 		container.set_anchors_preset(Control.PRESET_FULL_RECT)
-		container.add_child(colorrect)
+		if colorrect != null:
+			container.add_child(colorrect)
 		container.add_child(bare_control)
 
 		popout_window.add_child(container)

@@ -4,7 +4,7 @@ var _mods_list = []
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-
+	popout_modal = true
 	_get_app_root()._load_mods()
 
 	var mod_scene_files : PackedStringArray
@@ -42,8 +42,7 @@ func _ready() -> void:
 		%Mods_List.add_item(mod_entry["name"])
 
 func _get_mods_node():
-	# FIXME: Make a better way to get this data.
-	return get_node("../../../Mods")
+	return _get_app_root().get_node("%Mods")
 
 func _on_button_add_mod_pressed() -> void:
 
@@ -56,7 +55,7 @@ func _on_button_add_mod_pressed() -> void:
 		%ModsWindow.update_mods_list()
 
 func _on_button_cancel_pressed():
-	hide()
+	close_window()
 
 func _on_mods_list_item_selected(index: int) -> void:
 
