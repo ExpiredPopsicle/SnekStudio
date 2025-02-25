@@ -64,12 +64,15 @@ func _gui_input(event):
 				dragging_camera = true
 			else:
 				dragging_camera = false
+			get_viewport().set_input_as_handled()
 		
 		if event.pressed:
 			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 				camera_boom.zoom_camera(zoom_scale)
+				get_viewport().set_input_as_handled()
 			if event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				camera_boom.zoom_camera(-zoom_scale)
+				get_viewport().set_input_as_handled()
 
 	if event is InputEventMouseMotion:
 		if dragging_camera:
