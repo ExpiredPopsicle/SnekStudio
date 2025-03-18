@@ -42,11 +42,9 @@ offset_bottom = 28.52
 layout_mode = 2
 
 [node name="File" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar"]
-title = "acsdcscsc"
 size = Vector2i(145, 124)
 item_count = 6
 item_0/text = "Open VRM..."
-item_0/id = 0
 item_1/id = 5
 item_1/separator = true
 item_2/text = "Save settings..."
@@ -62,7 +60,6 @@ item_5/id = 1
 size = Vector2i(176, 100)
 item_count = 5
 item_0/text = "General settings..."
-item_0/id = 0
 item_1/text = "Colliders..."
 item_1/id = 1
 item_2/text = "Sound..."
@@ -75,7 +72,6 @@ item_4/id = 4
 [node name="Modules" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar"]
 item_count = 2
 item_0/text = "Mod list..."
-item_0/id = 0
 item_1/text = "Channel Event Tester..."
 item_1/id = 1
 
@@ -89,7 +85,6 @@ layout_mode = 2
 [node name="Help" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar2"]
 item_count = 2
 item_0/text = "Controls..."
-item_0/id = 0
 item_1/text = "About..."
 item_1/id = 1
 
