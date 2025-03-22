@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cwt2oqwri2i5y"]
 
-[ext_resource type="Script" path="res://Core/UI/BasicSliderWithNumber.gd" id="1_7a0iy"]
+[ext_resource type="Script" uid="uid://ci1ok1nxwe03a" path="res://Core/UI/BasicSliderWithNumber.gd" id="1_7a0iy"]
 
 [node name="BasicSliderWithNumber" type="HBoxContainer"]
 anchors_preset = -1

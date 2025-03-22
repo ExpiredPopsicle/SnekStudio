@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c6e15slpt0o7x"]
 
-[ext_resource type="Script" path="res://Core/UI/SettingsWindowGroup.gd" id="1_2cmcf"]
+[ext_resource type="Script" uid="uid://dex3x1r7i8yqy" path="res://Core/UI/SettingsWindowGroup.gd" id="1_2cmcf"]
 
 [node name="SettingsWindowGroup" type="PanelContainer"]
 offset_right = 169.0

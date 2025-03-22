@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://deopl3p3blrra"]
 
-[ext_resource type="Script" path="res://Core/UI/VectorSettingWidget.gd" id="1_a0wdn"]
+[ext_resource type="Script" uid="uid://gpi80m4xwr8n" path="res://Core/UI/VectorSettingWidget.gd" id="1_a0wdn"]
 
 [node name="VectorSettingWidget" type="HBoxContainer"]
 script = ExtResource("1_a0wdn")

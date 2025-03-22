@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://c2wap5df10scn"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_uy3rq"]
-[ext_resource type="Script" path="res://Core/UI/SettingsWindow_ChannelEvents.gd" id="2_q1o80"]
+[ext_resource type="Script" uid="uid://dq7riqbyu30br" path="res://Core/UI/SettingsWindow_ChannelEvents.gd" id="2_q1o80"]
 
 [node name="ChannelEvents" instance=ExtResource("1_uy3rq")]
 offset_right = 518.0

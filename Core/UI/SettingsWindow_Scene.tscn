@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://kxrsf0p1se2x"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_btiov"]
-[ext_resource type="Script" path="res://Core/UI/SettingsWindow_Scene.gd" id="2_d1a2w"]
+[ext_resource type="Script" uid="uid://bwvka7mkevlcg" path="res://Core/UI/SettingsWindow_Scene.gd" id="2_d1a2w"]
 
 [node name="SettingsWindow_Lighting" instance=ExtResource("1_btiov")]
 offset_right = 618.0

@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b37crjvwbb74a"]
 
-[ext_resource type="Script" path="res://Tests/TestLoadImportFiles.gd" id="1_oeuxu"]
+[ext_resource type="Script" uid="uid://bqn2aubc3sm3l" path="res://Tests/TestLoadImportFiles.gd" id="1_oeuxu"]
 
 [node name="TestLoadImportFiles" type="Control"]
 layout_mode = 3

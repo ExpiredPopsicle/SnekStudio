@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://fhm0lw7jf81x" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject.tscn" id="1_axtt2"]
 [ext_resource type="AudioStream" uid="uid://ck6s4l8wot1fp" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_Sound_HitHurt2.wav" id="2_2jux5"]
-[ext_resource type="Shader" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteShader.gdshader" id="3_h1817"]
+[ext_resource type="Shader" uid="uid://bk88vaf1p35ef" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteShader.gdshader" id="3_h1817"]
 [ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="4_3ouj7"]
 [ext_resource type="PackedScene" uid="uid://u3lguri8fcg5" path="res://Mods/ThrownObjects/Objects/GPU/GPU5.glb" id="5_27baa"]
 
@@ -13,9 +13,9 @@ size = Vector3(0.343507, 0.0322129, 0.0857495)
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("3_h1817")
-shader_parameter/rotation = null
-shader_parameter/uniform_scale = 1.0
 shader_parameter/texture_albedo = ExtResource("4_3ouj7")
+shader_parameter/rotation = 0.0
+shader_parameter/uniform_scale = 1.0
 
 [node name="ThrownObject_GPU" instance=ExtResource("1_axtt2")]
 collision_sound = ExtResource("2_2jux5")

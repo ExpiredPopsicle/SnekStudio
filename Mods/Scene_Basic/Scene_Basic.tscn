@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://bgoav4n60htm2"]
 
-[ext_resource type="Script" path="res://Mods/Scene_Basic/Scene_Basic.gd" id="1_qx82q"]
+[ext_resource type="Script" uid="uid://7quu5svg8jeg" path="res://Mods/Scene_Basic/Scene_Basic.gd" id="1_qx82q"]
 [ext_resource type="Material" uid="uid://bi00jwt1yfcby" path="res://Core/Materials/TriplanarGridMaterial.tres" id="2_udkp6"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_wvywh"]

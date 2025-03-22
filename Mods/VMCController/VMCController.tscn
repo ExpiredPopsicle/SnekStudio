@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://csepmx8e2i1ws"]
 
-[ext_resource type="Script" path="res://Mods/VMCController/VMCController.gd" id="1_je8hp"]
-[ext_resource type="Script" path="res://Mods/VMCController/KiriOSC/KiriOSCServer.gd" id="2_6yow6"]
+[ext_resource type="Script" uid="uid://d27xgmm73kahu" path="res://Mods/VMCController/VMCController.gd" id="1_je8hp"]
+[ext_resource type="Script" uid="uid://csrri2vhxv4w5" path="res://Mods/VMCController/KiriOSC/KiriOSC.gd" id="2_6yow6"]
 
 [node name="VMCController" type="Node"]
 script = ExtResource("1_je8hp")

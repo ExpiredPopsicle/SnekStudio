@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_twewb"]
 [ext_resource type="Texture2D" uid="uid://bkrrv568qmxc6" path="res://Core/UI/Images/logo_small.svg" id="2_hgb31"]
-[ext_resource type="Script" path="res://Core/UI/HelpAboutWindow_NameAndVersion.gd" id="4_3xs7y"]
+[ext_resource type="Script" uid="uid://ckoef17duyvvl" path="res://Core/UI/HelpAboutWindow_NameAndVersion.gd" id="4_3xs7y"]
 
 [node name="HelpAboutWindow" instance=ExtResource("1_twewb")]
 offset_right = 442.0

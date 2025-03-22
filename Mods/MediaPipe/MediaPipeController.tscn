@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://djb3ljwrnc87k"]
 
-[ext_resource type="Script" path="res://Mods/MediaPipe/MediaPipeController.gd" id="1_swir5"]
+[ext_resource type="Script" uid="uid://c5xoidvee8x5o" path="res://Mods/MediaPipe/MediaPipeController.gd" id="1_swir5"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_lqc5h"]
 size = Vector3(0.2, 0.2, 0.2)

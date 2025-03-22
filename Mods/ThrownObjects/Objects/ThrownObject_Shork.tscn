@@ -3,7 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://fhm0lw7jf81x" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject.tscn" id="1_8yele"]
 [ext_resource type="AudioStream" uid="uid://ck6s4l8wot1fp" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_Sound_HitHurt2.wav" id="2_0ts3g"]
 [ext_resource type="PackedScene" uid="uid://imivwlheemct" path="res://Mods/ThrownObjects/Objects/Shork/shork.glb" id="2_sk53b"]
-[ext_resource type="Shader" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteShader.gdshader" id="3_fveor"]
+[ext_resource type="Shader" uid="uid://bk88vaf1p35ef" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteShader.gdshader" id="3_fveor"]
 [ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="4_sojs2"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_kgaga"]
@@ -14,9 +14,9 @@ height = 0.92
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("3_fveor")
-shader_parameter/rotation = null
-shader_parameter/uniform_scale = 1.0
 shader_parameter/texture_albedo = ExtResource("4_sojs2")
+shader_parameter/rotation = 0.0
+shader_parameter/uniform_scale = 1.0
 
 [node name="ThrownObject" instance=ExtResource("1_8yele")]
 sticky = false

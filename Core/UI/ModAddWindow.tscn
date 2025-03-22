@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://ixbpqyxh3wjq"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_m4xge"]
-[ext_resource type="Script" path="res://Core/UI/ModAddWindow.gd" id="2_aj25v"]
+[ext_resource type="Script" uid="uid://dmtwvshpmxx1q" path="res://Core/UI/ModAddWindow.gd" id="2_aj25v"]
 
 [node name="ModAddWindow" instance=ExtResource("1_m4xge")]
 offset_right = 389.0
