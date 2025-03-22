@@ -254,7 +254,7 @@ func reset_settings_to_default() -> void:
 	colliders_by_model_name = {}
 
 	# Reset model to default.
-	load_vrm("res://SampleModels/VRM/samplesnek15b.vrm")
+	load_vrm("res://SampleModels/VRM/samplesnek_mediapipe_16.vrm")
 
 	# Clear mods list.
 	var mods_to_delete = $Mods.get_children()
@@ -562,7 +562,7 @@ func load_settings(path : String = ""):
 				"mirror_mode": true,
 				"tracking_pause": false,
 				"use_mediapipe_shapes": true,
-				"use_vrm_basic_shapes": false,
+				"use_vrm_basic_shapes": true,
 				"video_device": []
 				}
 			},
@@ -578,6 +578,11 @@ func load_settings(path : String = ""):
 				"light_directional_pitch": -37.8007940368435,
 				"light_directional_yaw": 36.680506409178
 				}
+			},
+			{
+				"name": "AnimationApplier",
+				"scene_path": "res://Mods/AnimationApplier/AnimationApplier.tscn",
+				"settings": { }
 			}
 		]}
 

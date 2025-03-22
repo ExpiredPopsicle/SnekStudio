@@ -163,6 +163,7 @@ func reset_skeleton_to_rest_pose() -> void:
 func reset_blend_shapes() -> void:
 	var anim_player : AnimationPlayer = $Model.find_child("AnimationPlayer", false, false)
 
+	# FIXME: This is having issues in 4.4.
 	anim_player.play("RESET")
 	anim_player.advance(0)
 	anim_player.stop()

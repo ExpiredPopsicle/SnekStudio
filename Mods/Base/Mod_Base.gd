@@ -317,6 +317,10 @@ func update_settings_ui(_ui_window = null):
 func _handle_global_mod_message(_key : String, _values : Dictionary):
 	return
 
+## Return a list of errors or warnings indicating that the mod may have issues.
+func check_configuration() -> PackedStringArray:
+	return []
+
 #endregion
 
 # -----------------------------------------------------------------------------
@@ -454,7 +458,7 @@ func get_global_mod_data(key : String) -> Dictionary:
 	var app : Node = get_app()
 	if key in app.module_global_data:
 		return app.module_global_data[key]
-	app.module_data[key] = {}
+	app.module_global_data[key] = {}
 	return app.module_global_data[key]
 
 func send_global_mod_message(key : String, values : Dictionary, skip_current : bool = true):
@@ -462,6 +466,55 @@ func send_global_mod_message(key : String, values : Dictionary, skip_current : b
 	for mod in mods_container.get_children():
 		if mod != self or not skip_current:
 			mod._handle_global_mod_message(key, values)
+
+## Check whether a required mod comes before or after this mod.
+##
+## If should_come_after is set to true, the named mod must appear after this
+## mod. This is useful in situations like requiring AnimationApplier for
+## animations to be applied from a MediaPipeController module, which generates
+## the blend shapes.
+func check_mod_dependency(
+	mod_or_classname_before : Variant,
+	should_come_after : bool = false) -> bool:
+
+	var found_me : bool = false
+
+	for child in get_parent().get_children():
+
+		if child == self:
+			found_me = true
+
+		# Is this our target? Match typename and exact reference.
+		var found_target : bool = false
+		if mod_or_classname_before is String:
+			# FIXME: This won't match child classes of the named class.
+			if child.get_script().get_global_name() == mod_or_classname_before:
+				found_target = true
+			pass
+		elif mod_or_classname_before == child:
+			found_target = true
+
+		if found_target:
+			if found_me:
+
+				# Found myself already, I can act as a dependency for this.
+				if should_come_after:
+					return true
+
+				# Found myself already, so this won't work as a dependency.
+				return false
+
+			if should_come_after:
+				# Did not find myself yet, but did find this, meaning that I
+				# cannot act as a dependency to it.
+				return false
+			else:
+				# Did not find myself yet, but did find this, meaning that it
+				# will act as a dependency.
+				return true
+
+	# Did not find the mod at all.
+	return false
 
 #endregion
 
