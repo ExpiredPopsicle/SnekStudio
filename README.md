@@ -27,7 +27,7 @@ using a copy of the Godot editor.
    If you didn't do the `--recursive` parameter, then you'll have to do
    `git submodule init` and `git submodule update` inside the repo.
 
-2. Open the project up in Godot 4.3.
+2. Open the project up in Godot 4.4.
 
 3. Download the latest Python Standalone Build.
 
@@ -65,27 +65,17 @@ using a copy of the Godot editor.
    Sometimes there will be duplicate devices. If the one you want doesn't
    work, try the duplicate.
 
-8. Select blend shapes mode.
-
-   If your VRM supports the 50-something extra blend shapes (the
-   "Perfect Sync" blend shapes, ARKit blend shapes, MediaPipe blend
-   shapes, etc), then make sure "Use MediaPipe Shapes" is checked and
-   "Use basic VRM shapes" is un-checked.
-
-   If your VRM does NOT support those, then make sure "Use MediaPipe
-   Shapes" is un-checked and "Use basic VRM shapes" is checked.
-
-9. Set arm rest angle.
+8. Set arm rest angle.
 
    After this, you can close the Mods settings.
 
-10. Set the window to transparent, if desired.
+9. Set the window to transparent, if desired.
 
 	Settings -> Window... -> Transparent background
 
 	Should work with OBS Xcomposite capture.
 
-11. (Optional) Set up colliders and then thrown object redeems.
+10. (Optional) Set up colliders and then thrown object redeems.
 
 	Note: Thrown objects will not work without colliders.
 
