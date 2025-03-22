@@ -12,14 +12,34 @@ func show_window():
 	super.show_window()
 	_update_log_text()
 
+func _process(delta: float) -> void:
+	_update_error_list()
+
+func _update_error_list():
+
+	var full_error_list : PackedStringArray = []
+	var mods : Node = _get_mods_node()
+	for mod in mods.get_children():
+		var new_warnings : Array = mod.check_configuration()
+		for new_warning : String in new_warnings:
+			full_error_list.append(mod.get_name() + ": " + new_warning)
+
+	if len(full_error_list):
+		%ModWarningsLabel.show()
+		%ModWarningsLabel.text = "Errors:\n" + "\n".join(full_error_list)
+	else:
+		%ModWarningsLabel.hide()
+		%ModWarningsLabel.text = ""
+
 # FIXME: Kind of a hack until we figure out how to correctly update the pointer
 #   when mods are removed.
 func _get_selected_mod() -> Node:
 	var mods_node : Node = _get_mods_node()
-	if mods_node:
-		if _selected_mod in mods_node.get_children():
-			if is_instance_valid(_selected_mod):
-				return _selected_mod
+	if is_instance_valid(_selected_mod):
+		if mods_node:
+			if _selected_mod in mods_node.get_children():
+				if is_instance_valid(_selected_mod):
+					return _selected_mod
 	return null
 
 func _update_status_text_for_mod(mod):
@@ -127,13 +147,14 @@ func update_mods_list():
 
 func _ready():
 	# Save default values for both popout and embedded splitter offsets
-	popout_mod_list_offset = $HSplitContainer.split_offset
-	popout_mod_status_offset = $HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
-	embed_mod_list_offset = $HSplitContainer.split_offset
-	embed_mod_status_offset = $HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
+	popout_mod_list_offset = $VBoxContainer3/HSplitContainer.split_offset
+	popout_mod_status_offset = $VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
+	embed_mod_list_offset = $VBoxContainer3/HSplitContainer.split_offset
+	embed_mod_status_offset = $VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
 
 	register_serializable_subwindow()
 	update_mods_list()
+	_update_error_list()
 
 func _swap_adjacent_mods(index1, index2):
 
@@ -148,7 +169,7 @@ func _swap_adjacent_mods(index1, index2):
 		mods_node.move_child(mods_node.get_child(index1), index2)
 	else:
 		mods_node.move_child(mods_node.get_child(index2), index1)
-		
+
 func _on_button_move_mod_up_pressed():
 	var mods_list_node : ItemList = %ModsList
 	var selected_item = mods_list_node.get_selected_items()
@@ -225,19 +246,19 @@ func _on_text_edit_mod_name_focus_exited():
 
 func save_current_splitter_offsets() -> void:
 	if popped_out:
-		popout_mod_list_offset = $HSplitContainer.split_offset
-		popout_mod_status_offset = $HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
+		popout_mod_list_offset = $VBoxContainer3/HSplitContainer.split_offset
+		popout_mod_status_offset = $VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
 	else:
-		embed_mod_list_offset = $HSplitContainer.split_offset
-		embed_mod_status_offset = $HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
+		embed_mod_list_offset = $VBoxContainer3/HSplitContainer.split_offset
+		embed_mod_status_offset = $VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
 
 func load_splitter_offsets(pop_out: bool) -> void:
 	if pop_out:
-		$HSplitContainer.split_offset = popout_mod_list_offset
-		$HSplitContainer/VBoxContainer2/VSplitContainer.split_offset = popout_mod_status_offset
+		$VBoxContainer3/HSplitContainer.split_offset = popout_mod_list_offset
+		$VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer.split_offset = popout_mod_status_offset
 	else:
-		$HSplitContainer.split_offset = embed_mod_list_offset
-		$HSplitContainer/VBoxContainer2/VSplitContainer.split_offset = embed_mod_status_offset
+		$VBoxContainer3/HSplitContainer.split_offset = embed_mod_list_offset
+		$VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer.split_offset = embed_mod_status_offset
 
 func popout_state_changing(pop_out: bool) -> void:
 	if pop_out != popped_out:

@@ -4,8 +4,8 @@
 [ext_resource type="Script" uid="uid://cm8xoe1t5ldah" path="res://Core/UI/ModsWindow.gd" id="2_whal8"]
 
 [node name="ModsWindow" instance=ExtResource("1_sdail")]
-offset_right = 563.0
-offset_bottom = 380.0
+offset_right = 569.0
+offset_bottom = 382.0
 script = ExtResource("2_whal8")
 label_text = "Mods"
 
@@ -16,25 +16,27 @@ offset_right = 563.0
 offset_right = 531.0
 text = "Mods"
 
-[node name="HSplitContainer" type="HSplitContainer" parent="." index="2"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="VBoxContainer3" type="VBoxContainer" parent="." index="2"]
+layout_mode = 2
+offset_right = 569.0
+offset_bottom = 382.0
+size_flags_horizontal = 3
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer3" index="0"]
+layout_mode = 2
+size_flags_vertical = 3
 split_offset = -123
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer" index="0"]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer3/HSplitContainer" index="0"]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 
-[node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer/VBoxContainer" index="0"]
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer3/HSplitContainer/VBoxContainer" index="0"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="ModsList" type="ItemList" parent="HSplitContainer/VBoxContainer/ScrollContainer" index="0"]
+[node name="ModsList" type="ItemList" parent="VBoxContainer3/HSplitContainer/VBoxContainer/ScrollContainer" index="0"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -44,73 +46,74 @@ item_0/text = "dfsdvsdfv"
 item_1/text = "asdcsdcas"
 item_2/text = "ascsdcs"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/VBoxContainer" index="1"]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer3/HSplitContainer/VBoxContainer" index="1"]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/VBoxContainer/VBoxContainer" index="0"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer3/HSplitContainer/VBoxContainer/VBoxContainer" index="0"]
 layout_mode = 2
 size_flags_vertical = 8
 
-[node name="Button_MoveModUp" type="Button" parent="HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer" index="0"]
+[node name="Button_MoveModUp" type="Button" parent="VBoxContainer3/HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer" index="0"]
 custom_minimum_size = Vector2(32, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "↑"
 
-[node name="Button_MoveModDown" type="Button" parent="HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer" index="1"]
+[node name="Button_MoveModDown" type="Button" parent="VBoxContainer3/HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer" index="1"]
 custom_minimum_size = Vector2(32, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "↓"
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="HSplitContainer/VBoxContainer/VBoxContainer" index="1"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer3/HSplitContainer/VBoxContainer/VBoxContainer" index="1"]
 layout_mode = 2
 
-[node name="Button_AddMod" type="Button" parent="HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer2" index="0"]
+[node name="Button_AddMod" type="Button" parent="VBoxContainer3/HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer2" index="0"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Add"
 
-[node name="Button_RemoveMod" type="Button" parent="HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer2" index="1"]
+[node name="Button_RemoveMod" type="Button" parent="VBoxContainer3/HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer2" index="1"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Remove"
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="HSplitContainer" index="1"]
+[node name="VBoxContainer2" type="VBoxContainer" parent="VBoxContainer3/HSplitContainer" index="1"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TextEdit_ModName" type="LineEdit" parent="HSplitContainer/VBoxContainer2" index="0"]
+[node name="TextEdit_ModName" type="LineEdit" parent="VBoxContainer3/HSplitContainer/VBoxContainer2" index="0"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 placeholder_text = "Mod instance name"
 
-[node name="VSplitContainer" type="VSplitContainer" parent="HSplitContainer/VBoxContainer2" index="1"]
+[node name="VSplitContainer" type="VSplitContainer" parent="VBoxContainer3/HSplitContainer/VBoxContainer2" index="1"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Mods_Settings_Panel" type="ScrollContainer" parent="HSplitContainer/VBoxContainer2/VSplitContainer" index="0"]
+[node name="Mods_Settings_Panel" type="ScrollContainer" parent="VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer" index="0"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="HSplitContainer/VBoxContainer2/VSplitContainer/Mods_Settings_Panel" index="0"]
+[node name="Label" type="Label" parent="VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer/Mods_Settings_Panel" index="0"]
 layout_mode = 2
 text = "sdcsdasdvdfdfvsdfnvdsfmkvdfjvkmdfv 
 "
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/VBoxContainer2/VSplitContainer" index="1"]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer" index="1"]
+visible = false
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 
-[node name="LineEdit_ModStatus" type="LineEdit" parent="HSplitContainer/VBoxContainer2/VSplitContainer/VBoxContainer" index="0"]
+[node name="LineEdit_ModStatus" type="LineEdit" parent="VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer/VBoxContainer" index="0"]
 unique_name_in_owner = true
 layout_mode = 2
 editable = false
 
-[node name="TextEdit_ModLog" type="TextEdit" parent="HSplitContainer/VBoxContainer2/VSplitContainer/VBoxContainer" index="1"]
+[node name="TextEdit_ModLog" type="TextEdit" parent="VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer/VBoxContainer" index="1"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
@@ -118,10 +121,17 @@ text = "dfvdfvdfvd
 "
 editable = false
 
-[connection signal="item_selected" from="HSplitContainer/VBoxContainer/ScrollContainer/ModsList" to="." method="_on_mods_list_item_selected"]
-[connection signal="pressed" from="HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer/Button_MoveModUp" to="." method="_on_button_move_mod_up_pressed"]
-[connection signal="pressed" from="HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer/Button_MoveModDown" to="." method="_on_button_move_mod_down_pressed"]
-[connection signal="pressed" from="HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer2/Button_AddMod" to="." method="_on_button_add_mod_pressed"]
-[connection signal="pressed" from="HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer2/Button_RemoveMod" to="." method="_on_button_remove_mod_pressed"]
-[connection signal="focus_exited" from="HSplitContainer/VBoxContainer2/TextEdit_ModName" to="." method="_on_text_edit_mod_name_focus_exited"]
-[connection signal="gui_input" from="HSplitContainer/VBoxContainer2/TextEdit_ModName" to="." method="_on_text_edit_mod_name_gui_input"]
+[node name="ModWarningsLabel" type="Label" parent="VBoxContainer3" index="1"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+text = "OK: No warnings detected!"
+autowrap_mode = 1
+
+[connection signal="item_selected" from="VBoxContainer3/HSplitContainer/VBoxContainer/ScrollContainer/ModsList" to="." method="_on_mods_list_item_selected"]
+[connection signal="pressed" from="VBoxContainer3/HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer/Button_MoveModUp" to="." method="_on_button_move_mod_up_pressed"]
+[connection signal="pressed" from="VBoxContainer3/HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer/Button_MoveModDown" to="." method="_on_button_move_mod_down_pressed"]
+[connection signal="pressed" from="VBoxContainer3/HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer2/Button_AddMod" to="." method="_on_button_add_mod_pressed"]
+[connection signal="pressed" from="VBoxContainer3/HSplitContainer/VBoxContainer/VBoxContainer/HBoxContainer2/Button_RemoveMod" to="." method="_on_button_remove_mod_pressed"]
+[connection signal="focus_exited" from="VBoxContainer3/HSplitContainer/VBoxContainer2/TextEdit_ModName" to="." method="_on_text_edit_mod_name_focus_exited"]
+[connection signal="gui_input" from="VBoxContainer3/HSplitContainer/VBoxContainer2/TextEdit_ModName" to="." method="_on_text_edit_mod_name_gui_input"]

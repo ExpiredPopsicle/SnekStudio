@@ -86,6 +86,10 @@ func _on_resized() -> void:
 		child.set_size(size)
 		child.position = Vector2(0.0, 0.0)
 
+@export_tool_button("Fix header")
+var _fix_header_button : Callable = func():
+	_on_resized()
+
 func _get_minimum_size():
 	var expected_minimum_size = Vector2(64, 64)
 	var child = _find_child()

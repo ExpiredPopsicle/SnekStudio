@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dqrrd52v1nc6j"]
+
+[ext_resource type="Script" uid="uid://bbjbk6sgmpi82" path="res://Mods/AnimationApplier/AnimationApplier.gd" id="1_w4n1e"]
+
+[node name="AnimationApplier" type="Node"]
+script = ExtResource("1_w4n1e")
+metadata/_custom_type_script = "uid://bsjotf2wtnmeq"

@@ -134,7 +134,9 @@ class MediaPipeTracker:
                 self._write_log("Video device acquired")
             else:
                 self.video_device_capture = None
-                self._write_log("Failed to open video device: %s" % str(self.video_device_index))
+                error_string = "Failed to open video device: %s" % str(self.video_device_index)
+                self._write_log(error_string)
+                self._send_error_packet(error_string)
 
     def _init_mediapipe(self):
 
@@ -208,6 +210,14 @@ class MediaPipeTracker:
 
         output_data = {
             "status" : status_str
+        };
+        output_data_json = json.dumps(output_data, indent=4).encode("utf-8")
+        self._udp_socket.sendto(output_data_json, ("127.0.0.1", self.udp_port_number))
+
+    def _send_error_packet(self, error_string):
+
+        output_data = {
+            "error" : error_string
         };
         output_data_json = json.dumps(output_data, indent=4).encode("utf-8")
         self._udp_socket.sendto(output_data_json, ("127.0.0.1", self.udp_port_number))
@@ -497,7 +507,14 @@ class MediaPipeTracker:
                     time.sleep(time_to_sleep)
 
                 # If the video device got disconnected, reconnect it.
-                self._open_video_device()
+                try:
+                    self._open_video_device()
+                except Exception as e:
+                    # We're going to ignore failures to open the
+                    # device on this thread, so the thread keeps
+                    # going, and the hosting application can still
+                    # switch it on the main thread.
+                    pass
 
                 with self.the_big_ugly_mutex:
 
@@ -634,7 +651,8 @@ class MediaPipeTracker:
                         # self._write_log(status_packet_str)
 
                         # Output the packet.
-                        self._udp_socket.sendto(output_data_json, ("127.0.0.1", self.udp_port_number))
+                        if self.video_device_capture:
+                            self._udp_socket.sendto(output_data_json, ("127.0.0.1", self.udp_port_number))
 
             self._write_log("Quitting")
 
