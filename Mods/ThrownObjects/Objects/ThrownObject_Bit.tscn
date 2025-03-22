@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://b50onfq3ntsdu"]
 
 [ext_resource type="PackedScene" uid="uid://fhm0lw7jf81x" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject.tscn" id="1_yp0os"]
-[ext_resource type="Shader" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteShader.gdshader" id="2_5eljo"]
+[ext_resource type="Shader" uid="uid://bk88vaf1p35ef" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteShader.gdshader" id="2_5eljo"]
 [ext_resource type="AudioStream" uid="uid://ba4naexox531o" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_Sound_Coin.wav" id="2_vsmwv"]
 [ext_resource type="PackedScene" uid="uid://btg7ertsifc0g" path="res://Mods/ThrownObjects/Objects/Bit/ThrownObject_Bit_Model.glb" id="3_gnqt2"]
 [ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="3_pgsk7"]
@@ -10,9 +10,9 @@
 resource_local_to_scene = true
 render_priority = 0
 shader = ExtResource("2_5eljo")
-shader_parameter/rotation = null
-shader_parameter/uniform_scale = 1.0
 shader_parameter/texture_albedo = ExtResource("3_pgsk7")
+shader_parameter/rotation = 0.0
+shader_parameter/uniform_scale = 1.0
 
 [node name="ThrownObject_Bit" instance=ExtResource("1_yp0os")]
 collision_sound = ExtResource("2_vsmwv")

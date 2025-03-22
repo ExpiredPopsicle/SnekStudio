@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://6rc2mjibeujw"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_fb5na"]
-[ext_resource type="Script" path="res://Core/UI/SettingsWindow_General.gd" id="2_1jk3i"]
+[ext_resource type="Script" uid="uid://cmsa3glep6m3a" path="res://Core/UI/SettingsWindow_General.gd" id="2_1jk3i"]
 [ext_resource type="PackedScene" uid="uid://cwt2oqwri2i5y" path="res://Core/UI/BasicSliderWithNumber.tscn" id="3_nw828"]
 
 [node name="SettingsWindow_General" instance=ExtResource("1_fb5na")]

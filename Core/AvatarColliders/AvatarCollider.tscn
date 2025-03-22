@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://330dxln7qmex"]
 
-[ext_resource type="Script" path="res://Core/AvatarColliders/AvatarCollider.gd" id="1_e26wh"]
+[ext_resource type="Script" uid="uid://bhv86wqqnn3bx" path="res://Core/AvatarColliders/AvatarCollider.gd" id="1_e26wh"]
 [ext_resource type="Material" uid="uid://bqyjie0rp7som" path="res://Core/AvatarColliders/AvatarColliderEditorMaterial.tres" id="2_w6emv"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_muviq"]

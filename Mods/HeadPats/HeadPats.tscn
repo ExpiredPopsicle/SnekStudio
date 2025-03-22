@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://dtyj5pyp17qee"]
 
-[ext_resource type="Script" path="res://Mods/HeadPats/HeadPats.gd" id="1_27bfs"]
+[ext_resource type="Script" uid="uid://1wqhqf3o012g" path="res://Mods/HeadPats/HeadPats.gd" id="1_27bfs"]
 [ext_resource type="PackedScene" uid="uid://dl2mo3ygrhbi3" path="res://Mods/HeadPats/Resources/HeadPats_BoneAttachment.tscn" id="2_cnxw1"]
 
 [node name="HeadPats" type="Node"]

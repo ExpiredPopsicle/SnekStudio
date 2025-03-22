@@ -296,10 +296,6 @@ static func apply_animations(model, shape_dict):
 	var anim_list : PackedStringArray = anim_player.get_animation_list()
 	var anim_root = anim_player.get_node(anim_player.root_node)
 
-	anim_player.play("RESET")
-	anim_player.advance(0)
-	anim_player.stop()
-
 	if anim_player:
 		#print("list...")
 		#print(anim_player.get_animation_list())

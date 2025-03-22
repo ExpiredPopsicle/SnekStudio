@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c6jcwdrpaxdcc"]
 
-[ext_resource type="Script" path="res://Tests/Python/test_python_rpc.gd" id="1_2lqr8"]
+[ext_resource type="Script" uid="uid://pkg0rf5vhr41" path="res://Tests/Python/test_python_rpc.gd" id="1_2lqr8"]
 
 [node name="TestPythonRpc" type="Node3D"]
 script = ExtResource("1_2lqr8")

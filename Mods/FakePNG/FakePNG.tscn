@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://t3o4shnp6ciw"]
 
-[ext_resource type="Script" path="res://Mods/Base/Mod_Base.gd" id="1_s4mf0"]
+[ext_resource type="Script" uid="uid://bsjotf2wtnmeq" path="res://Mods/Base/Mod_Base.gd" id="1_s4mf0"]
 [ext_resource type="Texture2D" uid="uid://crv6srcgf33gv" path="res://Mods/FakePNG/FakePNGBackgroundButItsActuallyAPNGFile.png" id="2_cywmq"]
 
 [sub_resource type="Environment" id="Environment_f8r6w"]

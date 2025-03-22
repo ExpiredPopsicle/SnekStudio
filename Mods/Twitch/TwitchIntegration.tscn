@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bhnv2jys0elxi"]
 
-[ext_resource type="Script" path="res://Mods/Twitch/TwitchIntegration.gd" id="1_cpn3c"]
+[ext_resource type="Script" uid="uid://qcxfyqj5uf20" path="res://Mods/Twitch/TwitchIntegration.gd" id="1_cpn3c"]
 
 [node name="TwitchIntegration" type="Node"]
 script = ExtResource("1_cpn3c")

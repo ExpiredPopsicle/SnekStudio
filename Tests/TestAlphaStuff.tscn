@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://cnrjvv1wc6glw"]
 
-[ext_resource type="Shader" path="res://Tests/TestAlphaStuff.gdshader" id="1_g0hof"]
+[ext_resource type="Shader" uid="uid://dmfvhqss15v4i" path="res://Tests/TestAlphaStuff.gdshader" id="1_g0hof"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_vitmx"]
 

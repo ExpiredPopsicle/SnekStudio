@@ -1,6 +1,6 @@
 [gd_scene load_steps=12 format=3 uid="uid://dqrb5gghpk1iu"]
 
-[ext_resource type="Script" path="res://Core/UI/UI_Root.gd" id="1_nc2n8"]
+[ext_resource type="Script" uid="uid://blbfdsno3vvss" path="res://Core/UI/UI_Root.gd" id="1_nc2n8"]
 [ext_resource type="PackedScene" uid="uid://yq6jyoi206yb" path="res://Core/UI/SettingsWindow_Sound.tscn" id="2_22ujg"]
 [ext_resource type="PackedScene" uid="uid://1yetg6crf27v" path="res://Core/UI/HelpControlsWindow.tscn" id="2_kenqi"]
 [ext_resource type="PackedScene" uid="uid://y6nky8evh76x" path="res://Core/UI/SettingsWindow_Colliders.tscn" id="2_m5fmr"]

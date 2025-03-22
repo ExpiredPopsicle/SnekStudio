@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://dl2mo3ygrhbi3"]
 
-[ext_resource type="Script" path="res://Mods/HeadPats/Resources/HeadPats_BoneAttachment.gd" id="1_wi6xn"]
+[ext_resource type="Script" uid="uid://bi638ibo8itll" path="res://Mods/HeadPats/Resources/HeadPats_BoneAttachment.gd" id="1_wi6xn"]
 [ext_resource type="SpriteFrames" uid="uid://c6neld0rvb4he" path="res://Mods/HeadPats/Resources/Sprites/HeadPats_SpriteFrames.tres" id="1_xdojq"]
 
 [node name="HeadPats_BoneAttachment" type="BoneAttachment3D"]

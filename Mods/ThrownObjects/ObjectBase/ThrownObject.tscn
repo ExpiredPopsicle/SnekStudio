@@ -1,6 +1,6 @@
 [gd_scene load_steps=10 format=3 uid="uid://fhm0lw7jf81x"]
 
-[ext_resource type="Script" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject.gd" id="1_orge0"]
+[ext_resource type="Script" uid="uid://cqg86vxkf5a52" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject.gd" id="1_orge0"]
 [ext_resource type="Material" uid="uid://bja5ngmfru7kh" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteMaterial.tres" id="2_if6gk"]
 [ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="3_ah5ng"]
 [ext_resource type="Texture2D" uid="uid://cfwkhvhltarbp" path="res://Mods/ThrownObjects/Objects/Bit/ThrownObject_Bit_Splat.png" id="4_6cjhr"]

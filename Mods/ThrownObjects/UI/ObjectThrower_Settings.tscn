@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://hjuwfff87y26"]
 
-[ext_resource type="Script" path="res://Mods/ThrownObjects/UI/ObjectThrower_Settings.gd" id="1_uvxcp"]
+[ext_resource type="Script" uid="uid://d0l4qik40or2f" path="res://Mods/ThrownObjects/UI/ObjectThrower_Settings.gd" id="1_uvxcp"]
 
 [node name="ObjectThrower_Settings" type="VBoxContainer"]
 custom_minimum_size = Vector2(0, 500)

@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://y6nky8evh76x"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_6t81y"]
-[ext_resource type="Script" path="res://Core/UI/SettingsWindow_Colliders.gd" id="2_emcxk"]
+[ext_resource type="Script" uid="uid://c0jjjq1tu0h1m" path="res://Core/UI/SettingsWindow_Colliders.gd" id="2_emcxk"]
 [ext_resource type="PackedScene" uid="uid://cwt2oqwri2i5y" path="res://Core/UI/BasicSliderWithNumber.tscn" id="3_iqo7w"]
 
 [node name="SettingsWindow_Colliders" instance=ExtResource("1_6t81y")]

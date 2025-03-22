@@ -22,6 +22,8 @@ StuffToRemove
 # Extra junk from the build.
 Build/build_vars.sh
 Build/Builds
-
+Build/GodotBinary
+Build/godot.zip
+Build/godot_templates.tpz
 
 Saved/*
