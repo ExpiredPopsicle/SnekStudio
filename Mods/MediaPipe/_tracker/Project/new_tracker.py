@@ -120,7 +120,7 @@ class MediaPipeTracker:
             # Try opening it!
             self._write_log("Opening a video device!")
 
-            self.video_device_capture = cv2.VideoCapture(self.video_device_index)
+            self.video_device_capture = cv2.VideoCapture(int(self.video_device_index))
 
             # Enforce low-res capture for performance reasons.
             try:
