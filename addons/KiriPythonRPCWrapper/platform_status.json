@@ -25,5 +25,5 @@
       "sort": "cpython-00000003-00000012-00000005-20240814-x86_64-apple-darwin-install_only_stripped-tar-gz"
     }
   },
-  "requirements": "mediapipe==0.10.14\npsutil==6.0.0\ncv2-enumerate-cameras==1.1.18.2\nnumpy==1.26.0\n\n"
+  "requirements": "mediapipe==0.10.21\npsutil==7.0.0\ncv2-enumerate-cameras==1.1.18.3\nnumpy==1.26.4\n\n"
 }

@@ -24,7 +24,7 @@ func _ready() -> void:
 	tracker_python_process.start_process()
 	
 	print("Kicking off thing...")
-	var r = await tracker_python_process.execute_python_async(["-m", "pip", "install", "mediapipe==0.10.14"])
+	var r = await tracker_python_process.execute_python_async(["-m", "pip", "install", "mediapipe==0.10.21"])
 	print("Done thing: ", r)
 	
 

@@ -77,10 +77,11 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 256)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "mediapipe==0.10.14
-psutil==6.0.0
-cv2-enumerate-cameras==1.1.18.2
-numpy==1.26.0
+text = "
+mediapipe==0.10.21
+psutil==7.0.0
+cv2-enumerate-cameras==1.1.18.3
+numpy==1.26.4
 
 "
 gutters_draw_line_numbers = true
