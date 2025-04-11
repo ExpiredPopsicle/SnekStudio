@@ -22,7 +22,8 @@ func _process(_delta):
 		updater._start_github_download("Windows-x86_64")
 		updater._start_github_download("Linux-x86_64")
 		updater._start_github_download("Linux-arm64")
-		# FIXME: MacOS.
+		updater._start_github_download("macOS-arm64")
+		# FIXME: MacOS x86_64
 
 		for platform in updater._current_downloads.keys():
 			var download_request : HTTPRequest = updater._current_downloads[platform]

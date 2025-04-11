@@ -8,8 +8,19 @@ var _platform_list : Array = [
 	"Linux-x86_64",
 	"Linux-arm64",
 	"Windows-x86_64",
-	"macOS-x86_64"
+	"macOS-x86_64",
+	"macOS-arm64",
 ]
+
+# See here for platform mappings?
+#   https://pip.pypa.io/en/stable/cli/pip_download/
+var platform_to_pip_mapping : Dictionary = {
+	"Windows-x86_64" : "win_amd64",
+	"Linux-x86_64" : "manylinux2014_x86_64",
+	"Linux-arm64" : "manylinux2014_aarch64",
+	"macOS-x86_64" : "macosx_11_0_universal2", # FIXME: Find something that works here. (macOS x86_64)
+	"macOS-arm64": "macosx_10_9_arm64"
+}
 
 # Last processed asset list (either from cache or GitHub).
 var _asset_list = []
@@ -201,12 +212,26 @@ func _update_download_button_progress():
 func _process(_delta : float):
 	_update_download_button_progress()
 
+func _enable_button(buttons: Dictionary, platform_name: String, text: String) -> void:
+	match platform_name:
+		"macOS-x86_64":
+			buttons[platform_name].text = "Not Supported"
+			buttons[platform_name].disabled = true
+			return
+		"macOS-arm64":
+			if OS.get_name() != "macOS":
+				buttons[platform_name].text = "Not Supported"
+				buttons[platform_name].disabled = true
+				return
+
+	buttons[platform_name].text = text
+	buttons[platform_name].disabled = false
+
 func _update_platform_ui():
 	for platform_name in _platform_list:
-		
 		# FIXME: Remove this.
 		_check_platform_file_ready(platform_name)
-		
+
 		# Main build downloads.
 		var this_platform_status : Dictionary = _platform_status["platforms"][platform_name]
 		if this_platform_status["file_size"] == 0 or \
@@ -223,8 +248,7 @@ func _update_platform_ui():
 			pass
 		else:
 			# File is selected, but might not exist yet, or is incomplete.
-			_platform_buttons[platform_name].disabled = false
-			_platform_buttons[platform_name].text = "Download"
+			_enable_button(_platform_buttons, platform_name, "Download")
 
 		# Dependencies downloads.
 		#
@@ -237,14 +261,12 @@ func _update_platform_ui():
 		if FileAccess.file_exists(requirements_path):
 			var last_written_requirements : String = FileAccess.get_file_as_string(requirements_path)
 			if last_written_requirements != _platform_status["requirements"]:
-				_platform_deps_buttons[platform_name].disabled = false
-				_platform_deps_buttons[platform_name].text = "Update"
+				_enable_button(_platform_deps_buttons, platform_name, "Update")
 			else:
 				_platform_deps_buttons[platform_name].disabled = true
 				_platform_deps_buttons[platform_name].text = "Downloaded"
 		else:
-			_platform_deps_buttons[platform_name].disabled = false
-			_platform_deps_buttons[platform_name].text = "Download"
+			_enable_button(_platform_deps_buttons, platform_name, "Download")
 
 	_update_download_button_progress()
 
@@ -454,8 +476,33 @@ func _on_button_download_requirements_pressed(platform_name : String) -> void:
 	download_platform_requirements(platform_name)
 	_update_platform_ui()
 
+func _pip_args(platform_name: String, target_download_directory: String, global_requirements_path: String) -> Array[String]:
+	var platform = platform_to_pip_mapping[platform_name]
+
+	# FIXME: Maybe specify Python version.
+	match platform_name:
+		"macOS-arm64":
+			if OS.get_name() != "macOS":
+				OS.alert("Running pip for macOS arm64 while not on a macOS arm64\ncomputer is currently not supported")
+				return ["-m", "pip", "list"]
+
+			return [
+				"-m", "pip", "download",
+				# TODO MacOS (arm64) find platform that results in a successful install
+				"--only-binary=:all:",
+				"-d", target_download_directory,
+				"-r", global_requirements_path
+				]
+		_:
+			return [
+				"-m", "pip", "download",
+				"--platform=" + platform,
+				"--only-binary=:all:",
+				"-d", target_download_directory,
+				"-r", global_requirements_path
+				]
+
 func download_platform_requirements(platform_name : String, automated : bool = false) -> bool:
-	
 	_load_platform_status()
 
 	var download_path : String = get_script().resource_path.get_base_dir().path_join("../Wheels")
@@ -476,22 +523,13 @@ func download_platform_requirements(platform_name : String, automated : bool = f
 	requirements_file.close()
 
 	print("Downloading requirements...")
-	
-	# See here for platform mappings?
-	#   https://pip.pypa.io/en/stable/cli/pip_download/
-	var platform_to_pip_mapping : Dictionary = {
-		"Windows-x86_64" : "win_amd64",
-		"Linux-x86_64" : "manylinux2014_x86_64",
-		"Linux-arm64" : "manylinux2014_aarch64",
-		"macOS-x86_64" : "macosx_11_0_universal2" # FIXME: Find something that works here. (macOS)
-	}
 
 	var this_platform_download_path : String = \
 		download_path.path_join(platform_name)
-	
+
 	# Make sure the directory exists.
 	DirAccess.make_dir_recursive_absolute(this_platform_download_path)
-	
+
 	# Clear out the whole directory, so we don't end up with stuff lingering
 	# from a previous fetch.
 	var files_to_delete : PackedStringArray = \
@@ -500,28 +538,23 @@ func download_platform_requirements(platform_name : String, automated : bool = f
 		print("Removing old whl file: ", file)
 		DirAccess.remove_absolute(this_platform_download_path.path_join(file))
 
-	# Actually run pip.
-	var pip_args = ["-m", "pip", "download",
-		"--platform=" + platform_to_pip_mapping[platform_name],
-		"--only-binary=:all:",
-		"-d", ProjectSettings.globalize_path(this_platform_download_path),
-		# FIXME: Maybe specify Python version.
-		"-r", ProjectSettings.globalize_path(requirements_path)]
-	var output : Array = []
-	var pip_download_return : int = python_instance.execute_python(
-		pip_args, output, true, true)
+	var output: Array = []
+	var global_requirements_path = ProjectSettings.globalize_path(requirements_path)
+	var target_download_directory = ProjectSettings.globalize_path(this_platform_download_path)
 
-	# Handle errors or write a success indicator.
-	if pip_download_return != 0:
-		if not automated:
-			OS.alert("Pip failed (platform: " + platform_name + "): " + str(output))
+	var pip_download_arguments = _pip_args(platform_name, target_download_directory, global_requirements_path)
+	var exit_code: int = python_instance.execute_python(pip_download_arguments, output, true, true)
+
+	if exit_code != 0:
+		if not automated: OS.alert("Pip failed (platform: " + platform_name + "): " + str(output))
+
 		push_error("Pip failed (platform: ", platform_name, "): ", output)
 		return false
-	else:
-		var last_requirements_file : FileAccess = \
-			FileAccess.open(
-				this_platform_download_path.path_join("requirements.txt"),
-				FileAccess.WRITE)
-		last_requirements_file.store_string(_platform_status["requirements"])
+
+	var last_requirements_file : FileAccess = \
+		FileAccess.open(
+			this_platform_download_path.path_join("requirements.txt"),
+			FileAccess.WRITE)
+	last_requirements_file.store_string(_platform_status["requirements"])
 
 	return true

@@ -201,13 +201,17 @@ func unpack_python():
 
 	# Detect Python executable.
 	var possible_executable_paths = []
-	if OS.get_name() == "Windows":
-		possible_executable_paths.append("python/install/python.exe")
-		possible_executable_paths.append("python/python.exe")
-	else:
-		possible_executable_paths.append("python/bin/python")
-		possible_executable_paths.append("python/install/bin/python")
-		# FIXME: Verify that these are the same in macOS.
+	match OS.get_name():
+		"Windows":
+			possible_executable_paths.append("python/install/python.exe")
+			possible_executable_paths.append("python/python.exe")
+		"macOS":
+			possible_executable_paths.append("python/bin/python")
+			possible_executable_paths.append("python/install/bin/python")
+		_:
+			possible_executable_paths.append("python/bin/python")
+			possible_executable_paths.append("python/install/bin/python")
+
 	for possible_path in possible_executable_paths:
 		if FileAccess.file_exists(cache_path_godot.path_join(possible_path)):
 			cache_status["executable_path"] = possible_path
