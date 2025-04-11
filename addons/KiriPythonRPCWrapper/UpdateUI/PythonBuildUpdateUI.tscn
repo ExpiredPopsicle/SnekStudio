@@ -77,8 +77,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 256)
 layout_mode = 2
 size_flags_horizontal = 3
-text = "
-mediapipe==0.10.21
+text = "mediapipe==0.10.21
 psutil==7.0.0
 cv2-enumerate-cameras==1.1.18.3
 numpy==1.26.4
