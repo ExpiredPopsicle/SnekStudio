@@ -212,12 +212,26 @@ func _update_download_button_progress():
 func _process(_delta : float):
 	_update_download_button_progress()
 
+func _enable_button(buttons: Dictionary, platform_name: String, text: String) -> void:
+	match platform_name:
+		"macOS-x86_64":
+			buttons[platform_name].text = "Not Supported"
+			buttons[platform_name].disabled = true
+			return
+		"macOS-arm64":
+			if OS.get_name() != "macOS":
+				buttons[platform_name].text = "Not Supported"
+				buttons[platform_name].disabled = true
+				return
+
+	buttons[platform_name].text = text
+	buttons[platform_name].disabled = false
+
 func _update_platform_ui():
 	for platform_name in _platform_list:
-		
 		# FIXME: Remove this.
 		_check_platform_file_ready(platform_name)
-		
+
 		# Main build downloads.
 		var this_platform_status : Dictionary = _platform_status["platforms"][platform_name]
 		if this_platform_status["file_size"] == 0 or \
@@ -234,8 +248,7 @@ func _update_platform_ui():
 			pass
 		else:
 			# File is selected, but might not exist yet, or is incomplete.
-			_platform_buttons[platform_name].disabled = false
-			_platform_buttons[platform_name].text = "Download"
+			_enable_button(_platform_buttons, platform_name, "Download")
 
 		# Dependencies downloads.
 		#
@@ -248,14 +261,12 @@ func _update_platform_ui():
 		if FileAccess.file_exists(requirements_path):
 			var last_written_requirements : String = FileAccess.get_file_as_string(requirements_path)
 			if last_written_requirements != _platform_status["requirements"]:
-				_platform_deps_buttons[platform_name].disabled = false
-				_platform_deps_buttons[platform_name].text = "Update"
+				_enable_button(_platform_deps_buttons, platform_name, "Update")
 			else:
 				_platform_deps_buttons[platform_name].disabled = true
 				_platform_deps_buttons[platform_name].text = "Downloaded"
 		else:
-			_platform_deps_buttons[platform_name].disabled = false
-			_platform_deps_buttons[platform_name].text = "Download"
+			_enable_button(_platform_deps_buttons, platform_name, "Download")
 
 	_update_download_button_progress()
 
@@ -471,6 +482,10 @@ func _pip_args(platform_name: String, target_download_directory: String, global_
 	# FIXME: Maybe specify Python version.
 	match platform_name:
 		"macOS-arm64":
+			if OS.get_name() != "macOS":
+				OS.alert("Running pip for macOS arm64 while not on a macOS arm64\ncomputer is currently not supported")
+				return ["-m", "pip", "list"]
+
 			return [
 				"-m", "pip", "download",
 				# TODO MacOS (arm64) find platform that results in a successful install
