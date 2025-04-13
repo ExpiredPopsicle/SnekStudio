@@ -120,18 +120,25 @@ func _on_OSCServer_message_received(address_string, arguments):
 	if address_string == "/VMC/Ext/Bone/Pos" and arguments[0] == "Hips":
 		var origin = Vector3(arguments[1], arguments[2], arguments[3])
 		#skeleton.global_position = -origin
-		var origin_hips = skeleton.get_bone_global_pose(skeleton.find_bone("Hips")).origin
+		var origin_hips = skeleton.get_bone_global_pose(skeleton.find_bone(arguments[0])).origin
 		var offset = origin - origin_hips
-		skeleton.global_position = Vector3(-offset.x, offset.y, -offset.z)
+		#skeleton.global_position = Vector3(-offset.x, offset.y, -offset.z)
 		#print("OLD: ", skeleton.global_position)
-		#skeleton.global_position = origin
+
+		origin.x *= -1 # FIXME: Why?
+		#origin.y = 0.0 # FIXME: Why?
+		if arguments[0] == "Hips":
+			skeleton.global_position = origin
+			skeleton.global_position.y = 0.0
 		#print(len(arguments))
+		#print(arguments)
 		
 		
 		var node_name = arguments[0]
 		node_name = node_name.replace(":", "_")
 		node_name = node_name.replace("/", "_")
 		var node = get_node_or_null(NodePath(str(node_name)))
+		#print(node_name)
 		if node == null:
 			print("NEW NODE: ", node_name)
 			node = MeshInstance3D.new()
@@ -140,8 +147,8 @@ func _on_OSCServer_message_received(address_string, arguments):
 			node.mesh.height = 0.2
 			node.name = node_name
 			add_child(node)
-			#
-		node.global_position = origin
+
+		node.transform.origin = origin
 	#else:
 	#	print(address_string)
 	
@@ -180,7 +187,7 @@ func _on_OSCServer_message_received(address_string, arguments):
 		# FIXME: If we want to actually handle bone translation offsets, we
 		# need to handle this in the correct coordinate space. Right now
 		# enabling it will just double-up translation and look wrong.
-		var origin = Vector3(arguments[1], arguments[2], arguments[3])
+		#var origin = Vector3(arguments[1], arguments[2], arguments[3])
 
 		#if actual_bone_name == "Hips":
 			##print(origin)
@@ -190,7 +197,7 @@ func _on_OSCServer_message_received(address_string, arguments):
 			##skeleton.global_position = origin
 
 		# FIXME: Currently we're rotation-only.
-		#var origin = Vector3(0.0, 0.0, 0.0) # Use this for rotation-only.
+		var origin = Vector3(0.0, 0.0, 0.0) # Use this for rotation-only.
 
 		# We have to flip around some of the rotation axes directly in the
 		# quaternion here to account for the different coordinate space.
@@ -233,32 +240,32 @@ func _on_OSCServer_message_received(address_string, arguments):
 		
 		if bone_index != -1:
 
-			#var new_transform : Transform3D = \
-##				$Model/GeneralSkeleton.get_bone_rest(bone_index) * \
-				#skeleton.get_bone_rest(bone_index) * \
-				#Transform3D(
-					#skeleton.get_bone_global_rest(bone_index).basis.get_rotation_quaternion()).inverse() * \
-				#Transform3D(
-					#Basis(rot),
-					#origin) * \
-				#Transform3D(
-					#skeleton.get_bone_global_rest(bone_index).basis.get_rotation_quaternion())
-#
-			#skeleton.set_bone_pose_rotation(
-			#	bone_index, new_transform.basis.get_rotation_quaternion())
-			
-			
 			var new_transform : Transform3D = \
 #				$Model/GeneralSkeleton.get_bone_rest(bone_index) * \
-				#skeleton.get_bone_rest(bone_index) * \
-				#skeleton.get_bone_global_rest(bone_index).inverse() * \
+				skeleton.get_bone_rest(bone_index) * \
+				Transform3D(
+					skeleton.get_bone_global_rest(bone_index).basis.get_rotation_quaternion()).inverse() * \
 				Transform3D(
 					Basis(rot),
-					origin) 
-								#Transform3D(
-				#	skeleton.get_bone_global_rest(bone_index))
-				
-			skeleton.set_bone_pose(bone_index, new_transform)
+					origin) * \
+				Transform3D(
+					skeleton.get_bone_global_rest(bone_index).basis.get_rotation_quaternion())
+
+			skeleton.set_bone_pose_rotation(
+				bone_index, new_transform.basis.get_rotation_quaternion())
+			
+			
+			#var new_transform : Transform3D = \
+##				$Model/GeneralSkeleton.get_bone_rest(bone_index) * \
+				##skeleton.get_bone_rest(bone_index) * \
+				##skeleton.get_bone_global_rest(bone_index).inverse() * \
+				#Transform3D(
+					#Basis(rot),
+					#origin) 
+								##Transform3D(
+				##	skeleton.get_bone_global_rest(bone_index))
+				#
+			#skeleton.set_bone_pose(bone_index, new_transform)
 		else:
 			print("NO BONE FOUND FOR VMC THING: ", actual_bone_name)
 
