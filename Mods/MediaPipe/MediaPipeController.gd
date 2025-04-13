@@ -445,6 +445,17 @@ func _ready():
 			blend_shape_last_values = {}
 	)
 
+	var reset_pose_button2 : Button = Button.new()
+	reset_pose_button2.text = "Reset pose - Just hips (FIXME)"
+	get_settings_window().add_child(reset_pose_button2)
+	reset_pose_button2.pressed.connect(
+		func():
+			var skel : Skeleton3D = get_app().get_skeleton()
+			var hips_index : int = skel.find_bone("Hips")
+			if hips_index != -1:
+				skel.reset_bone_pose(hips_index)
+	)
+
 	_update_for_new_model_if_needed()
 
 func save_before(_settings_current: Dictionary):
@@ -1203,6 +1214,8 @@ func _process(delta):
 	if delta_scale < 0.01:
 		delta_scale = 0.01
 
+	return
+
 	if last_parsed_data:
 		var parsed_data = last_parsed_data
 
@@ -1441,6 +1454,8 @@ func _process(delta):
 		# IK stuff starts here
 
 		# Arm IK.
+		
+		return
 
 		var x_pole_dist = 10.0
 		var z_pole_dist = 10.0

@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://dqrb5gghpk1iu" path="res://Core/UI/UI_Root.tscn" id="2_a0eek"]
 [ext_resource type="PackedScene" uid="uid://dq62o1q7l83ro" path="res://Core/CameraBoom/CameraBoom.tscn" id="3_ur4kn"]
 [ext_resource type="Script" uid="uid://v8u2efcjmg73" path="res://Core/ModelController.gd" id="5_upw4c"]
-[ext_resource type="Script" uid="uid://bhjru7482htmb" path="res://Core/AudioInput/AudioStreamRecord.gd" id="10_dpnxj"]
+[ext_resource type="Script" uid="uid://b4cqq0r6jrgd1" path="res://Core/AudioInput/AudioStreamRecord.gd" id="10_dpnxj"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nh3ai"]
 bg_color = Color(1, 0.164706, 0.776471, 1)
