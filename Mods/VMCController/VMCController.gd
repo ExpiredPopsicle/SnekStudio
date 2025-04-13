@@ -71,16 +71,25 @@ func _process(delta: float) -> void:
 
 	if playback_enabled:
 
-		var current_time = Time.get_ticks_msec() / 1000.0
+		var current_time = Time.get_ticks_msec() / 1000.0 + 350
 
 		# Have we just started playback?
 		if playback_start == -1:
 			playback_start = current_time
-
+		
+		# FIXME: Hack
+		current_time += 200
+		
 		var playback_time : float = current_time - playback_start
 		while playback_next_frame < len(recording_packets) and recording_packets[playback_next_frame]["time"] <= playback_time:
-			print("Recorded packet: ", playback_next_frame, recording_packets[playback_next_frame])
+			#print("Recorded packet: ", playback_next_frame, recording_packets[playback_next_frame])
+			_on_OSCServer_message_received(
+				recording_packets[playback_next_frame]["address"],
+				recording_packets[playback_next_frame]["arguments"])
 			playback_next_frame += 1
+
+		if playback_next_frame < len(recording_packets):
+			print("time until next keyframe: ", playback_time - recording_packets[playback_next_frame]["time"])
 
 	else:
 		# Restart playback.
@@ -92,7 +101,7 @@ func _on_OSCServer_message_received(address_string, arguments):
 	# Save packets.
 	if recording_enabled:
 		var new_frame : Dictionary = {}
-		new_frame["time"] = Time.get_ticks_msec() / 1000.0
+		new_frame["time"] = Time.get_ticks_msec() / 1000.0 - recording_start
 		new_frame["address"] = address_string
 		new_frame["arguments"] = arguments
 		recording_packets.append(new_frame)
@@ -224,19 +233,32 @@ func _on_OSCServer_message_received(address_string, arguments):
 		
 		if bone_index != -1:
 
+			#var new_transform : Transform3D = \
+##				$Model/GeneralSkeleton.get_bone_rest(bone_index) * \
+				#skeleton.get_bone_rest(bone_index) * \
+				#Transform3D(
+					#skeleton.get_bone_global_rest(bone_index).basis.get_rotation_quaternion()).inverse() * \
+				#Transform3D(
+					#Basis(rot),
+					#origin) * \
+				#Transform3D(
+					#skeleton.get_bone_global_rest(bone_index).basis.get_rotation_quaternion())
+#
+			#skeleton.set_bone_pose_rotation(
+			#	bone_index, new_transform.basis.get_rotation_quaternion())
+			
+			
 			var new_transform : Transform3D = \
 #				$Model/GeneralSkeleton.get_bone_rest(bone_index) * \
-				skeleton.get_bone_rest(bone_index) * \
-				Transform3D(
-					skeleton.get_bone_global_rest(bone_index).basis.get_rotation_quaternion()).inverse() * \
+				#skeleton.get_bone_rest(bone_index) * \
+				#skeleton.get_bone_global_rest(bone_index).inverse() * \
 				Transform3D(
 					Basis(rot),
-					origin) * \
-				Transform3D(
-					skeleton.get_bone_global_rest(bone_index).basis.get_rotation_quaternion())
-
-			skeleton.set_bone_pose_rotation(
-				bone_index, new_transform.basis.get_rotation_quaternion())
+					origin) 
+								#Transform3D(
+				#	skeleton.get_bone_global_rest(bone_index))
+				
+			skeleton.set_bone_pose(bone_index, new_transform)
 		else:
 			print("NO BONE FOUND FOR VMC THING: ", actual_bone_name)
 
