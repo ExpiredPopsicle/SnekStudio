@@ -680,6 +680,10 @@ func load_vrm(path) -> bool:
 	for k in collider_data:
 		k["visible"] = ui_collider_window.visible
 
+	# Force initial T-Pose.
+	var skel : Skeleton3D = get_skeleton()
+	skel.reset_bone_poses()
+
 	set_colliders(collider_data)
 
 	reinit_mods()
