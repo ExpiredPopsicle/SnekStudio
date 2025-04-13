@@ -8,11 +8,51 @@ var vmc_receiver_enabled : bool = false
 var blend_shape_last_values = {}
 var overridden_blend_shape_values = {} # FIXME: Make this more general-purpose
 
+var recording_enabled : bool = false
+var recording_start : float = 0.0
+var recording_packets : Array = []
+
+var playback_enabled : bool = false
+var playback_start : float = -1.0
+var playback_next_frame : int = 0
+
 
 func _ready():
 	add_tracked_setting("bind_ip_address", "Receiver IP address")
 	add_tracked_setting("bind_port", "Receiver port")
 	add_tracked_setting("vmc_receiver_enabled", "Receiver enabled")
+	
+	add_tracked_setting("recording_enabled", "Recording active")
+
+	add_tracked_setting("playback_enabled", "Playback active")
+
+	var clear_recording_button : Button = Button.new()
+	clear_recording_button.text = "Clear recorded frames"
+	get_settings_window().add_child(clear_recording_button)
+	clear_recording_button.pressed.connect(
+		func():
+			recording_packets = [])
+
+	var save_recording_button : Button = Button.new()
+	save_recording_button.text = "Save recorded frames"
+	get_settings_window().add_child(save_recording_button)
+	save_recording_button.pressed.connect(
+		func():
+			var out_file : FileAccess = FileAccess.open("user://vmc_temp_recording.json", FileAccess.WRITE)
+			var out_string : String = JSON.stringify(recording_packets, "  ")
+			out_file.store_string(out_string)
+			recording_packets = [])
+
+	var load_recording_button : Button = Button.new()
+	load_recording_button.text = "Load recorded frames"
+	get_settings_window().add_child(load_recording_button)
+	load_recording_button.pressed.connect(
+		func():
+			var in_file : FileAccess = FileAccess.open("user://vmc_temp_recording.json", FileAccess.READ)
+			if in_file:
+				var in_string = in_file.get_as_text()
+				recording_packets = JSON.parse_string(in_string))
+
 	update_settings_ui()
 
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
@@ -27,15 +67,80 @@ func scene_shutdown() -> void:
 	get_app().get_controller().reset_skeleton_to_rest_pose()
 	get_app().get_controller().reset_blend_shapes()
 
+func _process(delta: float) -> void:
+
+	if playback_enabled:
+
+		var current_time = Time.get_ticks_msec() / 1000.0
+
+		# Have we just started playback?
+		if playback_start == -1:
+			playback_start = current_time
+
+		var playback_time : float = current_time - playback_start
+		while playback_next_frame < len(recording_packets) and recording_packets[playback_next_frame]["time"] <= playback_time:
+			print("Recorded packet: ", playback_next_frame, recording_packets[playback_next_frame])
+			playback_next_frame += 1
+
+	else:
+		# Restart playback.
+		playback_next_frame = 0
+		playback_start = -1
+
 func _on_OSCServer_message_received(address_string, arguments):
+
+	# Save packets.
+	if recording_enabled:
+		var new_frame : Dictionary = {}
+		new_frame["time"] = Time.get_ticks_msec() / 1000.0
+		new_frame["address"] = address_string
+		new_frame["arguments"] = arguments
+		recording_packets.append(new_frame)
+		print("Packets saved: ", len(recording_packets))
 
 	var model : Node3D = get_app().get_model()
 	var skeleton : Skeleton3D = get_app().get_skeleton()
 	var model_controller : Node3D = get_app().get_node("ModelController")
 	
+	#if address_string == "/VMC/Ext/Root/Pos":
+	#	print(arguments)
+	#if randf() < 0.1:
+	#print(address_string, ": ", arguments)
+	
+	#if address_string == "/VMC/Ext/Tra/Pos" or address_string == "/VMC/Ext/Bone/Pos" or address_string == "/VMC/Ext/Hmd/Pos" or address_string == "/VMC/Ext/Root/Pos" or address_string == "/VMC/Ext/Con/Pos":
+	if address_string == "/VMC/Ext/Bone/Pos" and arguments[0] == "Hips":
+		var origin = Vector3(arguments[1], arguments[2], arguments[3])
+		#skeleton.global_position = -origin
+		var origin_hips = skeleton.get_bone_global_pose(skeleton.find_bone("Hips")).origin
+		var offset = origin - origin_hips
+		skeleton.global_position = Vector3(-offset.x, offset.y, -offset.z)
+		#print("OLD: ", skeleton.global_position)
+		#skeleton.global_position = origin
+		#print(len(arguments))
+		
+		
+		var node_name = arguments[0]
+		node_name = node_name.replace(":", "_")
+		node_name = node_name.replace("/", "_")
+		var node = get_node_or_null(NodePath(str(node_name)))
+		if node == null:
+			print("NEW NODE: ", node_name)
+			node = MeshInstance3D.new()
+			node.mesh = SphereMesh.new()
+			node.mesh.radius = 0.1
+			node.mesh.height = 0.2
+			node.name = node_name
+			add_child(node)
+			#
+		node.global_position = origin
+	#else:
+	#	print(address_string)
+	
 	if address_string == "/VMC/Ext/Bone/Pos":
 	
 		var actual_bone_name = arguments[0]
+		
+		#print(actual_bone_name)
 
 		# We may have to rename some thumb bone names, depending on whether we
 		# have a VRM 1.0 or 0.0 model.
@@ -66,10 +171,17 @@ func _on_OSCServer_message_received(address_string, arguments):
 		# FIXME: If we want to actually handle bone translation offsets, we
 		# need to handle this in the correct coordinate space. Right now
 		# enabling it will just double-up translation and look wrong.
-		#var origin = Vector3(arguments[1], arguments[2], arguments[3])
+		var origin = Vector3(arguments[1], arguments[2], arguments[3])
+
+		#if actual_bone_name == "Hips":
+			##print(origin)
+			#if skeleton.global_position != origin:
+				#print("Changed")
+			#print(skeleton.global_position)
+			##skeleton.global_position = origin
 
 		# FIXME: Currently we're rotation-only.
-		var origin = Vector3(0.0, 0.0, 0.0) # Use this for rotation-only.
+		#var origin = Vector3(0.0, 0.0, 0.0) # Use this for rotation-only.
 
 		# We have to flip around some of the rotation axes directly in the
 		# quaternion here to account for the different coordinate space.
