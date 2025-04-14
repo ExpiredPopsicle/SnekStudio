@@ -133,9 +133,6 @@ func scene_shutdown() -> void:
 
 func _process(delta: float) -> void:
 
-	# FIXME: Remove this.
-	_on_OSCServer_message_received("kiri_dummy_message", [Time.get_ticks_msec()])
-
 	if playback_enabled:
 
 		var current_time = Time.get_ticks_msec() / 1000.0
@@ -143,9 +140,6 @@ func _process(delta: float) -> void:
 		# Have we just started playback?
 		if playback_start == -1:
 			playback_start = current_time
-
-		# FIXME: Rmove this.
-		current_time += 200
 
 		# Process every packet up to the current time in the animation as though
 		# we just received it as an actual packet.
