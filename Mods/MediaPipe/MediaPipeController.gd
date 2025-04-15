@@ -1214,8 +1214,6 @@ func _process(delta):
 	if delta_scale < 0.01:
 		delta_scale = 0.01
 
-	return
-
 	if last_parsed_data:
 		var parsed_data = last_parsed_data
 
@@ -1455,8 +1453,6 @@ func _process(delta):
 
 		# Arm IK.
 		
-		return
-
 		var x_pole_dist = 10.0
 		var z_pole_dist = 10.0
 		var y_pole_dist = 5.0
