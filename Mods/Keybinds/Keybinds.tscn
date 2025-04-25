@@ -1,0 +1,42 @@
+[gd_scene load_steps=4 format=3 uid="uid://cvokpd5h375w1"]
+
+[ext_resource type="Script" uid="uid://c47cbmmvkrwvl" path="res://Mods/Keybinds/Keybinds.gd" id="1_8jfd0"]
+[ext_resource type="Script" uid="uid://bqviy8gst7123" path="res://Mods/Keybinds/SettingsUI.gd" id="2_hfm7f"]
+[ext_resource type="PackedScene" uid="uid://d3tfxmryd30cl" path="res://Mods/Keybinds/ActionUI.tscn" id="3_gqp3c"]
+
+[node name="Keybinds" type="Node3D" node_paths=PackedStringArray("panel")]
+script = ExtResource("1_8jfd0")
+panel = NodePath("TempPanel")
+
+[node name="TempPanel" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SettingsUIContainer" type="ScrollContainer" parent="TempPanel" node_paths=PackedStringArray("attached")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 70.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_hfm7f")
+base = ExtResource("3_gqp3c")
+attached = NodePath("FlowContainer")
+
+[node name="FlowContainer" type="FlowContainer" parent="TempPanel/SettingsUIContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="TempPanel"]
+visible = false
+layout_mode = 2
+offset_right = 205.0
+offset_bottom = 101.0
+text = "HELLO LOTS OF TEXT HERE
+
+Yes Hello!
+Yes"
