@@ -80,6 +80,7 @@ func _create_action(item : Dictionary) -> void:
 		
 	print("Creating new action and associated event %s" % action)
 	var key_event = _create_key_event(item["key"])
+
 	if not InputMap.has_action(action):
 		InputMap.add_action(action)
 	else:
@@ -88,7 +89,8 @@ func _create_action(item : Dictionary) -> void:
 	
 	# Always add the event to the action, if there is no action it was made.
 	# existing events for the action have been cleared.	
-	InputMap.action_add_event(action, key_event)
+	if key_event != null:
+		InputMap.action_add_event(action, key_event)
 
 func _update_action(new_item : Dictionary, old_item : Dictionary) -> void:
 	if new_item["action_name"] != old_item["action_name"]:

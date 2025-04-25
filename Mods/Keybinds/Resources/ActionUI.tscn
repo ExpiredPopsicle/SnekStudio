@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://d3tfxmryd30cl"]
 
-[ext_resource type="Script" uid="uid://dsy8dnqv77moj" path="res://Mods/Keybinds/ActionUI.gd" id="1_kpyqj"]
+[ext_resource type="Script" uid="uid://dsy8dnqv77moj" path="res://Mods/Keybinds/Resources/ActionUI.gd" id="1_kpyqj"]
 
 [node name="ActionUi" type="Control"]
 custom_minimum_size = Vector2(230, 165)
