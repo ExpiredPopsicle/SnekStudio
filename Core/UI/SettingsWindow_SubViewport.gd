@@ -41,9 +41,13 @@ func settings_changed_from_app():
 		if "custom_res_enabled" in subviewport_settings:
 			check_button_custom_res.set_pressed_no_signal(subviewport_settings["custom_res_enabled"])
 		if "custom_res_value" in subviewport_settings:
-			var vec_string: String = subviewport_settings["custom_res_value"]
-			var vec2 := Vector2i(vec_string.get_slice(",", 0).trim_prefix("(").to_int(),
-								vec_string.get_slice(",", 1).trim_suffix(")").to_int())
+			var vec2: Vector2i
+			if typeof(subviewport_settings["custom_res_value"]) == 6:
+				vec2 = subviewport_settings["custom_res_value"]
+			else:
+				var vec_string: String = subviewport_settings["custom_res_value"]
+				vec2 = Vector2i(vec_string.get_slice(",", 0).trim_prefix("(").to_int(),
+									vec_string.get_slice(",", 1).trim_suffix(")").to_int())
 			vector_setting_widget.set_value_no_signal(Vector3(float(vec2.x), float(vec2.y), 0.0))
 		if "msaa" in subviewport_settings:
 			option_button_msaa.selected = subviewport_settings["msaa"]
