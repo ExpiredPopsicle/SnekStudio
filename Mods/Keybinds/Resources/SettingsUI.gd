@@ -7,6 +7,12 @@ class_name KeybindSettingUI
 
 signal on_change_item(action : int, item : Dictionary, old_item : Dictionary)
 
+## Resets initial state and removes all UI items.
+func reset() -> void:
+	has_set_initial = false
+	for child in attached.get_children():
+		attached.remove_child(child)
+
 ## ONLY used for the first initial ready setup of key actions.
 func set_initial_key_actions(new_key_actions : Array) -> void:
 	if has_set_initial:

@@ -9,10 +9,22 @@ class_name Keybinds
 #   "key" : number_for_key_representation
 #   "action_name" : "action_name_here"
 #  }
+# ]
 var key_actions : Array = []
 var settings_ui : KeybindSettingUI
+var KEYBIND_PREFIX : String = "kb_"
 
 func _ready() -> void:
+	# Alert all mods that rely on keybinds of the prefix we are using.
+	var global_dict = get_global_mod_data("Keybinds")
+	if not global_dict.has("prefix"):
+		global_dict["prefix"] = KEYBIND_PREFIX
+	else:
+		KEYBIND_PREFIX = global_dict["prefix"]
+
+	# Not essential, but allows us to reference it in other mods quickly.
+	send_global_mod_message("Keybinds", global_dict)
+
 	# Remove the temp panel and attach the children to the 
 	# settings window! This way we aren't messing around with
 	# tracked settings, and instead are simply loading our own UI.
@@ -23,16 +35,20 @@ func _ready() -> void:
 	get_settings_window().add_child(new_keybind_button)
 	new_keybind_button.pressed.connect(_new_keybind)
 
+	var load_default_button : Button = Button.new()
+	load_default_button.text = "Reset Keybinds"
+	get_settings_window().add_child(load_default_button)
+	load_default_button.pressed.connect(_load_default)
+
 	var first_child = panel.get_child(0)
 	settings_ui = first_child
 	panel.remove_child(settings_ui)
 	get_settings_window().add_child(settings_ui)
 	settings_ui.on_change_item.connect(on_ui_change_item)
 	settings_ui.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	
-	# Trigger load
-	var settings = save_settings()
-	load_settings(settings)
+
+	# Always make sure we remove previous actions in case there's a double-up.
+	_remove_actions()
 
 func _new_keybind() -> void:
 	settings_ui.add_key_action(null)
@@ -41,7 +57,9 @@ func on_ui_change_item(action : int, item : Dictionary, old_item : Dictionary):
 	if action == ChangeAction.ACTION_NAME or action == ChangeAction.KEY_BIND:
 		# Updates should be fine as there is a reference to the item.
 		# We only have to check if there isn't an item, then add an item.
-		if action == ChangeAction.ACTION_NAME and _get_key_action_by_item(item) == null:
+		if action == ChangeAction.ACTION_NAME \
+		   and item["action_name"] != "" \
+		   and _get_key_action_by_item(item) == null:
 			key_actions.append(item)
 			_create_action(item)
 		else:
@@ -51,17 +69,17 @@ func on_ui_change_item(action : int, item : Dictionary, old_item : Dictionary):
 		_remove_key_action_by_item(item)
 
 		# Adjust our input map.
-		var action_event_count = len(InputMap.action_get_events(item["action_name"]))
+		var action_event_count = len(InputMap.action_get_events(KEYBIND_PREFIX + item["action_name"]))
 		if action_event_count <= 1:
 			# Delete the entire action.
 			print_log("Deleting the entire action for %s" % item["action_name"])
-			InputMap.erase_action(item["action_name"])
+			InputMap.erase_action(KEYBIND_PREFIX + item["action_name"])
 		else:
 			# Delete just our event.
 			var key_event = _create_key_event(item["key"])
 			if key_event != null:
 				print_log("Deleting just our event for %s" % item["action_name"])
-				InputMap.action_erase_event(item["action_name"], key_event)
+				InputMap.action_erase_event(KEYBIND_PREFIX + item["action_name"], key_event)
 
 	save_settings()
 
@@ -74,44 +92,65 @@ func _create_key_event(key : int) -> InputEventKey:
 
 func _create_action(item : Dictionary) -> void:
 	var action = item["action_name"]
-	
+
 	# Do not create empty.
 	if action == "":
 		return
-		
+
 	print_log("Creating new action and associated event %s" % action)
 	var key_event = _create_key_event(item["key"])
 
-	if not InputMap.has_action(action):
-		InputMap.add_action(action)
-	
+	if not InputMap.has_action(KEYBIND_PREFIX + action):
+		InputMap.add_action(KEYBIND_PREFIX + action)
+
 	# Always add the event to the action, if there is no action it was made.
 	# existing events for the action have been cleared.	
 	if key_event != null:
-		InputMap.action_add_event(action, key_event)
+		InputMap.action_add_event(KEYBIND_PREFIX + action, key_event)
 
 func _update_action(new_item : Dictionary, old_item : Dictionary) -> void:
-	if new_item["action_name"] != old_item["action_name"]:
-		print_log("New item action name (%s) is different from the old (%s)." % [new_item["action_name"], old_item["action_name"]])
-		InputMap.erase_action(old_item["action_name"])
+	var new_action = new_item["action_name"]
+	var old_action = old_item["action_name"]
+	var new_key = new_item["key"]
+	var old_key = old_item["key"]
+
+	if new_action != old_action:
+		print_log("New item action name (%s) is different from the old (%s)." % 
+					[new_action, old_action])
+		var existing_events = InputMap.action_get_events(KEYBIND_PREFIX + old_action)
+		if old_action != "" and len(existing_events) < 1:
+			InputMap.erase_action(KEYBIND_PREFIX + old_action)
 		_create_action(new_item)
-	elif new_item["key"] != old_item["key"]:
+	elif new_key != old_key:
 		print_log("New item key is not the same as the old key.")
-		if old_item["key"] != -1:
+		if old_key != -1:
 			print_log("Old item key is not unassigned. Removing the old item key event.")
-			var old_key_event = _create_key_event(old_item["key"])
-			InputMap.action_erase_event(new_item["action_name"], old_key_event)
+			var old_key_event = _create_key_event(old_key)
+			if new_action == "":
+				# We need to cycle through all actions and events
+				# and find where the key is used and remove it.
+				for action_name in InputMap.get_actions():
+					if not action_name.begins_with(KEYBIND_PREFIX):
+						continue
+					if not InputMap.event_is_action(old_key_event, action_name, true):
+						continue
+					print("Removing orphan event from %s action" % action_name)
+					InputMap.action_erase_event(action_name, old_key_event)
+			else:
+				InputMap.action_erase_event(KEYBIND_PREFIX + new_action, old_key_event)
 
 		print_log("Adding event for the action name with the correct key.")
 
 		# We only want to create a new key event if it wasn't reset.
-		var new_key_event = _create_key_event(new_item["key"])
-		if new_key_event != null and new_item["action_name"] != "":
-			InputMap.action_add_event(new_item["action_name"], new_key_event)
+		var new_key_event = _create_key_event(new_key)
+		if new_key_event != null and new_action != "":
+			InputMap.action_add_event(KEYBIND_PREFIX + new_action, new_key_event)
 
 func _input(event : InputEvent) -> void:
-	if InputMap.has_action("ping") and event.is_action_pressed("ping"):
+	if InputMap.has_action(KEYBIND_PREFIX + "ping") \
+		and event.is_action_pressed(KEYBIND_PREFIX + "ping"):
 		print_log("pong!")
+		set_status("Pong!")
 	#if event is InputEventKey:
 		#print_log("Key pressed")
 		##if event.physical_keycode in key_actions:
@@ -157,19 +196,35 @@ func _create_initial_actions() -> void:
 		},
 	]
 
+func _remove_actions() -> void:
+	for action_name in InputMap.get_actions():
+		# ONLY remove our actions we make.
+		if not action_name.begins_with(KEYBIND_PREFIX):
+			continue
+		InputMap.erase_action(action_name)
+
+func _load_default() -> void:
+	_remove_actions()
+	_create_initial_actions()
+	_add_actions()
+	settings_ui.reset()
+	settings_ui.set_initial_key_actions(key_actions)
+	
 func save_before(_settings_current : Dictionary):
 	_settings_current["keybinds_key_actions"] = key_actions
 	print_log("Saved key actions")
 
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
-	print_log("Load after")
 	if _settings_new.has("keybinds_key_actions") and len(_settings_new["keybinds_key_actions"]) > 0:
 		key_actions = _settings_new["keybinds_key_actions"]
 		print_log("Loaded key actions.")
-	else:
-		# Add default.
-		print_log("Loading default key actions.")
-		_create_initial_actions()
+
 	# Try set initial, it will return if initial has already been set.	
-	settings_ui.set_initial_key_actions(key_actions)
-	_add_actions()
+	if len(key_actions) <= 0:
+		return
+	print_log("Attempting to load...")
+	if not settings_ui.has_set_initial:
+		print("Initial adding of actions.")
+		_add_actions()
+	print_log("Setting up UI...")
+	settings_ui.set_initial_key_actions(key_actions)	
