@@ -13,8 +13,6 @@ var key_actions : Array = []
 var settings_ui : KeybindSettingUI
 
 func _ready() -> void:
-	_add_actions()
-
 	# Remove the temp panel and attach the children to the 
 	# settings window! This way we aren't messing around with
 	# tracked settings, and instead are simply loading our own UI.
@@ -32,6 +30,9 @@ func _ready() -> void:
 	settings_ui.on_change_item.connect(on_ui_change_item)
 	settings_ui.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	
+	# Trigger load
+	var settings = save_settings()
+	load_settings(settings)
 
 func _new_keybind() -> void:
 	settings_ui.add_key_action(null)
@@ -53,13 +54,13 @@ func on_ui_change_item(action : int, item : Dictionary, old_item : Dictionary):
 		var action_event_count = len(InputMap.action_get_events(item["action_name"]))
 		if action_event_count <= 1:
 			# Delete the entire action.
-			print("Deleting the entire action for %s" % item["action_name"])
+			print_log("Deleting the entire action for %s" % item["action_name"])
 			InputMap.erase_action(item["action_name"])
 		else:
 			# Delete just our event.
 			var key_event = _create_key_event(item["key"])
 			if key_event != null:
-				print("Deleting just our event for %s" % item["action_name"])
+				print_log("Deleting just our event for %s" % item["action_name"])
 				InputMap.action_erase_event(item["action_name"], key_event)
 
 	save_settings()
@@ -78,14 +79,11 @@ func _create_action(item : Dictionary) -> void:
 	if action == "":
 		return
 		
-	print("Creating new action and associated event %s" % action)
+	print_log("Creating new action and associated event %s" % action)
 	var key_event = _create_key_event(item["key"])
 
 	if not InputMap.has_action(action):
 		InputMap.add_action(action)
-	else:
-		# Clear existing events for the action
-		InputMap.action_erase_events(action)
 	
 	# Always add the event to the action, if there is no action it was made.
 	# existing events for the action have been cleared.	
@@ -94,33 +92,33 @@ func _create_action(item : Dictionary) -> void:
 
 func _update_action(new_item : Dictionary, old_item : Dictionary) -> void:
 	if new_item["action_name"] != old_item["action_name"]:
-		print("New item action name (%s) is different from the old (%s)." % [new_item["action_name"], old_item["action_name"]])
+		print_log("New item action name (%s) is different from the old (%s)." % [new_item["action_name"], old_item["action_name"]])
 		InputMap.erase_action(old_item["action_name"])
 		_create_action(new_item)
 	elif new_item["key"] != old_item["key"]:
-		print("New item key is not the same as the old key.")
+		print_log("New item key is not the same as the old key.")
 		if old_item["key"] != -1:
-			print("Old item key is not unassigned. Removing the old item key event.")
+			print_log("Old item key is not unassigned. Removing the old item key event.")
 			var old_key_event = _create_key_event(old_item["key"])
 			InputMap.action_erase_event(new_item["action_name"], old_key_event)
 
-		print("Adding event for the action name with the correct key.")
+		print_log("Adding event for the action name with the correct key.")
 
 		# We only want to create a new key event if it wasn't reset.
 		var new_key_event = _create_key_event(new_item["key"])
-		if new_key_event != null:
+		if new_key_event != null and new_item["action_name"] != "":
 			InputMap.action_add_event(new_item["action_name"], new_key_event)
 
 func _input(event : InputEvent) -> void:
 	if InputMap.has_action("ping") and event.is_action_pressed("ping"):
-		print("pong!")
+		print_log("pong!")
 	#if event is InputEventKey:
-		#print("Key pressed")
+		#print_log("Key pressed")
 		##if event.physical_keycode in key_actions:
 		#var value = _get_key_action_by_input(event.physical_keycode)
 		#if value == null:
 			#return
-		#print(value["action_name"])
+		#print_log(value["action_name"])
 
 func _get_key_action_by_item(item : Dictionary):
 	for i in key_actions:
@@ -147,16 +145,31 @@ func _add_actions() -> void:
 	for item in key_actions:
 		_create_action(item)
 
+func _create_initial_actions() -> void:
+	key_actions = [
+		{ 
+			"key": KEY_P,
+			"action_name": "ping"
+		},
+		{ 
+			"key": KEY_Y,
+			"action_name": "ping"
+		},
+	]
+
 func save_before(_settings_current : Dictionary):
 	_settings_current["keybinds_key_actions"] = key_actions
-	print("Saved key actions")
+	print_log("Saved key actions")
 
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
-	print("Load after")
-
-	if _settings_new.has("keybinds_key_actions"):
+	print_log("Load after")
+	if _settings_new.has("keybinds_key_actions") and len(_settings_new["keybinds_key_actions"]) > 0:
 		key_actions = _settings_new["keybinds_key_actions"]
-		print("Loaded key actions")
-		# Try set initial, it will return if initial has already been set.
-		settings_ui.set_initial_key_actions(key_actions)
-		_add_actions()
+		print_log("Loaded key actions.")
+	else:
+		# Add default.
+		print_log("Loading default key actions.")
+		_create_initial_actions()
+	# Try set initial, it will return if initial has already been set.	
+	settings_ui.set_initial_key_actions(key_actions)
+	_add_actions()

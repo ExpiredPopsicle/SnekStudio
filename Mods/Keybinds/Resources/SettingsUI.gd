@@ -10,8 +10,8 @@ signal on_change_item(action : int, item : Dictionary, old_item : Dictionary)
 ## ONLY used for the first initial ready setup of key actions.
 func set_initial_key_actions(new_key_actions : Array) -> void:
 	if has_set_initial:
-		print("Already set initial key actions")
-	print("Set new key actions")
+		return
+	
 	_build_ui(new_key_actions)
 	has_set_initial = true
 
