@@ -14,17 +14,14 @@ func set_initial_key_actions(new_key_actions : Array) -> void:
 	print("Set new key actions")
 	_build_ui(new_key_actions)
 	has_set_initial = true
-	
+
 func _build_ui(key_actions : Array): 
 	for item in key_actions:
 		add_key_action(item)
 
+## Create an action UI element for a particular item.
+## If the item is null, it will create a blank item.
 func add_key_action(item):
-	# FIXME: Properly handle updates - remove missing, add new.
-	#if item["action_name"] in built_ui_for:
-		#print("Already built UI for this one...")
-		#return
-		#
 	var new_item : ActionUI = base.instantiate()
 	new_item.on_change_item.connect(_on_change_item)
 	if item != null:
@@ -34,7 +31,5 @@ func add_key_action(item):
 	new_item.visible = true
 	attached.add_child(new_item)
 
-	# FIXME: Multiple events for single action means this may not be correct.
-	#built_ui_for.append(item["action_name"])
 func _on_change_item(action : int, item : Dictionary, old_item : Dictionary):
 	emit_signal("on_change_item", action, item, old_item)

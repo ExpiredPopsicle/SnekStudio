@@ -1,20 +1,22 @@
 extends Control
 class_name ActionUI
 
-@export var ui_item : Dictionary = {}
-@export var currently_setting : bool = false
+var ui_item : Dictionary = {}
+var currently_setting : bool = false
 
 signal on_change_item(action : int, item : Dictionary, old_item : Dictionary)
 
+## Load the item to the UI elements.
+## Keybind does not have to be set, but must be -1 if not set.
 func set_item(item : Dictionary) -> void:
 	# Bind to the UI item.
 	ui_item = item
-	
+
 	var action : String = item["action_name"]
 	if item["key"] != -1:
 		var key_code : Key = item["key"]
 		_set_key_bind_display(key_code)
-		
+
 	%ActionNameTxt.text = action
 	emit_signal("on_change_item", ChangeAction.INITIAL, item, {})
 
@@ -28,9 +30,10 @@ func _set_key_bind_display(key_code : Key):
 	var display_bind = OS.get_keycode_string(
 		DisplayServer.keyboard_get_label_from_physical(
 			input_event.get_physical_keycode_with_modifiers()))
-	
+
 	%KeybindDisplay.text = display_bind
 
+## Set the UI item to be blank.
 func blank_item() -> void:
 	ui_item = {
 		"key": -1,
@@ -42,11 +45,9 @@ func _on_action_name_txt_text_changed(new_text : String) -> void:
 	ui_item["action_name"] = new_text
 	emit_signal("on_change_item", ChangeAction.ACTION_NAME, ui_item, old_item)
 
-
 func _on_delete_btn_pressed() -> void:
 	emit_signal("on_change_item", ChangeAction.DELETE, ui_item, {})
 	queue_free()
-
 
 func _on_reset_btn_pressed() -> void:
 	var old_item = ui_item.duplicate()
@@ -63,7 +64,7 @@ func _input(event : InputEvent):
 		ui_item["key"] = new_key
 		emit_signal("on_change_item", ChangeAction.KEY_BIND, ui_item, old_item)
 		_set_key_bind_display(new_key)
-		
+
 func _on_set_btn_pressed() -> void:
 	currently_setting = true
 	if currently_setting:
