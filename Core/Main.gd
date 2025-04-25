@@ -1,4 +1,12 @@
-extends Node3D
+extends Window
+
+
+@export var model_controller: Node3D
+@export var world_environment: WorldEnvironment
+@export var camera_boom: Node3D
+@export var mods: Node
+@export var subviewport: SubViewport
+
 
 var _mods_running = false
 var colliders_by_model_name = {}
@@ -13,6 +21,10 @@ var _mods_loaded : bool = false
 # Array of all serializable BasicSubWindows
 var subwindows : Array[BasicSubWindow] = []
 
+var subviewport_settings: Dictionary = {}
+
+@onready var timer_size_change: Timer = $TimerSizeChange
+
 func _process(_delta):
 	_set_process_order()
 
@@ -22,7 +34,7 @@ func _set_process_order():
 	# process priority to everything in the list. Mods must execute before the
 	# physics on the model, or the physics will lag a frame behind.
 	var child_index = 0
-	for child in $Mods.get_children():
+	for child in mods.get_children():
 		child.set_process_priority(-1 - get_child_count() + child_index)
 		child_index += 1
 
@@ -32,18 +44,17 @@ func get_background_color():
 	return current_style.bg_color
 
 func set_background_color(c : Color):
-	var env = get_node("WorldEnvironment")
-	var env2 : Environment = env.environment
-	env2.background_color = c
+	#var env2 : Environment = world_environment.environment
+	#env2.background_color = c
 	
 	var current_style : StyleBoxFlat = %BackgroundPanel.get("theme_override_styles/panel")
 	current_style.bg_color = c
 
 func set_background_transparency(transparent : bool):
 	if transparent:
-		var env = get_node("WorldEnvironment")
-		var env2 : Environment = env.environment
-		env2.background_mode = Environment.BG_CLEAR_COLOR
+
+		#var env2 : Environment = world_environment.environment
+		#env2.background_mode = Environment.BG_CLEAR_COLOR
 		get_node("BackgroundLayer").visible = false
 		get_tree().get_root().set_transparent_background(true) # Needed for compatibility mode.
 		
@@ -54,9 +65,9 @@ func set_background_transparency(transparent : bool):
 #		get_tree().root.transparent_bg = true
 		
 	else:
-		var env = get_node("WorldEnvironment")
-		var env2 : Environment = env.environment
-		env2.background_mode = Environment.BG_CANVAS
+
+		#var env2 : Environment = world_environment.environment
+		#env2.background_mode = Environment.BG_CANVAS
 		#env2.background_color = Color(1.0, 1.0, 1.0, 1.0)
 		get_node("BackgroundLayer").visible = true
 		get_tree().get_root().set_transparent_background(false) # Needed for compatibility mode.
@@ -119,21 +130,21 @@ func _exit_tree():
 func _on_handle_channel_points_redeem(redeemer_username, redeemer_display_name, redeem_title, user_input):
 	
 	# Relay message to all mods.
-	for child in $Mods.get_children():
+	for child in mods.get_children():
 		if child is Mod_Base:
 			child.handle_channel_point_redeem(redeemer_username, redeemer_display_name, redeem_title, user_input)
 
 func _on_handle_channel_chat_message(cheerer_username, cheerer_display_name, message, bits_count):
 
 	# Relay message to all mods.
-	for child in $Mods.get_children():
+	for child in mods.get_children():
 		if child is Mod_Base:
 			child.handle_channel_chat_message(cheerer_username, cheerer_display_name, message, bits_count)
 
 func _on_handle_channel_raid(raider_username, raider_display_name, raid_user_count):
 	
 	# Relay message to all mods.
-	for child in $Mods.get_children():
+	for child in mods.get_children():
 		if child is Mod_Base:
 			child.handle_channel_raid(raider_username, raider_display_name, raid_user_count)
 
@@ -162,10 +173,11 @@ func _force_update_ui():
 	%UI_Root/%SettingsWindow_Sound.settings_changed_from_app()
 	%UI_Root/%SettingsWindow_Scene.settings_changed_from_app()
 	%UI_Root/%SettingsWindow_Window.settings_changed_from_app()
+	%UI_Root/%SettingsWindow_SubViewport.settings_changed_from_app()
 	%UI_Root/%SettingsWindow_Colliders.update_from_app()
 
 func _get_current_model_base_name():
-	var last_vrm_path = $ModelController.get_last_loaded_vrm()
+	var last_vrm_path = model_controller.get_last_loaded_vrm()
 	var model_base_name = last_vrm_path.get_file()
 	return model_base_name	
 
@@ -214,12 +226,20 @@ func get_colliders(create_defaults_if_missing : bool = false) -> Array:
 ## Get the root object of the VTuber model.
 func get_model() -> Node3D:
 	# FIXME (multiplayer): Get model by index or something.
-	return $ModelController.get_model()
+	return model_controller.get_model()
+
+## Get parent node of mods.
+func get_mods() -> Node:
+	return mods
+
+## Get the SubViewport node which renders the 3D scene.
+func get_subviewport() -> SubViewport:
+	return subviewport
 
 ## Get the skeleton of the VTuber model.
 func get_skeleton() -> Skeleton3D:
 	# FIXME (multiplayer): Get skeleton by index or something.
-	return $ModelController.get_skeleton()
+	return model_controller.get_skeleton()
 
 ## Sync colliders on model with whatever is in the dictionary, or do a default
 ## if colliders_list is null.
@@ -257,14 +277,14 @@ func reset_settings_to_default() -> void:
 	load_vrm("res://SampleModels/VRM/samplesnek_mediapipe_16.vrm")
 
 	# Clear mods list.
-	var mods_to_delete = $Mods.get_children()
+	var mods_to_delete = mods.get_children()
 	for child in mods_to_delete:
 		child.scene_shutdown()
-		$Mods.remove_child(child)
+		mods.remove_child(child)
 		child.queue_free()
 
 	# Reset camera.
-	$CameraBoom.reset_to_default()
+	camera_boom.reset_to_default()
 
 	# Reset transparency.	
 	set_background_transparency(false)
@@ -296,13 +316,13 @@ func serialize_settings(do_settings=true, do_mods=true):
 	if do_settings:
 		
 		# Save camera.
-		settings_to_save["camera"] = $CameraBoom.save_settings()
+		settings_to_save["camera"] = camera_boom.save_settings()
 
 		# Save UI visibility.
 		settings_to_save["ui_visible"] = %UI_Root.visible
 
 		# Save model path.
-		var last_vrm_path = $ModelController.get_last_loaded_vrm()
+		var last_vrm_path = model_controller.get_last_loaded_vrm()
 		settings_to_save["last_vrm_path"] = last_vrm_path
 
 		# Save window settings
@@ -330,10 +350,13 @@ func serialize_settings(do_settings=true, do_mods=true):
 			window_position[1]]	
 		settings_to_save["window_maximized"] = not not \
 			(get_viewport().mode & Window.MODE_MAXIMIZED)
+		
+		#Subviewport settings
+		settings_to_save["subviewport_settings"] = subviewport_settings
 
 	# Save mods list.
 	if do_mods:
-		var mods_list = $Mods.get_children()
+		var mods_list = mods.get_children()
 		settings_to_save["mods"] = []
 		for mod in mods_list:
 			var mod_definition = {}
@@ -425,7 +448,7 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 
 		# Load camera.
 		if "camera" in settings_dict:
-			$CameraBoom.load_settings(settings_dict["camera"])
+			camera_boom.load_settings(settings_dict["camera"])
 
 		# Load transparency.
 		if "transparent_window" in settings_dict:
@@ -474,20 +497,71 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 		#elif not "sound_device_output" in settings_dict:
 		#	AudioServer.set_output_device("Default")
 			
+		## Commented out since this does not seem to do anything
 		# Window size/position settings
-		if _setting_changed("window_size", old_settings_dict, settings_dict):
-			get_viewport().set_size(Vector2i(
-				settings_dict["window_size"][0], 
-				settings_dict["window_size"][1]))
-		if _setting_changed("window_position", old_settings_dict, settings_dict):
-			get_viewport().set_position(Vector2i(
-				settings_dict["window_position"][0], 
-				settings_dict["window_position"][1]))
+		#if _setting_changed("window_size", old_settings_dict, settings_dict):
+			#get_viewport().set_size(Vector2i(
+				#settings_dict["window_size"][0], 
+				#settings_dict["window_size"][1]))
+		#if _setting_changed("window_position", old_settings_dict, settings_dict):
+			#get_viewport().set_position(Vector2i(
+				#settings_dict["window_position"][0], 
+				#settings_dict["window_position"][1]))
 		if _setting_changed("window_maximized", old_settings_dict, settings_dict):
 			if settings_dict["window_maximized"]:
 				get_viewport().mode |= Window.MODE_MAXIMIZED
 			else:
 				get_viewport().mode &= ~Window.MODE_MAXIMIZED
+		
+		# Subviewport settings
+		if _setting_changed("subviewport_settings", old_settings_dict, settings_dict):
+			subviewport_settings = settings_dict["subviewport_settings"]
+			
+			if subviewport_settings["custom_res_enabled"]:
+				## Saved Vector2i is being parsed as a string?
+				## update: I see now that I should save it as an array.
+				## I will do that eventually
+				var size_to_set: Vector2i
+				var custom_res_value = subviewport_settings["custom_res_value"]
+				if typeof(custom_res_value) == 6:
+					size_to_set = custom_res_value
+				elif typeof(custom_res_value) == 4:
+					var value_string: String = custom_res_value
+					size_to_set = Vector2i(
+						value_string.get_slice(",", 0).trim_prefix("(").to_int(),
+						value_string.get_slice(",", 1).trim_prefix(")").to_int()
+					)
+				else:
+					print("custom_res_value is type %s" % type_string(custom_res_value))
+				subviewport.size = size_to_set
+			else:
+				var res: Vector2i
+				match subviewport_settings["chosen_res"]:
+					"Fit to window":
+						res = get_window().size
+					"1152x648 (default)":
+						res = Vector2i(1152, 648)
+					"1280x720":
+						res = Vector2i(1280, 720)
+					"1440x900":
+						res = Vector2i(1440, 900)
+					"1920x1080":
+						res = Vector2i(1920, 1080)
+				print("chosen subviewport res: %s" % res)
+				subviewport.size = res
+				get_window().size = res
+			
+			subviewport.msaa_3d = subviewport_settings["msaa"]
+			print("MSAA set to %s" % subviewport.msaa_3d)
+			subviewport.debug_draw = subviewport_settings["debug_draw"]
+			
+			var filter_value: String = subviewport_settings["filter"]
+			if filter_value == "Nearest":
+				canvas_item_default_texture_filter = Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
+				subviewport.canvas_item_default_texture_filter = Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
+			elif filter_value == "Linear":
+				canvas_item_default_texture_filter = Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR
+				subviewport.canvas_item_default_texture_filter = Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_LINEAR
 
 	_update_window_decorations()
 
@@ -501,7 +575,7 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 				if packed_scene:
 					var scene = packed_scene.instantiate()
 					scene.set_name(mod_definition["name"])
-					$Mods.add_child(scene)
+					mods.add_child(scene)
 					scene.load_settings(mod_definition["settings"])
 					scene.update_settings_ui()
 			reinit_mods()
@@ -605,7 +679,7 @@ func load_vrm(path) -> bool:
 	# FIXME: Handle failure cases.
 
 	shutdown_mods()
-	var new_model_root : Node3D = $ModelController.load_vrm(path)
+	var new_model_root : Node3D = model_controller.load_vrm(path)
 
 	if not new_model_root:
 		reinit_mods()
@@ -621,7 +695,7 @@ func load_vrm(path) -> bool:
 		collider["from_vrm"] = false
 
 	# Add colliders from VRM (the ones used for springbone collisions).
-	var model = $ModelController.get_node_or_null("Model")
+	var model = model_controller.get_node_or_null("Model")
 	if model:
 		var secondary_path = NodePath("secondary") #model.vrm_secondary
 		var secondary = model.get_node(secondary_path)
@@ -693,13 +767,13 @@ func load_vrm(path) -> bool:
 
 func shutdown_mods():
 	if _mods_running:
-		for mod in $Mods.get_children():
+		for mod in mods.get_children():
 			mod.scene_shutdown()
 		_mods_running = false
 
 func reinit_mods():
 	if not _mods_running:
-		for mod in $Mods.get_children():
+		for mod in mods.get_children():
 			mod.scene_init()
 		_mods_running = true
 
@@ -707,7 +781,7 @@ func get_audio():
 	return $AudioStreamRecord
 
 func get_controller():
-	return $ModelController
+	return model_controller
 
 ## Get the saved user data directory. When running in the editor, this will be
 ## the "Saved" directory under the project. For running outside the editor, it
@@ -743,3 +817,20 @@ static func get_added_mods_locations() -> PackedStringArray:
 		for global_path : String in paths_global:
 			paths_localized.append(ProjectSettings.localize_path(global_path))
 	return paths_localized
+
+func _on_size_changed() -> void:
+	if timer_size_change:
+		timer_size_change.start()
+		subviewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+
+func _on_timer_size_change_timeout() -> void:
+	## This limits how often the viewport can attempt to match the window size,
+	## which prevents Godot or Linux or whatever from eating all my RAM
+	if subviewport_settings.has("chosen_res"):
+		if subviewport_settings["chosen_res"] == "Fit to window"\
+			and subviewport_settings["custom_res_enabled"] == false:
+				subviewport.size = size
+	subviewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
+
+func _on_close_requested() -> void:
+	get_tree().quit()

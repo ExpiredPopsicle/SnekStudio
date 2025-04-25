@@ -387,7 +387,7 @@ func get_skeleton() -> Skeleton3D:
 ## Get the VTuber model in the scene.
 func get_model() -> Node3D:
 	# FIXME (multiplayer): Return the specific model this applies to.
-	var controller = get_app().get_node("ModelController")
+	var controller = get_app().get_controller()
 	return controller.get_node_or_null("Model")
 
 func get_bone_transform(bone_name) -> Transform3D:
@@ -462,7 +462,7 @@ func get_global_mod_data(key : String) -> Dictionary:
 	return app.module_global_data[key]
 
 func send_global_mod_message(key : String, values : Dictionary, skip_current : bool = true):
-	var mods_container : Node = get_app().get_node("Mods")
+	var mods_container : Node = get_app().get_mods()
 	for mod in mods_container.get_children():
 		if mod != self or not skip_current:
 			mod._handle_global_mod_message(key, values)

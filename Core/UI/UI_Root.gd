@@ -4,6 +4,7 @@ extends Control
 @export var camera_boom : Node3D
 
 var dragging_camera = false
+var settings_windows: Array[BasicSubWindow]
 
 func _get_root():
 	return get_node("../..")
@@ -24,6 +25,13 @@ func _reset_window_title():
 	DisplayServer.window_set_title(
 		full_title)
 
+func _register_settings_windows() -> void:
+	# any child of the SettingsWindows node gets registered as a settings window
+	var settings: PopupMenu = $ColorRect/HBoxContainer/MenuBar/Settings
+	for child in $SettingsWindows.get_children():
+		settings_windows.append(child)
+		settings.add_item(child.name.trim_prefix("SettingsWindow_") + "...")
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	
@@ -31,9 +39,11 @@ func _ready():
 	# TODO(SAVING): Save UI visibility and hidden/shown windows.
 	
 	_reset_window_title()
+	_register_settings_windows()
 	
 	set_process_unhandled_input(true)
 
+	#get_viewport()
 	get_viewport().files_dropped.connect(_on_files_dropped)
 
 func _on_vrm_load_file_dialog_file_selected(path):
@@ -97,6 +107,11 @@ func _gui_input(event):
 func _on_resized():
 	# Go through all our sub-windows and make sure they don't slide off the edge
 	# of the screen.
+	
+	# Added SettingsWindows node to help distinguish them from other BasicSubWindows
+	for child in $SettingsWindows.get_children():
+		if child is BasicSubWindow:
+			child._ensure_window_visibility()
 	for child in get_children():
 		if child is BasicSubWindow:
 			child._ensure_window_visibility()
@@ -136,16 +151,18 @@ func _on_file_id_pressed(id):
 		$SettingsLoadDialog.show()
 
 func _on_settings_id_pressed(id):
-	if id == 0:
-		%SettingsWindow_General.show_window()
-	if id == 1:
-		%SettingsWindow_Colliders.show_window()
-	if id == 2:
-		%SettingsWindow_Sound.show_window()
-	if id == 3:
-		%SettingsWindow_Scene.show_window()
-	if id == 4:
-		%SettingsWindow_Window.show_window()
+	var window_to_show: BasicSubWindow = settings_windows[id]
+	window_to_show.show_window()
+	#if id == 0:
+		#%SettingsWindow_General.show_window()
+	#if id == 1:
+		#%SettingsWindow_Colliders.show_window()
+	#if id == 2:
+		#%SettingsWindow_Sound.show_window()
+	#if id == 3:
+		#%SettingsWindow_Scene.show_window()
+	#if id == 4:
+		#%SettingsWindow_Window.show_window()
 
 func _on_mods_id_pressed(id):
 	if id == 0:

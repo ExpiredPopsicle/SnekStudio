@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bst148ok43uyo"]
+[gd_scene load_steps=9 format=3 uid="uid://bst148ok43uyo"]
 
 [ext_resource type="Script" uid="uid://cfw605s4nxgam" path="res://Core/Main.gd" id="1_88riu"]
 [ext_resource type="PackedScene" uid="uid://dqrb5gghpk1iu" path="res://Core/UI/UI_Root.tscn" id="2_a0eek"]
@@ -6,35 +6,70 @@
 [ext_resource type="Script" uid="uid://v8u2efcjmg73" path="res://Core/ModelController.gd" id="5_upw4c"]
 [ext_resource type="Script" uid="uid://bhjru7482htmb" path="res://Core/AudioInput/AudioStreamRecord.gd" id="10_dpnxj"]
 
+[sub_resource type="ViewportTexture" id="ViewportTexture_mmo8m"]
+viewport_path = NodePath("UX_Root/TextureRect/SubViewport")
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nh3ai"]
 bg_color = Color(1, 0.164706, 0.776471, 1)
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_jmxhl"]
-sky_energy_multiplier = 7.83
-
-[sub_resource type="Sky" id="Sky_1idd5"]
-sky_material = SubResource("ProceduralSkyMaterial_jmxhl")
-
-[sub_resource type="Environment" id="Environment_w4pqy"]
-background_mode = 3
-background_color = Color(0.952941, 0, 0.835294, 1)
-sky = SubResource("Sky_1idd5")
-ambient_light_source = 2
-ambient_light_color = Color(1, 1, 1, 1)
-reflected_light_source = 1
-
 [sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_djr57"]
 
-[node name="SnekStudio_Main" type="Node3D"]
+[node name="SnekStudio_Main" type="Window" node_paths=PackedStringArray("model_controller", "camera_boom", "mods", "subviewport")]
+transparent_bg = true
+initial_position = 1
+size = Vector2i(1152, 648)
+transparent = true
+content_scale_mode = 2
 script = ExtResource("1_88riu")
+model_controller = NodePath("UX_Root/TextureRect/SubViewport/World/ModelController")
+camera_boom = NodePath("UX_Root/TextureRect/SubViewport/World/CameraBoom")
+mods = NodePath("UX_Root/TextureRect/SubViewport/World/Mods")
+subviewport = NodePath("UX_Root/TextureRect/SubViewport")
+
+[node name="UX_Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="UX_Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("ViewportTexture_mmo8m")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="SubViewport" type="SubViewport" parent="UX_Root/TextureRect"]
+transparent_bg = true
+msaa_3d = 2
+audio_listener_enable_3d = true
+size = Vector2i(1152, 648)
+
+[node name="World" type="Node3D" parent="UX_Root/TextureRect/SubViewport"]
+
+[node name="CameraBoom" parent="UX_Root/TextureRect/SubViewport/World" instance=ExtResource("3_ur4kn")]
+transform = Transform3D(1, 0, 0, 0, 0.994522, 0.104528, 0, -0.104528, 0.994522, 0, 1.45, 0)
+
+[node name="ModelController" type="Node3D" parent="UX_Root/TextureRect/SubViewport/World"]
+transform = Transform3D(1, 0, 3.49691e-07, 0, 1, 0, -3.49691e-07, 0, 1, 0, 0, 0)
+script = ExtResource("5_upw4c")
+
+[node name="Mods" type="Node" parent="UX_Root/TextureRect/SubViewport/World"]
+unique_name_in_owner = true
 
 [node name="CanvasLayer2" type="CanvasLayer" parent="."]
 layer = 2
 
 [node name="UI_Root" parent="CanvasLayer2" node_paths=PackedStringArray("controller", "camera_boom") instance=ExtResource("2_a0eek")]
 unique_name_in_owner = true
-controller = NodePath("../../ModelController")
-camera_boom = NodePath("../../CameraBoom")
+controller = NodePath("../../UX_Root/TextureRect/SubViewport/World/ModelController")
+camera_boom = NodePath("../../UX_Root/TextureRect/SubViewport/World/CameraBoom")
 
 [node name="BackgroundLayer" type="CanvasLayer" parent="."]
 layer = -1
@@ -48,20 +83,15 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_nh3ai")
 
-[node name="CameraBoom" parent="." instance=ExtResource("3_ur4kn")]
-transform = Transform3D(1, 0, 0, 0, 0.994522, 0.104528, 0, -0.104528, 0.994522, 0, 1.45, 0)
-
-[node name="Mods" type="Node" parent="."]
-unique_name_in_owner = true
-
-[node name="ModelController" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 3.49691e-07, 0, 1, 0, -3.49691e-07, 0, 1, 0, 0, 0)
-script = ExtResource("5_upw4c")
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_w4pqy")
-
 [node name="AudioStreamRecord" type="AudioStreamPlayer" parent="."]
 stream = SubResource("AudioStreamMicrophone_djr57")
 bus = &"Record"
 script = ExtResource("10_dpnxj")
+
+[node name="TimerSizeChange" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
+[connection signal="close_requested" from="." to="." method="_on_close_requested"]
+[connection signal="size_changed" from="." to="." method="_on_size_changed"]
+[connection signal="timeout" from="TimerSizeChange" to="." method="_on_timer_size_change_timeout"]

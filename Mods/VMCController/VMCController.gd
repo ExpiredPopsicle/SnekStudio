@@ -169,7 +169,7 @@ func _on_OSCServer_message_received(address_string, arguments):
 
 	var model : Node3D = get_app().get_model()
 	var skeleton : Skeleton3D = get_app().get_skeleton()
-	var model_controller : Node3D = get_app().get_node("ModelController")
+	var model_controller : Node3D = get_app().get_controller()
 
 	# Move the skeleton based on the hips offset.
 	if apply_hips_offset_to_skeleton:

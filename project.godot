@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="SnekStudio"
+config/name="SnekStudioChangeTesting"
 config/version="0.1.3"
 run/main_scene="res://Core/Main.tscn"
 config/use_custom_user_dir=true
@@ -33,6 +33,7 @@ settings/stdout/print_fps=true
 
 window/size/transparent=true
 window/subwindows/embed_subwindows=false
+window/stretch/mode="viewport"
 window/per_pixel_transparency/allowed=true
 window/vsync/vsync_mode=0
 
