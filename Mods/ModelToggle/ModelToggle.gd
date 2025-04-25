@@ -60,7 +60,7 @@ func check_configuration() -> PackedStringArray:
 	var errors : PackedStringArray = []
 	
 	if keybind_prefix == "" and keybind_action_name != "":
-		errors.append("No Keybinds mod installed. Keybind toggles for moddle toggle will not work.")
+		errors.append("No Keybinds mod installed. Keybind toggle for model will not work.")
 
 	return errors
 
