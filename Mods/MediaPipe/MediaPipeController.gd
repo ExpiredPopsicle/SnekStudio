@@ -69,86 +69,10 @@ var chest_yaw_scale : float = 0.25
 var lean_scale : float = 2.0
 var hip_adjustment_speed : float = 1.0
 
-var blendshape_scale : float = 1.2
-var blendshape_smoothing_scale : float = 0.05
 
 var hand_position_scale : Vector3 = Vector3(7.0, 7.0, 3.5)
 var hand_position_offset : Vector3 = Vector3(0.0, -0.14, 0.0)
 var hand_to_head_scale : float = 2.0
-
-const blendshape_names_mediapipe : PackedStringArray = [
-	"_neutral",
-	"browDownLeft",
-	"browDownRight",
-	"browInnerUp",
-	"browOuterUpLeft",
-	"browOuterUpRight",
-	"cheekPuff",
-	"cheekSquintLeft",
-	"cheekSquintRight",
-	"eyeBlinkLeft",
-	"eyeBlinkRight",
-	"eyeLookDownLeft",
-	"eyeLookDownRight",
-	"eyeLookInLeft",
-	"eyeLookInRight",
-	"eyeLookOutLeft",
-	"eyeLookOutRight",
-	"eyeLookUpLeft",
-	"eyeLookUpRight",
-	"eyeSquintLeft",
-	"eyeSquintRight",
-	"eyeWideLeft",
-	"eyeWideRight",
-	"jawForward",
-	"jawLeft",
-	"jawOpen",
-	"jawRight",
-	"mouthClose",
-	"mouthDimpleLeft",
-	"mouthDimpleRight",
-	"mouthFrownLeft",
-	"mouthFrownRight",
-	"mouthFunnel",
-	"mouthLeft",
-	"mouthLowerDownLeft",
-	"mouthLowerDownRight",
-	"mouthPressLeft",
-	"mouthPressRight",
-	"mouthPucker",
-	"mouthRight",
-	"mouthRollLower",
-	"mouthRollUpper",
-	"mouthShrugLower",
-	"mouthShrugUpper",
-	"mouthSmileLeft",
-	"mouthSmileRight",
-	"mouthStretchLeft",
-	"mouthStretchRight",
-	"mouthUpperUpLeft",
-	"mouthUpperUpRight",
-	"noseSneerLeft",
-	"noseSneerRight",
-]
-
-const blendshape_names_vrm1 : PackedStringArray = [
-	"happy", "angry", "sad", "relaxed", "surprised",
-	"aa", "ih", "ou", "ee", "oh",
-	#"blink", # Disabled because we only use left/right.
-	"blinkLeft", "blinkRight",
-	"lookUp", "lookDown",
-	"lookLeft", "lookRight",
-	"neutral"
-]
-
-const blendshape_names_all : PackedStringArray = \
-	blendshape_names_mediapipe + blendshape_names_vrm1
-
-var blendshape_scales : Dictionary = {}
-var blendshape_offsets : Dictionary = {}
-var blendshape_smoothing : Dictionary = {}
-var blendshape_progressbars : Dictionary = {}
-var blendshape_progressbar_update_index : int = 0
 
 var eyes_link_vertical : bool = false
 var eyes_link_horizontal : bool = false
@@ -162,99 +86,6 @@ var last_packet_received = null
 # What we should show in the new error/warning reporting.
 var _current_error_to_show : String = ""
 
-func _get_property_list() -> Array[Dictionary]:
-
-	var properties : Array[Dictionary] = []
-
-	for blend_shape : String in blendshape_names_all:
-		var new_entry_scale : Dictionary = {
-			"name" : "blendshape_scale_" + blend_shape,
-			"type" : TYPE_FLOAT
-		}
-		var new_entry_offset : Dictionary = {
-			"name" : "blendshape_offset_" + blend_shape,
-			"type" : TYPE_FLOAT
-		}
-		var new_entry_smoothing : Dictionary = {
-			"name" : "blendshape_smoothing_" + blend_shape,
-			"type" : TYPE_FLOAT
-		}
-		properties.append(new_entry_scale)
-		properties.append(new_entry_offset)
-		properties.append(new_entry_smoothing)
-
-	return properties
-
-func _get(property: StringName) -> Variant:
-
-	if property.begins_with("blendshape_scale_"):
-		var blendshape_name : String = property.substr(len("blendshape_scale_"))
-		if blendshape_name in blendshape_names_all:
-			if blendshape_name in blendshape_scales:
-				return blendshape_scales[blendshape_name]
-			else:
-				return 1.0
-		else:
-			return null
-
-	if property.begins_with("blendshape_offset_"):
-		var blendshape_name : String = property.substr(len("blendshape_offset_"))
-		if blendshape_name in blendshape_names_all:
-			if blendshape_name in blendshape_offsets:
-				return blendshape_offsets[blendshape_name]
-			else:
-				return 0.0
-		else:
-			return null
-
-	if property.begins_with("blendshape_smoothing_"):
-		var blendshape_name : String = property.substr(len("blendshape_smoothing_"))
-		if blendshape_name in blendshape_names_all:
-			if blendshape_name in blendshape_smoothing:
-				return blendshape_smoothing[blendshape_name]
-			else:
-				return 0.0
-		else:
-			return null
-
-	return null
-
-func _set(property: StringName, value: Variant) -> bool:
-
-	if property.begins_with("blendshape_smoothing_"):
-		var blendshape_name : String = property.substr(len("blendshape_smoothing_"))
-		if blendshape_name in blendshape_names_all:
-			if value == 1.0:
-				blendshape_smoothing.erase(blendshape_name)
-			else:
-				blendshape_smoothing[blendshape_name] = value
-			return true
-		else:
-			return false
-
-	if property.begins_with("blendshape_scale_"):
-		var blendshape_name : String = property.substr(len("blendshape_scale_"))
-		if blendshape_name in blendshape_names_all:
-			if value == 1.0:
-				blendshape_scales.erase(blendshape_name)
-			else:
-				blendshape_scales[blendshape_name] = value
-			return true
-		else:
-			return false
-
-	if property.begins_with("blendshape_offset_"):
-		var blendshape_name : String = property.substr(len("blendshape_offset_"))
-		if blendshape_name in blendshape_names_all:
-			if value == 0.0:
-				blendshape_offsets.erase(blendshape_name)
-			else:
-				blendshape_offsets[blendshape_name] = value
-			return true
-		else:
-			return false
-
-	return false
 
 func _ready():
 
@@ -353,16 +184,6 @@ func _ready():
 		"advanced")
 
 	add_tracked_setting(
-		"blendshape_scale", "Blend Shape Scale", { "min" : 0.0, "max" : 10.0 },
-		"advanced")
-	# FIXME: Setting disabled because it doesn't do anything until you actually
-	#   set the per-shape smoothing scale, which doesn't make sense from a UI
-	#   standpoint.
-	#add_tracked_setting(
-		#"blendshape_smoothing_scale", "Blend Shape Smoothing", { "min" : 0.0, "max" : 100.0 },
-		#"advanced")
-
-	add_tracked_setting(
 		"hand_position_scale", "Hand Position Scale", {},
 		"advanced")
 	add_tracked_setting(
@@ -375,44 +196,6 @@ func _ready():
 	add_tracked_setting(
 		"debug_visible_hand_trackers", "Debug: Visible hand trackers", {},
 		"advanced")
-
-	add_setting_group("blendshapes_scale_offset", "Blendshape Tuning")
-
-	for blendshape_name in blendshape_names_all:
-
-		var label : Label = Label.new()
-		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		label.text = blendshape_name + " scale/offset/smoothing"
-		# FIXME: Direct use of internal (indented private, not protected) variables.
-		_settings_groups["blendshapes_scale_offset"].add_setting_control(label)
-
-		var progressbar : ProgressBar = ProgressBar.new()
-		progressbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		progressbar.show_percentage = false
-		progressbar.value = randf()
-		progressbar.min_value = 0.0
-		progressbar.max_value = 1.0
-		progressbar.custom_minimum_size = Vector2(0, 32.0)
-		# FIXME: Direct use of internal variables.
-		_settings_groups["blendshapes_scale_offset"].add_setting_control(progressbar)
-
-		# Mouth shapes start with scale doubled by default.
-		if blendshape_name.begins_with("mouth") or blendshape_name.begins_with("jaw"):
-			blendshape_scales[blendshape_name] = 2.0
-
-		add_tracked_setting(
-			"blendshape_scale_" + blendshape_name, "",  { "min" : 0.0, "max" : 5.0 },
-			"blendshapes_scale_offset")
-		add_tracked_setting(
-			"blendshape_offset_" + blendshape_name, "",  { "min" : -2.0, "max" : 2.0 },
-			"blendshapes_scale_offset")
-		add_tracked_setting(
-			"blendshape_smoothing_" + blendshape_name, "",  { "min" : 0.0, "max" : 10.0 },
-			"blendshapes_scale_offset")
-
-		blendshape_progressbars[blendshape_name] = progressbar
-
-		# TODO: Link together left/right sides (optionally?)
 
 	hand_rest_trackers["Left"] = $LeftHandRestReference
 	hand_rest_trackers["Right"] = $RightHandRestReference
@@ -959,14 +742,6 @@ func _process_single_packet(model : Node3D, delta : float, parsed_data : Diction
 	if mirror_mode:
 		parsed_data = mirror_parsed_data(parsed_data)
 
-	if parsed_data.has("blendshapes"):
-		functions_blendshapes.apply_blendshape_scale(parsed_data["blendshapes"], blendshape_scale)
-
-		# Apply blendshape scales to MediaPipe shapes.
-		functions_blendshapes.apply_blendshape_scale_offset_dict(
-			parsed_data["blendshapes"],
-			blendshape_scales, blendshape_offsets)
-
 	last_parsed_data["head_quat"] = parsed_data["head_quat"]
 	last_parsed_data["head_origin"] = parsed_data["head_origin"]
 	last_parsed_data["head_missing_time"] = parsed_data["head_missing_time"]
@@ -1002,38 +777,12 @@ func _process_single_packet(model : Node3D, delta : float, parsed_data : Diction
 				if blendshape_calibration[blendshape]:
 					last_parsed_data["blendshapes"][blendshape] -= blendshape_calibration[blendshape]
 
-		var shape_dict_new = {}
-
-		# Eye fixups. We want to apply this before it gets sent into the
-		# VRM conversion so it'll affect that.
 		last_parsed_data["blendshapes"] = functions_blendshapes.fixup_eyes(
 			last_parsed_data["blendshapes"], eyes_prevent_opposite_directions,
 			eyes_link_vertical, eyes_link_horizontal,
 			eyes_link_blink)
 
-		shape_dict_new.merge(last_parsed_data["blendshapes"], true)
-
-		# Update a few of the progress bars.
-		var shape_keys : Array = blendshape_progressbars.keys()
-		for i in range(0, 5):
-
-			var shape_name : String = \
-				shape_keys[blendshape_progressbar_update_index]
-
-			if shape_name in shape_dict_new:
-				blendshape_progressbars[shape_name].value = \
-					shape_dict_new[shape_name]
-			else:
-				blendshape_progressbars[shape_name].value = 0.0
-
-			blendshape_progressbar_update_index += 1
-			blendshape_progressbar_update_index %= len(shape_keys)
-
-		# Apply smoothing.
-		# FIXME: Parameterize.
-		shape_dict_new = functions_blendshapes.apply_smoothing(
-			blend_shape_last_values, shape_dict_new,
-			delta, blendshape_smoothing_scale, blendshape_smoothing)
+		var shape_dict_new : Dictionary = last_parsed_data["blendshapes"]
 
 		# Blend back to a rest position if we have lost tracking.
 		if frames_missing_before_spine_reset < last_parsed_data["head_missing_time"]:

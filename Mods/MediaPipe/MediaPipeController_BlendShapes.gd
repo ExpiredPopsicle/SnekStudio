@@ -1,62 +1,7 @@
 extends Object
 
 
-static func apply_blendshape_scale(shape_dict, scale):
-	for name in shape_dict.keys():
-		shape_dict[name] *= scale
 
-static func apply_blendshape_scale_offset_dict(
-	shape_dict : Dictionary,
-	scale_dict : Dictionary,
-	offset_dict : Dictionary) -> void:
-
-	var shape_names : Array = shape_dict.keys()
-	for shape : String in shape_names:
-		if shape in scale_dict:
-			shape_dict[shape] *= scale_dict[shape]
-		if shape in offset_dict:
-			shape_dict[shape] += offset_dict[shape]
-
-		# FIXME: Should we be doing this here? Where's it normally done?
-		shape_dict[shape] = clampf(shape_dict[shape], 0.0, 1.0)
-
-static func apply_smoothing(
-	shape_dict_last_frame : Dictionary, shape_dict_from_tracker : Dictionary, delta : float,
-	blendshape_smoothing_scale : float, blendshape_smoothing : Dictionary):
-
-	var shape_dict_new = shape_dict_last_frame.duplicate()
-
-	for shape_name in shape_dict_from_tracker.keys():
-
-		# FIXME: Get rid of the hard-coded speed!!!
-
-		if shape_name in shape_dict_last_frame:
-
-			# This shape existed last frame. LERP to the new value, if necessary.
-
-			var old = shape_dict_last_frame[shape_name]
-			var new = shape_dict_from_tracker[shape_name]
-
-			var total_scale : float = blendshape_smoothing_scale
-
-			if shape_name in blendshape_smoothing:
-				total_scale *= blendshape_smoothing[shape_name]
-			else:
-				total_scale = 0.0
-
-			if total_scale <= 0.0:
-				shape_dict_new[shape_name] = new
-			else:
-				shape_dict_new[shape_name] = lerp(old, new,
-					clamp(delta / blendshape_smoothing_scale, 0.0, 1.0))
-
-		else:
-			# This shape didn't exist last frame at all. Just snap directly to
-			# it.
-			shape_dict_new[shape_name] = \
-				clamp(shape_dict_from_tracker[shape_name], 0.0, 1.0) * 1.0
-
-	return shape_dict_new
 
 static func fixup_eyes(
 	shape_dict_new : Dictionary,

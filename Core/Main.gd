@@ -573,6 +573,12 @@ func load_settings(path : String = ""):
 				}
 			},
 			{
+				"name": "BlendShapeScalingAndOffset",
+				"scene_path": "res://Mods/BlendShapeScalingAndOffset/BlendShapeScalingAndOffset.tscn",
+				"settings": {
+				}
+			},
+			{
 				"name": "SceneBasic",
 				"scene_path": "res://Mods/Scene_Basic/Scene_Basic.tscn",
 				"settings": {
