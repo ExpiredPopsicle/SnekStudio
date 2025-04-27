@@ -1,0 +1,3 @@
+Convert MediaPipe blendshapes to basic VRM blend shapes.
+
+Use this to convert from MediaPipe's ~50 blendshapes down to the basic VRM required blend shapes. Probably necessary for most VRM 0.0 models.

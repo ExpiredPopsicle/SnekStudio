@@ -1,4 +1,5 @@
 extends Mod_Base
+class_name Mod_MediaPipeController
 
 # Tracker process state and UDP connection info.
 var udp_server = null
@@ -34,8 +35,7 @@ var _ikchains = []
 @export var arm_reset_time : float = 0.5
 @export var arm_reset_speed : float = 0.1
 @export var hand_tracking_enabed : bool = true
-var use_vrm_basic_shapes = true
-var use_mediapipe_shapes = true
+
 var video_device = Array() # It's an array that we only ever put one thing in.
 
 var blendshape_calibration = {}
@@ -282,8 +282,6 @@ func _ready():
 	tracker_python_process.stop_process()
 
 	add_tracked_setting("hand_tracking_enabed", "Hand tracking enabled")
-	add_tracked_setting("use_vrm_basic_shapes", "Use basic VRM shapes")
-	add_tracked_setting("use_mediapipe_shapes", "Use MediaPipe shapes")
 	add_tracked_setting("mirror_mode", "Mirror mode")
 	add_tracked_setting("arm_rest_angle", "Arm rest angle", { "min" : 0.0, "max" : 180.0 })
 
@@ -512,10 +510,6 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	_send_settings_to_tracker()
 
 	var reset_blend_shapes = false
-	if _settings_old["use_vrm_basic_shapes"] != _settings_new["use_vrm_basic_shapes"]:
-		reset_blend_shapes = true
-	if _settings_old["use_mediapipe_shapes"] != _settings_new["use_mediapipe_shapes"]:
-		reset_blend_shapes = true
 	if reset_blend_shapes:
 		for k in blend_shape_last_values.keys():
 			blend_shape_last_values[k] = 0.0
@@ -1017,22 +1011,7 @@ func _process_single_packet(model : Node3D, delta : float, parsed_data : Diction
 			eyes_link_vertical, eyes_link_horizontal,
 			eyes_link_blink)
 
-		# Merge in MediaPipe or basic VRM blendshapes per options.
-		if use_vrm_basic_shapes:
-			var vrm_shapes : Dictionary = functions_blendshapes.convert_mediapipe_shapes_to_vrm_standard( \
-				last_parsed_data["blendshapes"])
-
-			# Apply blendshape scales to basic VRM shapes.
-			functions_blendshapes.apply_blendshape_scale_offset_dict(
-				vrm_shapes, blendshape_scales, blendshape_offsets)
-			shape_dict_new.merge(
-				vrm_shapes,
-				true)
-
-		if use_mediapipe_shapes:
-			shape_dict_new.merge(
-				last_parsed_data["blendshapes"],
-				true)
+		shape_dict_new.merge(last_parsed_data["blendshapes"], true)
 
 		# Update a few of the progress bars.
 		var shape_keys : Array = blendshape_progressbars.keys()

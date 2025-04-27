@@ -567,6 +567,12 @@ func load_settings(path : String = ""):
 				}
 			},
 			{
+				"name": "MediaPipeToVrmBlendShapes",
+				"scene_path": "res://Mods/MediaPipeToVRMBlendShapes/MediaPipeToVRMBlendShapes.tscn",
+				"settings": {
+				}
+			},
+			{
 				"name": "SceneBasic",
 				"scene_path": "res://Mods/Scene_Basic/Scene_Basic.tscn",
 				"settings": {
