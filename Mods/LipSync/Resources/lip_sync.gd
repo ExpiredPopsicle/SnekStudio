@@ -221,6 +221,12 @@ var fingerprint := BANDS_DEF.duplicate()
 # Visemes
 var visemes := VISEMES_DEF.duplicate()
 
+var current_energy_average := 0.0
+
+var current_energy_sum := 0.0
+
+var prev_energy_sum := 0.0
+
 # Audio stream player
 var _player : AudioStreamPlayer
 
@@ -285,7 +291,12 @@ func _process(_delta: float) -> void:
 	var energy_scale := 0.0 if energy_avg <= silence else 1.0 / energy_avg
 	for i in BANDS_COUNT:
 		fingerprint[i] = energy[i] * energy_scale
-
+		
+	var slew_scale = slew * _delta
+	current_energy_average = energy_avg
+	var c_energy_sum = 0.0 if energy_avg <= silence else energy_sum
+	current_energy_sum = lerp(prev_energy_sum, c_energy_sum, slew_scale)
+	
 	# Construct new visemes scores
 	var scores := VISEMES_DEF.duplicate()
 	var score_sum := precision
@@ -302,12 +313,13 @@ func _process(_delta: float) -> void:
 
 	# Update viseme scores
 	var score_scale = 1.0 / score_sum
-	var slew_scale = slew * _delta
+	
 	for i in VISEME.COUNT:
 		var old_weight: float = visemes[i]
 		var new_weight: float = scores[i] * score_scale
 		visemes[i] = lerp(old_weight, new_weight, slew_scale)
-
+	
+	prev_energy_sum = current_energy_sum
 
 # Get or create an audio bus with the specified name
 static func _get_or_create_audio_bus(name: String) -> int:

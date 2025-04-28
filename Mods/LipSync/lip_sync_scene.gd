@@ -20,8 +20,29 @@ var viseme_names = [
 		"KK",
 		"NN"
 	]
-	
+var vrm_mapping = [
+	"sil",
+	"",
+	"",
+	"E",
+	"",
+	"ih",
+	"oh",
+	"",
+	"",
+	"",
+	"",
+	"ou",
+	"aa",
+	"",
+	""
+]
 func _ready():
+	
+	# Small tweaks
+	engine.precision = 1.0
+	engine.slew = 15
+	
 	#VISEME_SILENT = 0,	# Mouth closed (silent)
 	#VISEME_CH = 1,		# /tS/ (CHeck, CHoose) /dZ/ (Job, aGe) /S/ (She, puSh)
 	#VISEME_DD = 2,		# /t/ (Take, haT) /d/ (Day, haD)
@@ -64,14 +85,13 @@ func _ready():
 	update_settings_ui()
 
 func _process(delta : float):
-	#print(engine.visemes[Visemes.VISEME.VISEME_CH])
-#	pass
-	_update_viseme_progressbars()
-
-func _update_viseme_progressbars():
-	var blend_shapes : Dictionary = get_global_mod_data("BlendShapes")
+	var viseme_shapes = get_global_mod_data("VisemeBlendShapes")
+	var blendshapes =  get_global_mod_data("BlendShapes")
 	var model : Node3D = get_model()
 	
+	#if len(blendshapes.keys()) == 0:
+	#	return
+		
 	var anim_player : AnimationPlayer = model.find_child("AnimationPlayer", false, false)
 
 	# Can't continue if there's no animation player.
@@ -79,11 +99,85 @@ func _update_viseme_progressbars():
 		return
 
 	var anim_list : PackedStringArray = anim_player.get_animation_list()
-	var anim_root = anim_player.get_node(anim_player.root_node)
-	
+
 	for vis in range(Visemes.VISEME.COUNT):
-		var viseme_value =  engine.visemes[vis]
+		var viseme_value = clampf(engine.visemes[vis] * 5, -1.0, 1.0)
 		var name = viseme_names[vis]
+		var vrm_blendshape = vrm_mapping[vis]
+		
 		var progressbar : ProgressBar = viseme_progressbars[name]
 		progressbar.value = viseme_value
+
+		# Silent is irrelevant.
+		if vis == 0:
+			continue
+			
+		#if vrm_blendshape in anim_list:
+			#viseme_shapes[vrm_blendshape] = viseme_value
+		#else:
+			# MediaPipe blendshapes?
+		blendshapes = _conv_blendshape_to_mediapipe(name, viseme_value, blendshapes)
 		
+
+func _conv_blendshape_to_mediapipe(name, value, blendshapes):
+	#print("Converting")
+	#if engine.current_energy_sum > 0.0:
+	blendshapes["jawOpen"] = clampf(engine.current_energy_sum / 50.0, -1.0, 1.0)
+	if name == viseme_names[Visemes.VISEME.VISEME_CH]:
+		#_set_val(blendshapes, "jawOpen", value)
+		_set_val(blendshapes, "mouthFunnel", value * 1.2)
+		_set_val(blendshapes, "mouthShrugUpper", value * 1.0)
+	elif name == viseme_names[Visemes.VISEME.VISEME_DD] \
+		or name == viseme_names[Visemes.VISEME.VISEME_TH]:
+		#_set_val(blendshapes, "jawOpen", value)
+		pass
+	elif name == viseme_names[Visemes.VISEME.VISEME_E]:
+		#_set_val(blendshapes, "jawOpen", value * 0.5)
+		_set_val(blendshapes, "mouthStretchLeft", value)
+		_set_val(blendshapes, "mouthStretchRight", value)
+	elif name == viseme_names[Visemes.VISEME.VISEME_I]:
+		#_set_val(blendshapes, "jawOpen", value * 0.5)
+		_set_val(blendshapes, "mouthStretchLeft", value)
+		_set_val(blendshapes, "mouthStretchRight", value)
+	elif name == viseme_names[Visemes.VISEME.VISEME_AA]:
+		pass
+		#_set_val(blendshapes, "jawOpen", value * 1.3)
+		#_set_val(blendshapes, "jawOpen", value)
+	elif name == viseme_names[Visemes.VISEME.VISEME_U]:
+		#_set_val(blendshapes, "jawOpen", value * 0.2)
+		_set_val(blendshapes, "mouthFunnel", value)
+		_set_val(blendshapes, "mouthPucker", value * 0.5)
+	elif name == viseme_names[Visemes.VISEME.VISEME_O]:
+		_set_val(blendshapes, "mouthFunnel", value * 1.2)
+		_set_val(blendshapes, "mouthPucker", value * 1.2)
+		_set_val(blendshapes, "mouthPressLeft", value * 1.2)
+		_set_val(blendshapes, "mouthPressRight", value * 1.2)
+	elif name == viseme_names[Visemes.VISEME.VISEME_RR]:
+		#_set_val(blendshapes, "jawOpen", value * 0.2)
+		_set_val(blendshapes, "mouthFunnel", value * 1.6)
+		_set_val(blendshapes, "mouthPucker", value * 1.5)
+	elif name == viseme_names[Visemes.VISEME.VISEME_NN]:
+		#_set_val(blendshapes, "jawOpen", value * 0.2)
+		_set_val(blendshapes, "mouthFunnel", value * 1.4)
+		_set_val(blendshapes, "mouthPucker", value * 0.5)
+	elif name == viseme_names[Visemes.VISEME.VISEME_SS]:
+		#_set_val(blendshapes, "jawOpen", value * 0.1)
+		_set_val(blendshapes, "mouthStretchLeft", value * 1.2)
+		_set_val(blendshapes, "mouthStretchRight", value * 1.2)
+	elif name == viseme_names[Visemes.VISEME.VISEME_KK]:
+		pass
+		#_set_val(blendshapes, "jawOpen", value * 0.3)
+	elif name == viseme_names[Visemes.VISEME.VISEME_FF]:
+		#_set_val(blendshapes, "jawOpen", value * 0.1)
+		_set_val(blendshapes, "mouthFunnel", value)
+	
+	return blendshapes
+
+func _set_val(collection, key, new):
+	if not collection.has(key):
+		collection[key] = new
+	var existing = collection[key]
+	if existing + new == 0:
+		return 0
+	var avg = new #existing + new / 2
+	collection[key] = avg
