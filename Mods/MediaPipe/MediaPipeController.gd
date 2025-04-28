@@ -86,6 +86,7 @@ var last_packet_received = null
 # What we should show in the new error/warning reporting.
 var _current_error_to_show : String = ""
 
+var hack_reset_hips_every_frame : bool = true
 
 func _ready():
 
@@ -195,6 +196,11 @@ func _ready():
 
 	add_tracked_setting(
 		"debug_visible_hand_trackers", "Debug: Visible hand trackers", {},
+		"advanced")
+
+	add_tracked_setting(
+		"hack_reset_hips_every_frame",
+		"Hack: Reset hips every frame (prevent drift)", {},
 		"advanced")
 
 	hand_rest_trackers["Left"] = $LeftHandRestReference
@@ -906,11 +912,15 @@ func _process(delta):
 	if not model_root:
 		return
 
-
 	# FIXME: Remove this. OffKai hack.
 	if tracking_pause:
 		return
-	
+
+	# Hack to fix hips drift.
+	if hack_reset_hips_every_frame:
+		var hips_index : int = skel.find_bone("Hips")
+		if hips_index != -1:
+			skel.reset_bone_pose(hips_index)
 
 	# FIXME: Hack.
 	# This just moves the body based on the head position.
@@ -1295,7 +1305,6 @@ func _process(delta):
 	var head_offset : Vector3 = $Head.transform.origin - model_root.transform.origin
 	var lean_amount : float = sin(lean_check_axis.dot(head_offset))
 	handle_lean(skel, lean_amount * lean_scale)
-
 
 
 func _reset_hand_landmarks():
