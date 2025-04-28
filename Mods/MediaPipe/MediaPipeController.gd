@@ -972,157 +972,13 @@ func _process(delta):
 		 ]
 
 		for hand_data in per_hand_data:
-
-			var time_since_last_update = hand_time_since_last_update[hand_data["index"]]
-			var time_since_last_missing = hand_time_since_last_missing[hand_data["index"]]
-
-			var hand_str = hand_data["side"]
-			var hand_str_lower = hand_str.to_lower()
-			var tracker_ob = hand_data["tracker_object"]
-
-			var hand_score_str = "hand_" + hand_str_lower + "_score"
-			var hand_origin_str = "hand_" + hand_str_lower + "_origin"
-			var hand_rotation_str = "hand_" + hand_str_lower + "_rotation"
-			
-			var hand_origin_array = parsed_data[hand_origin_str]
-			var hand_score = parsed_data[hand_score_str]
-		
-			# Apply thresholds to the confidence score.			
-			if parsed_data[hand_score_str] < score_threshold or not hand_tracking_enabed: # FIXME: Wrong place for the enabled check?
-				parsed_data[hand_score_str] = 0.0
-
-			# Track time since last visible or not.
-			if hand_score >= score_threshold:
-				time_since_last_update = 0.0
-				time_since_last_missing += delta
-			else:
-				time_since_last_update += delta
-				time_since_last_missing = 0.0
-
-			hand_time_since_last_update[hand_data["index"]] = time_since_last_update
-			hand_time_since_last_missing[hand_data["index"]] = time_since_last_missing
-
-			if time_since_last_update > arm_reset_time:
-				
-				var reference_ob = hand_data["rest_reference_object"]
-				# Move hand to rest position.
-				tracker_ob.global_transform.origin = tracker_ob.global_transform.origin.lerp(
-					reference_ob.global_transform.origin, arm_reset_speed) # FIXME: Hardcoded value.
-				
-				var rot_quat1 = tracker_ob.global_transform.basis.get_rotation_quaternion()
-				var rot_quat2 = reference_ob.global_transform.basis.get_rotation_quaternion()
-				tracker_ob.global_transform.basis = Basis(rot_quat1.slerp(rot_quat2, arm_reset_speed)) # FIXME: Hardcoded value
-				tracker_ob.global_transform.basis = tracker_ob.global_transform.basis.orthonormalized()
-
-			elif time_since_last_missing > 0.1: # FIXME: Hardcoded value.
-
-				# Stretch the last bit of the score out with an exponent.
-				parsed_data[hand_score_str] = pow(parsed_data[hand_score_str], score_exponent)
-			
-				# TODO: Replace the tracker object with just a Transform3D.
-				var target_origin = model_origin_offset + (Vector3(
-					hand_origin_array[0],
-					hand_origin_array[1],
-					hand_origin_array[2]) * hand_origin_multiplier) * arbitrary_scale
-				
-				# Attempt to move hand in front of model. Reaching behind is
-				# *usually* the results of bad data.
-				#
-				# FIXME: Ugly hack.
-				#   If we're going to do this, we need to make sure we do it in the model's forward
-				#   direction.
-				#
-				# FIXME: Hardcoded values all over this part.
-				#
-				var chest_transform_global_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
-				var min_z = (skel.global_transform * chest_transform_global_pose).origin
-				if target_origin.z < min_z.z + 0.2:
-					target_origin.z = min_z.z + 0.2
-
-				# Move tracker forward if we're reaching across the chest to see
-				# if we can fix some clipping-into-chest problems.
-				#
-				# FIXME: Hardcoded values all over this part.
-				#
-				
-				# FIXME: THIS IS BAD CODE AND YOU (KIRI) SHOULD FEEL BAD ABOUT IT.
-				var tracker_in_chest_space = chest_transform_global_pose.inverse() * target_origin
-				# FIXME: Hack for mirror.
-				var swap_tracker = tracker_right
-				if tracker_ob == swap_tracker:
-					tracker_in_chest_space.x *= -1
-				# Just clamp the overall reach, first.
-
-				# Clamp tracker reach.
-				# FIXME: Hardcoded value.
-				if tracker_in_chest_space.x < -0.2:
-					tracker_in_chest_space.x = -0.2
-
-				# Now move forward.
-				if tracker_in_chest_space.x < 0.0:
-					# FIXME: Hardcoded scaling value.
-					tracker_in_chest_space.z += -(tracker_in_chest_space.x - 0.1) * 0.2
-				# FIXME: Hack for mirror.
-				if tracker_ob == swap_tracker:
-					tracker_in_chest_space.x *= -1
-				
-				target_origin = chest_transform_global_pose * tracker_in_chest_space
-
-				var rotation_basis_array = parsed_data[hand_rotation_str]
-
-				var rotation_basis = Basis(
-					Vector3(rotation_basis_array[0][0], rotation_basis_array[0][1], rotation_basis_array[0][2]),
-					Vector3(rotation_basis_array[1][0], rotation_basis_array[1][1], rotation_basis_array[1][2]),
-					Vector3(rotation_basis_array[2][0], rotation_basis_array[2][1], rotation_basis_array[2][2]))
-
-				var new_rotation : Basis = (rotation_basis * Basis()).orthonormalized()
-
-				# If we don't do this, the hands often don't rotate. !?!?!?!?!
-				var new_rot_quat = new_rotation.get_rotation_quaternion()
-				#new_rot_quat.y *= -1.0
-				#new_rot_quat.z *= -1.0
-				#new_rot_quat.w *= -1.0
-				#new_rot_quat.x *= -1.0
-				new_rotation = Basis(new_rot_quat)
-
-				# Why do we have to go through the global transform? I guess we need like a "baked"
-				# version of the transform that handles all of our weird axis flipping.
-				
-				var old_world_transform = tracker_ob.get_global_transform()
-
-				#tracker_ob.transform.basis = new_rotation # Basis(new_rotation.orthonormalized().get_rotation_quaternion())
-				
-				# FIXME: Can't work due to variability in chest bone location?
-				#   (problem with new model rigging that wasn't a problem with the old)
-#				# Snap tracker to rest position if we're below a certain
-#				# threshold
-#				#
-#				# FIXME: Hardcoded threshold.
-#				if tracker_in_chest_space.y < 0.0:
-#					var reference_ob = hand[3]
-#					target_origin = reference_ob.global_transform.origin
-#					#tracker_ob.transform.basis = reference_ob.transform.basis
-#					new_rotation = reference_ob.transform.basis
-					
-				var lerp_scale = 1.0 / hand_position_smoothing
-				tracker_ob.transform.origin = tracker_ob.transform.origin.lerp(
-					target_origin,
-					hand_score * delta_scale * lerp_scale)
-				
-				# FIXME: Hardcoded SLERP speed. Make configurable.
-				tracker_ob.transform.basis = Basis(
-					tracker_ob.transform.basis.orthonormalized().get_rotation_quaternion().slerp(
-					new_rotation, 1.0 / hand_rotation_smoothing)) # Basis(new_rotation.orthonormalized().get_rotation_quaternion())
-				
-				var new_world_transform = tracker_ob.get_global_transform()
-				
-				# FIXME: Hardcoded smoothing value.
-				var interped_transform = old_world_transform.interpolate_with(new_world_transform, 0.75)
-				tracker_ob.global_transform.basis = interped_transform.basis
-
-				#tracker_ob.transform.basis = new_rotation
-				if tracker_ob.mesh:
-					tracker_ob.mesh.material.albedo_color.a = 0.25 + hand_score * 0.75
+			# FIXME: We moved this out of the main function here into another
+			# function and just copied all the variables it used. We NEED to
+			# clean that up.
+			_update_hand_tracker(
+				delta, hand_data, parsed_data, score_threshold,
+				score_exponent, model_origin_offset, hand_origin_multiplier,
+				arbitrary_scale, skel, tracker_right, delta_scale);
 
 		# -----------------------------------------------------------------------------------------
 		# Head packets
@@ -1469,3 +1325,155 @@ func check_configuration() -> PackedStringArray:
 		errors.append("No AnimationApplier detected, or detected before MediaPipeController. Blend shapes will not function as expected.")
 
 	return errors
+
+func _update_hand_tracker(delta, hand_data, parsed_data, score_threshold, score_exponent, model_origin_offset, hand_origin_multiplier, arbitrary_scale, skel, tracker_right, delta_scale):
+	var time_since_last_update = hand_time_since_last_update[hand_data["index"]]
+	var time_since_last_missing = hand_time_since_last_missing[hand_data["index"]]
+
+	var hand_str = hand_data["side"]
+	var hand_str_lower = hand_str.to_lower()
+	var tracker_ob = hand_data["tracker_object"]
+
+	var hand_score_str = "hand_" + hand_str_lower + "_score"
+	var hand_origin_str = "hand_" + hand_str_lower + "_origin"
+	var hand_rotation_str = "hand_" + hand_str_lower + "_rotation"
+	
+	var hand_origin_array = parsed_data[hand_origin_str]
+	var hand_score = parsed_data[hand_score_str]
+
+	# Apply thresholds to the confidence score.			
+	if parsed_data[hand_score_str] < score_threshold or not hand_tracking_enabed: # FIXME: Wrong place for the enabled check?
+		parsed_data[hand_score_str] = 0.0
+
+	# Track time since last visible or not.
+	if hand_score >= score_threshold:
+		time_since_last_update = 0.0
+		time_since_last_missing += delta
+	else:
+		time_since_last_update += delta
+		time_since_last_missing = 0.0
+
+	hand_time_since_last_update[hand_data["index"]] = time_since_last_update
+	hand_time_since_last_missing[hand_data["index"]] = time_since_last_missing
+
+	if time_since_last_update > arm_reset_time:
+		
+		var reference_ob = hand_data["rest_reference_object"]
+		# Move hand to rest position.
+		tracker_ob.global_transform.origin = tracker_ob.global_transform.origin.lerp(
+			reference_ob.global_transform.origin, arm_reset_speed) # FIXME: Hardcoded value.
+		
+		var rot_quat1 = tracker_ob.global_transform.basis.get_rotation_quaternion()
+		var rot_quat2 = reference_ob.global_transform.basis.get_rotation_quaternion()
+		tracker_ob.global_transform.basis = Basis(rot_quat1.slerp(rot_quat2, arm_reset_speed)) # FIXME: Hardcoded value
+		tracker_ob.global_transform.basis = tracker_ob.global_transform.basis.orthonormalized()
+
+	elif time_since_last_missing > 0.1: # FIXME: Hardcoded value.
+
+		# Stretch the last bit of the score out with an exponent.
+		parsed_data[hand_score_str] = pow(parsed_data[hand_score_str], score_exponent)
+	
+		# TODO: Replace the tracker object with just a Transform3D.
+		var target_origin = model_origin_offset + (Vector3(
+			hand_origin_array[0],
+			hand_origin_array[1],
+			hand_origin_array[2]) * hand_origin_multiplier) * arbitrary_scale
+		
+		# Attempt to move hand in front of model. Reaching behind is
+		# *usually* the results of bad data.
+		#
+		# FIXME: Ugly hack.
+		#   If we're going to do this, we need to make sure we do it in the model's forward
+		#   direction.
+		#
+		# FIXME: Hardcoded values all over this part.
+		#
+		var chest_transform_global_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
+		var min_z = (skel.global_transform * chest_transform_global_pose).origin
+		if target_origin.z < min_z.z + 0.2:
+			target_origin.z = min_z.z + 0.2
+
+		# Move tracker forward if we're reaching across the chest to see
+		# if we can fix some clipping-into-chest problems.
+		#
+		# FIXME: Hardcoded values all over this part.
+		#
+		
+		# FIXME: THIS IS BAD CODE AND YOU (KIRI) SHOULD FEEL BAD ABOUT IT.
+		var tracker_in_chest_space = chest_transform_global_pose.inverse() * target_origin
+		# FIXME: Hack for mirror.
+		var swap_tracker = tracker_right
+		if tracker_ob == swap_tracker:
+			tracker_in_chest_space.x *= -1
+		# Just clamp the overall reach, first.
+
+		# Clamp tracker reach.
+		# FIXME: Hardcoded value.
+		if tracker_in_chest_space.x < -0.2:
+			tracker_in_chest_space.x = -0.2
+
+		# Now move forward.
+		if tracker_in_chest_space.x < 0.0:
+			# FIXME: Hardcoded scaling value.
+			tracker_in_chest_space.z += -(tracker_in_chest_space.x - 0.1) * 0.2
+		# FIXME: Hack for mirror.
+		if tracker_ob == swap_tracker:
+			tracker_in_chest_space.x *= -1
+		
+		target_origin = chest_transform_global_pose * tracker_in_chest_space
+
+		var rotation_basis_array = parsed_data[hand_rotation_str]
+
+		var rotation_basis = Basis(
+			Vector3(rotation_basis_array[0][0], rotation_basis_array[0][1], rotation_basis_array[0][2]),
+			Vector3(rotation_basis_array[1][0], rotation_basis_array[1][1], rotation_basis_array[1][2]),
+			Vector3(rotation_basis_array[2][0], rotation_basis_array[2][1], rotation_basis_array[2][2]))
+
+		var new_rotation : Basis = (rotation_basis * Basis()).orthonormalized()
+
+		# If we don't do this, the hands often don't rotate. !?!?!?!?!
+		var new_rot_quat = new_rotation.get_rotation_quaternion()
+		#new_rot_quat.y *= -1.0
+		#new_rot_quat.z *= -1.0
+		#new_rot_quat.w *= -1.0
+		#new_rot_quat.x *= -1.0
+		new_rotation = Basis(new_rot_quat)
+
+		# Why do we have to go through the global transform? I guess we need like a "baked"
+		# version of the transform that handles all of our weird axis flipping.
+		
+		var old_world_transform = tracker_ob.get_global_transform()
+
+		#tracker_ob.transform.basis = new_rotation # Basis(new_rotation.orthonormalized().get_rotation_quaternion())
+		
+		# FIXME: Can't work due to variability in chest bone location?
+		#   (problem with new model rigging that wasn't a problem with the old)
+#				# Snap tracker to rest position if we're below a certain
+#				# threshold
+#				#
+#				# FIXME: Hardcoded threshold.
+#				if tracker_in_chest_space.y < 0.0:
+#					var reference_ob = hand[3]
+#					target_origin = reference_ob.global_transform.origin
+#					#tracker_ob.transform.basis = reference_ob.transform.basis
+#					new_rotation = reference_ob.transform.basis
+			
+		var lerp_scale = 1.0 / hand_position_smoothing
+		tracker_ob.transform.origin = tracker_ob.transform.origin.lerp(
+			target_origin,
+			hand_score * delta_scale * lerp_scale)
+		
+		# FIXME: Hardcoded SLERP speed. Make configurable.
+		tracker_ob.transform.basis = Basis(
+			tracker_ob.transform.basis.orthonormalized().get_rotation_quaternion().slerp(
+			new_rotation, 1.0 / hand_rotation_smoothing)) # Basis(new_rotation.orthonormalized().get_rotation_quaternion())
+		
+		var new_world_transform = tracker_ob.get_global_transform()
+		
+		# FIXME: Hardcoded smoothing value.
+		var interped_transform = old_world_transform.interpolate_with(new_world_transform, 0.75)
+		tracker_ob.global_transform.basis = interped_transform.basis
+
+		#tracker_ob.transform.basis = new_rotation
+		if tracker_ob.mesh:
+			tracker_ob.mesh.material.albedo_color.a = 0.25 + hand_score * 0.75
