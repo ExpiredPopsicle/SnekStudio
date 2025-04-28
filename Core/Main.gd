@@ -567,6 +567,12 @@ func load_settings(path : String = ""):
 				}
 			},
 			{
+				"name": "EyeAdjustments",
+				"scene_path": "res://Mods/EyeAdjustments/EyeAdjustments.tscn",
+				"settings": {
+				}
+			},
+			{
 				"name": "MediaPipeToVrmBlendShapes",
 				"scene_path": "res://Mods/MediaPipeToVRMBlendShapes/MediaPipeToVRMBlendShapes.tscn",
 				"settings": {

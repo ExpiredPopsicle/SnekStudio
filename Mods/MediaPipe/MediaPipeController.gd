@@ -74,11 +74,6 @@ var hand_position_scale : Vector3 = Vector3(7.0, 7.0, 3.5)
 var hand_position_offset : Vector3 = Vector3(0.0, -0.14, 0.0)
 var hand_to_head_scale : float = 2.0
 
-var eyes_link_vertical : bool = false
-var eyes_link_horizontal : bool = false
-var eyes_link_blink : bool = false
-var eyes_prevent_opposite_directions : bool = true
-
 # Last packet we got, in case we need to process it again on a frame that
 # received no data. (FIXME: hack)
 var last_packet_received = null
@@ -121,18 +116,6 @@ func _ready():
 
 	add_setting_group("advanced", "Advanced")
 
-	add_tracked_setting(
-		"eyes_prevent_opposite_directions", "Prevent eyes looking outwards", {},
-		"advanced")
-	add_tracked_setting(
-		"eyes_link_vertical", "Link eyes vertical direction", {},
-		"advanced")
-	add_tracked_setting(
-		"eyes_link_horizontal", "Link eyes horizontal direction", {},
-		"advanced")
-	add_tracked_setting(
-		"eyes_link_blink", "Link eyes blinking", {},
-		"advanced")
 
 	add_tracked_setting(
 		"hand_confidence_time_threshold", "Hand confidence time",
@@ -782,11 +765,6 @@ func _process_single_packet(model : Node3D, delta : float, parsed_data : Diction
 			for blendshape in last_parsed_data["blendshapes"]:
 				if blendshape_calibration[blendshape]:
 					last_parsed_data["blendshapes"][blendshape] -= blendshape_calibration[blendshape]
-
-		last_parsed_data["blendshapes"] = functions_blendshapes.fixup_eyes(
-			last_parsed_data["blendshapes"], eyes_prevent_opposite_directions,
-			eyes_link_vertical, eyes_link_horizontal,
-			eyes_link_blink)
 
 		var shape_dict_new : Dictionary = last_parsed_data["blendshapes"]
 

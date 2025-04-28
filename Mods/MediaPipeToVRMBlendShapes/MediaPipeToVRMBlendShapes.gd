@@ -1,4 +1,5 @@
 extends Mod_Base
+class_name Mod_MediaPipeToVRMShapes
 
 var remove_other_shapes : bool = false
 

@@ -1,0 +1,3 @@
+Apply some eye blendshape adjustments.
+
+Allows fixing eyes going in different directions, locking blink together, etc.
