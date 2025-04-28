@@ -1192,10 +1192,10 @@ func _process(delta):
 
 				# FIXME: We really need to parameterize this all in a less
 				# silly way.
-				var rotation_scale = -1.0
-				var shoulder_bone = "RightShoulder"
+				var rotation_scale = 1.0
+				var shoulder_bone = "LeftShoulder"
 				if tracker_to_use == tracker_right:
-					shoulder_bone = "LeftShoulder"
+					shoulder_bone = "RightShoulder"
 					rotation_scale = -rotation_scale
 				
 				var shoulder_bone_index = skel.find_bone(shoulder_bone)
