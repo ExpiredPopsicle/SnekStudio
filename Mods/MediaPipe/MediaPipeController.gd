@@ -930,7 +930,6 @@ func _process(delta):
 
 		# FIXME: Make these adjustable.
 		var model_origin_offset = Vector3(0.0, 2.0, 0.0)
-		var arbitrary_scale = 1.0
 		var score_exponent = 1.5
 		var score_threshold = 0.1
 		var head_rotation_scale = 2.0
@@ -978,7 +977,7 @@ func _process(delta):
 			_update_hand_tracker(
 				delta, hand_data, parsed_data, score_threshold,
 				score_exponent, model_origin_offset, hand_origin_multiplier,
-				arbitrary_scale, skel, tracker_right, delta_scale);
+				skel, delta_scale);
 
 		# -----------------------------------------------------------------------------------------
 		# Head packets
@@ -991,7 +990,7 @@ func _process(delta):
 				(Vector3(
 					head_origin_array[0],
 					head_origin_array[1],
-					head_origin_array[2]) * head_origin_multiplier) * arbitrary_scale,
+					head_origin_array[2]) * head_origin_multiplier),
 					delta_scale * 0.5) # FIXME: Hardcoded smoothing.
 			var head_quat_array = parsed_data["head_quat"]
 			var head_euler = Basis(Quaternion(
@@ -1326,7 +1325,11 @@ func check_configuration() -> PackedStringArray:
 
 	return errors
 
-func _update_hand_tracker(delta, hand_data, parsed_data, score_threshold, score_exponent, model_origin_offset, hand_origin_multiplier, arbitrary_scale, skel, tracker_right, delta_scale):
+func _update_hand_tracker(
+	delta, hand_data, parsed_data, score_threshold, score_exponent,
+	model_origin_offset, hand_origin_multiplier, skel,
+	delta_scale):
+
 	var time_since_last_update = hand_time_since_last_update[hand_data["index"]]
 	var time_since_last_missing = hand_time_since_last_missing[hand_data["index"]]
 
@@ -1377,7 +1380,7 @@ func _update_hand_tracker(delta, hand_data, parsed_data, score_threshold, score_
 		var target_origin = model_origin_offset + (Vector3(
 			hand_origin_array[0],
 			hand_origin_array[1],
-			hand_origin_array[2]) * hand_origin_multiplier) * arbitrary_scale
+			hand_origin_array[2]) * hand_origin_multiplier)
 		
 		# Attempt to move hand in front of model. Reaching behind is
 		# *usually* the results of bad data.
@@ -1398,13 +1401,13 @@ func _update_hand_tracker(delta, hand_data, parsed_data, score_threshold, score_
 		#
 		# FIXME: Hardcoded values all over this part.
 		#
-		
+
 		# FIXME: THIS IS BAD CODE AND YOU (KIRI) SHOULD FEEL BAD ABOUT IT.
 		var tracker_in_chest_space = chest_transform_global_pose.inverse() * target_origin
 		# FIXME: Hack for mirror.
-		var swap_tracker = tracker_right
-		if tracker_ob == swap_tracker:
+		if hand_str_lower == "right":
 			tracker_in_chest_space.x *= -1
+
 		# Just clamp the overall reach, first.
 
 		# Clamp tracker reach.
@@ -1416,10 +1419,11 @@ func _update_hand_tracker(delta, hand_data, parsed_data, score_threshold, score_
 		if tracker_in_chest_space.x < 0.0:
 			# FIXME: Hardcoded scaling value.
 			tracker_in_chest_space.z += -(tracker_in_chest_space.x - 0.1) * 0.2
+
 		# FIXME: Hack for mirror.
-		if tracker_ob == swap_tracker:
+		if hand_str_lower == "right":
 			tracker_in_chest_space.x *= -1
-		
+
 		target_origin = chest_transform_global_pose * tracker_in_chest_space
 
 		var rotation_basis_array = parsed_data[hand_rotation_str]
