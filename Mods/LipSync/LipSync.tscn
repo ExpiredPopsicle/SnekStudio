@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://cgjg1lspy6t5a"]
+
+[ext_resource type="Script" uid="uid://dxvrw78xlc5ig" path="res://Mods/LipSync/lip_sync_scene.gd" id="1_8eykn"]
+[ext_resource type="Script" uid="uid://wlwqj0hh1jae" path="res://Mods/LipSync/Resources/lip_sync.gd" id="2_qp301"]
+
+[node name="LipSync" type="Node3D" node_paths=PackedStringArray("engine")]
+script = ExtResource("1_8eykn")
+engine = NodePath("Engine")
+
+[node name="Engine" type="Node" parent="."]
+script = ExtResource("2_qp301")
