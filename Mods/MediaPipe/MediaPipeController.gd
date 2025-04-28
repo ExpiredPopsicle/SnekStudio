@@ -419,11 +419,6 @@ func _setup_ik_chains():
 	var hand_tracker_left : Node3D = $Hand_Left
 	var hand_tracker_right : Node3D = $Hand_Right
 
-	# FIXME: UGHHHGGHfgjkdnjvhndfvdfnvjkdfnjksdfn
-	# FIXME: MIRROR MESS
-	hand_tracker_left = $Hand_Right
-	hand_tracker_right = $Hand_Left
-
 	# Make sure finger landmarks exist already.
 	_reset_hand_landmarks()
 
@@ -954,9 +949,6 @@ func _process(delta):
 		head_origin_multiplier = Vector3(-1.0, 1.0, 1.0)
 		head_quat_multiplier = [1.0, -1.0, -1.0, 1.0]
 
-		tracker_left = $Hand_Right
-		tracker_right = $Hand_Left
-
 		# -----------------------------------------------------------------------------------------
 		# Hand packets
 
@@ -1176,17 +1168,15 @@ func _process(delta):
 		# FIXME: MIRRORING MESS
 		var tracker_to_use_right = tracker_right
 		var tracker_to_use_left = tracker_left
-		tracker_to_use_right = tracker_left
-		tracker_to_use_left = tracker_right
 		
 		# FIXME: Hack hack hack hack hack hack
 		for k in range(1, 3):
 
-			var tracker_to_use = tracker_to_use_right
+			var tracker_to_use = tracker_to_use_left
 			var compensation_alpha_scale = 1.0
 			var pole_target_x = x_pole_dist
 			if k == 2: # FIXME: Hack.
-				tracker_to_use = tracker_to_use_left
+				tracker_to_use = tracker_to_use_right
 				compensation_alpha_scale *= -1.0
 				pole_target_x = -x_pole_dist
 		
@@ -1207,13 +1197,6 @@ func _process(delta):
 				if tracker_to_use == tracker_right:
 					shoulder_bone = "LeftShoulder"
 					rotation_scale = -rotation_scale
-				
-				# FIXME: MIRRORING MESS
-				rotation_scale = -rotation_scale
-				if shoulder_bone == "RightShoulder":
-					shoulder_bone = "LeftShoulder"
-				else:
-					shoulder_bone = "RightShoulder"
 				
 				var shoulder_bone_index = skel.find_bone(shoulder_bone)
 				var shoulder_pose = skel.get_bone_global_pose(shoulder_bone_index)
@@ -1260,8 +1243,8 @@ func _process(delta):
 		if do_hands:
 	
 			var hands = [ \
-				[ "Left", hand_landmarks_left, tracker_right, Basis() ], # FIXME: Remove the last value.
-				[ "Right", hand_landmarks_right, tracker_left, Basis() ]]  # FIXME: Remove the last value.
+				[ "Left", hand_landmarks_left, tracker_left, Basis() ], # FIXME: Remove the last value.
+				[ "Right", hand_landmarks_right, tracker_right, Basis() ]]  # FIXME: Remove the last value.
 
 			for hand in hands:
 				update_hand(hand, parsed_data, skel)
@@ -1317,14 +1300,12 @@ func _reset_hand_landmarks():
 func update_hand(hand, parsed_data, skel : Skeleton3D):
 	var mark_counter = 0
 
-	var flipped_hand = "left"
-	if hand[0] == "Left":
-		flipped_hand = "right"
+	var which_hand = hand[0].to_lower()
 
 	var hand_landmark_rotation_to_use = hand[3]
 	var hand_landmarks = hand[1]
 
-	for mark in parsed_data["hand_landmarks_" + flipped_hand]:
+	for mark in parsed_data["hand_landmarks_" + which_hand]:
 		
 		# FIXME: Remove this.
 		## Add any missing landmarks
@@ -1351,7 +1332,7 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 		var marker_original_local = Vector3(mark[0], mark[1], mark[2]) # FIXME: Add a scaling value.
 
 		# FIXME: WHY THE HECK DO WE HAVE TO DO DO THIS!?!?!?!?!?!?!?!?!?!?!?!?!!!??!?!?!?!?!?!
-		if flipped_hand == "right":
+		if which_hand == "right":
 			marker_original_local[0] *= -1
 			marker_original_local[1] *= -1
 			marker_original_local[2] *= -1
@@ -1413,12 +1394,6 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 		[ "ThumbDistal",        3,  4,  "ThumbDistal", "ThumbProximal" ],
 	]
 
-	# FIXME: MIRROR MESS
-	if hand_landmarks == hand_landmarks_left:
-		hand_landmarks = hand_landmarks_right
-	elif hand_landmarks == hand_landmarks_right:
-		hand_landmarks = hand_landmarks_left
-			
 	if len(hand_landmarks) < 21:
 		return
 	
@@ -1470,9 +1445,9 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 
 		var global_rotation_from_rest = skel.get_bone_global_rest(test_bone_index).basis * rotation_axis_local
 		
-		var hand_index = 0
-		if flipped_hand == "left":
-			hand_index = 1
+		var hand_index = 1
+		if which_hand == "left":
+			hand_index = 0
 
 		if hand_time_since_last_update[hand_index] > arm_reset_time:
 			#skel.set_bone_pose_rotation(test_bone_index,
