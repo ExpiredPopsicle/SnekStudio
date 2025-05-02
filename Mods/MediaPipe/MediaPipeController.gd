@@ -1,4 +1,5 @@
 extends Mod_Base
+class_name Mod_MediaPipeController
 
 # Tracker process state and UDP connection info.
 var udp_server = null
@@ -35,8 +36,7 @@ var _ikchains = []
 @export var arm_reset_time : float = 0.5
 @export var arm_reset_speed : float = 0.1
 @export var hand_tracking_enabed : bool = true
-var use_vrm_basic_shapes = true
-var use_mediapipe_shapes = true
+
 var video_device = Array() # It's an array that we only ever put one thing in.
 
 var blendshape_calibration = {}
@@ -70,91 +70,10 @@ var chest_yaw_scale : float = 0.25
 var lean_scale : float = 2.0
 var hip_adjustment_speed : float = 1.0
 
-var blendshape_scale : float = 1.2
-var blendshape_smoothing_scale : float = 0.05
 
 var hand_position_scale : Vector3 = Vector3(7.0, 7.0, 3.5)
 var hand_position_offset : Vector3 = Vector3(0.0, -0.14, 0.0)
 var hand_to_head_scale : float = 2.0
-
-const blendshape_names_mediapipe : PackedStringArray = [
-	"_neutral",
-	"browDownLeft",
-	"browDownRight",
-	"browInnerUp",
-	"browOuterUpLeft",
-	"browOuterUpRight",
-	"cheekPuff",
-	"cheekSquintLeft",
-	"cheekSquintRight",
-	"eyeBlinkLeft",
-	"eyeBlinkRight",
-	"eyeLookDownLeft",
-	"eyeLookDownRight",
-	"eyeLookInLeft",
-	"eyeLookInRight",
-	"eyeLookOutLeft",
-	"eyeLookOutRight",
-	"eyeLookUpLeft",
-	"eyeLookUpRight",
-	"eyeSquintLeft",
-	"eyeSquintRight",
-	"eyeWideLeft",
-	"eyeWideRight",
-	"jawForward",
-	"jawLeft",
-	"jawOpen",
-	"jawRight",
-	"mouthClose",
-	"mouthDimpleLeft",
-	"mouthDimpleRight",
-	"mouthFrownLeft",
-	"mouthFrownRight",
-	"mouthFunnel",
-	"mouthLeft",
-	"mouthLowerDownLeft",
-	"mouthLowerDownRight",
-	"mouthPressLeft",
-	"mouthPressRight",
-	"mouthPucker",
-	"mouthRight",
-	"mouthRollLower",
-	"mouthRollUpper",
-	"mouthShrugLower",
-	"mouthShrugUpper",
-	"mouthSmileLeft",
-	"mouthSmileRight",
-	"mouthStretchLeft",
-	"mouthStretchRight",
-	"mouthUpperUpLeft",
-	"mouthUpperUpRight",
-	"noseSneerLeft",
-	"noseSneerRight",
-]
-
-const blendshape_names_vrm1 : PackedStringArray = [
-	"happy", "angry", "sad", "relaxed", "surprised",
-	"aa", "ih", "ou", "ee", "oh",
-	#"blink", # Disabled because we only use left/right.
-	"blinkLeft", "blinkRight",
-	"lookUp", "lookDown",
-	"lookLeft", "lookRight",
-	"neutral"
-]
-
-const blendshape_names_all : PackedStringArray = \
-	blendshape_names_mediapipe + blendshape_names_vrm1
-
-var blendshape_scales : Dictionary = {}
-var blendshape_offsets : Dictionary = {}
-var blendshape_smoothing : Dictionary = {}
-var blendshape_progressbars : Dictionary = {}
-var blendshape_progressbar_update_index : int = 0
-
-var eyes_link_vertical : bool = false
-var eyes_link_horizontal : bool = false
-var eyes_link_blink : bool = false
-var eyes_prevent_opposite_directions : bool = true
 
 # Last packet we got, in case we need to process it again on a frame that
 # received no data. (FIXME: hack)
@@ -163,99 +82,7 @@ var last_packet_received = null
 # What we should show in the new error/warning reporting.
 var _current_error_to_show : String = ""
 
-func _get_property_list() -> Array[Dictionary]:
-
-	var properties : Array[Dictionary] = []
-
-	for blend_shape : String in blendshape_names_all:
-		var new_entry_scale : Dictionary = {
-			"name" : "blendshape_scale_" + blend_shape,
-			"type" : TYPE_FLOAT
-		}
-		var new_entry_offset : Dictionary = {
-			"name" : "blendshape_offset_" + blend_shape,
-			"type" : TYPE_FLOAT
-		}
-		var new_entry_smoothing : Dictionary = {
-			"name" : "blendshape_smoothing_" + blend_shape,
-			"type" : TYPE_FLOAT
-		}
-		properties.append(new_entry_scale)
-		properties.append(new_entry_offset)
-		properties.append(new_entry_smoothing)
-
-	return properties
-
-func _get(property: StringName) -> Variant:
-
-	if property.begins_with("blendshape_scale_"):
-		var blendshape_name : String = property.substr(len("blendshape_scale_"))
-		if blendshape_name in blendshape_names_all:
-			if blendshape_name in blendshape_scales:
-				return blendshape_scales[blendshape_name]
-			else:
-				return 1.0
-		else:
-			return null
-
-	if property.begins_with("blendshape_offset_"):
-		var blendshape_name : String = property.substr(len("blendshape_offset_"))
-		if blendshape_name in blendshape_names_all:
-			if blendshape_name in blendshape_offsets:
-				return blendshape_offsets[blendshape_name]
-			else:
-				return 0.0
-		else:
-			return null
-
-	if property.begins_with("blendshape_smoothing_"):
-		var blendshape_name : String = property.substr(len("blendshape_smoothing_"))
-		if blendshape_name in blendshape_names_all:
-			if blendshape_name in blendshape_smoothing:
-				return blendshape_smoothing[blendshape_name]
-			else:
-				return 0.0
-		else:
-			return null
-
-	return null
-
-func _set(property: StringName, value: Variant) -> bool:
-
-	if property.begins_with("blendshape_smoothing_"):
-		var blendshape_name : String = property.substr(len("blendshape_smoothing_"))
-		if blendshape_name in blendshape_names_all:
-			if value == 1.0:
-				blendshape_smoothing.erase(blendshape_name)
-			else:
-				blendshape_smoothing[blendshape_name] = value
-			return true
-		else:
-			return false
-
-	if property.begins_with("blendshape_scale_"):
-		var blendshape_name : String = property.substr(len("blendshape_scale_"))
-		if blendshape_name in blendshape_names_all:
-			if value == 1.0:
-				blendshape_scales.erase(blendshape_name)
-			else:
-				blendshape_scales[blendshape_name] = value
-			return true
-		else:
-			return false
-
-	if property.begins_with("blendshape_offset_"):
-		var blendshape_name : String = property.substr(len("blendshape_offset_"))
-		if blendshape_name in blendshape_names_all:
-			if value == 0.0:
-				blendshape_offsets.erase(blendshape_name)
-			else:
-				blendshape_offsets[blendshape_name] = value
-			return true
-		else:
-			return false
-
-	return false
+var hack_reset_hips_every_frame : bool = true
 
 func _ready():
 
@@ -283,8 +110,6 @@ func _ready():
 	tracker_python_process.stop_process()
 
 	add_tracked_setting("hand_tracking_enabed", "Hand tracking enabled")
-	add_tracked_setting("use_vrm_basic_shapes", "Use basic VRM shapes")
-	add_tracked_setting("use_mediapipe_shapes", "Use MediaPipe shapes")
 	add_tracked_setting("mirror_mode", "Mirror mode")
 	add_tracked_setting("arm_rest_angle", "Arm rest angle", { "min" : 0.0, "max" : 180.0 })
 
@@ -292,18 +117,6 @@ func _ready():
 
 	add_setting_group("advanced", "Advanced")
 
-	add_tracked_setting(
-		"eyes_prevent_opposite_directions", "Prevent eyes looking outwards", {},
-		"advanced")
-	add_tracked_setting(
-		"eyes_link_vertical", "Link eyes vertical direction", {},
-		"advanced")
-	add_tracked_setting(
-		"eyes_link_horizontal", "Link eyes horizontal direction", {},
-		"advanced")
-	add_tracked_setting(
-		"eyes_link_blink", "Link eyes blinking", {},
-		"advanced")
 
 	add_tracked_setting(
 		"hand_confidence_time_threshold", "Hand confidence time",
@@ -360,16 +173,6 @@ func _ready():
 		"advanced")
 
 	add_tracked_setting(
-		"blendshape_scale", "Blend Shape Scale", { "min" : 0.0, "max" : 10.0 },
-		"advanced")
-	# FIXME: Setting disabled because it doesn't do anything until you actually
-	#   set the per-shape smoothing scale, which doesn't make sense from a UI
-	#   standpoint.
-	#add_tracked_setting(
-		#"blendshape_smoothing_scale", "Blend Shape Smoothing", { "min" : 0.0, "max" : 100.0 },
-		#"advanced")
-
-	add_tracked_setting(
 		"hand_position_scale", "Hand Position Scale", {},
 		"advanced")
 	add_tracked_setting(
@@ -383,43 +186,10 @@ func _ready():
 		"debug_visible_hand_trackers", "Debug: Visible hand trackers", {},
 		"advanced")
 
-	add_setting_group("blendshapes_scale_offset", "Blendshape Tuning")
-
-	for blendshape_name in blendshape_names_all:
-
-		var label : Label = Label.new()
-		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		label.text = blendshape_name + " scale/offset/smoothing"
-		# FIXME: Direct use of internal (indented private, not protected) variables.
-		_settings_groups["blendshapes_scale_offset"].add_setting_control(label)
-
-		var progressbar : ProgressBar = ProgressBar.new()
-		progressbar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		progressbar.show_percentage = false
-		progressbar.value = randf()
-		progressbar.min_value = 0.0
-		progressbar.max_value = 1.0
-		progressbar.custom_minimum_size = Vector2(0, 32.0)
-		# FIXME: Direct use of internal variables.
-		_settings_groups["blendshapes_scale_offset"].add_setting_control(progressbar)
-
-		# Mouth shapes start with scale doubled by default.
-		if blendshape_name.begins_with("mouth") or blendshape_name.begins_with("jaw"):
-			blendshape_scales[blendshape_name] = 2.0
-
-		add_tracked_setting(
-			"blendshape_scale_" + blendshape_name, "",  { "min" : 0.0, "max" : 5.0 },
-			"blendshapes_scale_offset")
-		add_tracked_setting(
-			"blendshape_offset_" + blendshape_name, "",  { "min" : -2.0, "max" : 2.0 },
-			"blendshapes_scale_offset")
-		add_tracked_setting(
-			"blendshape_smoothing_" + blendshape_name, "",  { "min" : 0.0, "max" : 10.0 },
-			"blendshapes_scale_offset")
-
-		blendshape_progressbars[blendshape_name] = progressbar
-
-		# TODO: Link together left/right sides (optionally?)
+	add_tracked_setting(
+		"hack_reset_hips_every_frame",
+		"Hack: Reset hips every frame (prevent drift)", {},
+		"advanced")
 
 	hand_rest_trackers["Left"] = $LeftHandRestReference
 	hand_rest_trackers["Right"] = $RightHandRestReference
@@ -517,10 +287,6 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	_send_settings_to_tracker()
 
 	var reset_blend_shapes = false
-	if _settings_old["use_vrm_basic_shapes"] != _settings_new["use_vrm_basic_shapes"]:
-		reset_blend_shapes = true
-	if _settings_old["use_mediapipe_shapes"] != _settings_new["use_mediapipe_shapes"]:
-		reset_blend_shapes = true
 	if reset_blend_shapes:
 		for k in blend_shape_last_values.keys():
 			blend_shape_last_values[k] = 0.0
@@ -657,11 +423,6 @@ func _setup_ik_chains():
 
 	var hand_tracker_left : Node3D = $Hand_Left
 	var hand_tracker_right : Node3D = $Hand_Right
-
-	# FIXME: UGHHHGGHfgjkdnjvhndfvdfnvjkdfnjksdfn
-	# FIXME: MIRROR MESS
-	hand_tracker_left = $Hand_Right
-	hand_tracker_right = $Hand_Left
 
 	# Make sure finger landmarks exist already.
 	_reset_hand_landmarks()
@@ -970,14 +731,6 @@ func _process_single_packet(model : Node3D, delta : float, parsed_data : Diction
 	if mirror_mode:
 		parsed_data = mirror_parsed_data(parsed_data)
 
-	if parsed_data.has("blendshapes"):
-		functions_blendshapes.apply_blendshape_scale(parsed_data["blendshapes"], blendshape_scale)
-
-		# Apply blendshape scales to MediaPipe shapes.
-		functions_blendshapes.apply_blendshape_scale_offset_dict(
-			parsed_data["blendshapes"],
-			blendshape_scales, blendshape_offsets)
-
 	last_parsed_data["head_quat"] = parsed_data["head_quat"]
 	last_parsed_data["head_origin"] = parsed_data["head_origin"]
 	last_parsed_data["head_missing_time"] = parsed_data["head_missing_time"]
@@ -1013,53 +766,7 @@ func _process_single_packet(model : Node3D, delta : float, parsed_data : Diction
 				if blendshape_calibration[blendshape]:
 					last_parsed_data["blendshapes"][blendshape] -= blendshape_calibration[blendshape]
 
-		var shape_dict_new = {}
-
-		# Eye fixups. We want to apply this before it gets sent into the
-		# VRM conversion so it'll affect that.
-		last_parsed_data["blendshapes"] = functions_blendshapes.fixup_eyes(
-			last_parsed_data["blendshapes"], eyes_prevent_opposite_directions,
-			eyes_link_vertical, eyes_link_horizontal,
-			eyes_link_blink)
-
-		# Merge in MediaPipe or basic VRM blendshapes per options.
-		if use_vrm_basic_shapes:
-			var vrm_shapes : Dictionary = functions_blendshapes.convert_mediapipe_shapes_to_vrm_standard( \
-				last_parsed_data["blendshapes"])
-
-			# Apply blendshape scales to basic VRM shapes.
-			functions_blendshapes.apply_blendshape_scale_offset_dict(
-				vrm_shapes, blendshape_scales, blendshape_offsets)
-			shape_dict_new.merge(
-				vrm_shapes,
-				true)
-
-		if use_mediapipe_shapes:
-			shape_dict_new.merge(
-				last_parsed_data["blendshapes"],
-				true)
-
-		# Update a few of the progress bars.
-		var shape_keys : Array = blendshape_progressbars.keys()
-		for i in range(0, 5):
-
-			var shape_name : String = \
-				shape_keys[blendshape_progressbar_update_index]
-
-			if shape_name in shape_dict_new:
-				blendshape_progressbars[shape_name].value = \
-					shape_dict_new[shape_name]
-			else:
-				blendshape_progressbars[shape_name].value = 0.0
-
-			blendshape_progressbar_update_index += 1
-			blendshape_progressbar_update_index %= len(shape_keys)
-
-		# Apply smoothing.
-		# FIXME: Parameterize.
-		shape_dict_new = functions_blendshapes.apply_smoothing(
-			blend_shape_last_values, shape_dict_new,
-			delta, blendshape_smoothing_scale, blendshape_smoothing)
+		var shape_dict_new : Dictionary = last_parsed_data["blendshapes"]
 
 		# Blend back to a rest position if we have lost tracking.
 		if frames_missing_before_spine_reset < last_parsed_data["head_missing_time"]:
@@ -1183,11 +890,15 @@ func _process(delta):
 	if not model_root:
 		return
 
-
 	# FIXME: Remove this. OffKai hack.
 	if tracking_pause:
 		return
-	
+
+	# Hack to fix hips drift.
+	if hack_reset_hips_every_frame:
+		var hips_index : int = skel.find_bone("Hips")
+		if hips_index != -1:
+			skel.reset_bone_pose(hips_index)
 
 	# FIXME: Hack.
 	# This just moves the body based on the head position.
@@ -1224,7 +935,6 @@ func _process(delta):
 
 		# FIXME: Make these adjustable.
 		var model_origin_offset = Vector3(0.0, 2.0, 0.0)
-		var arbitrary_scale = 1.0
 		var score_exponent = 1.5
 		var score_threshold = 0.1
 		var head_rotation_scale = 2.0
@@ -1242,9 +952,6 @@ func _process(delta):
 		hand_origin_multiplier = Vector3(-1.0, 1.0, 1.0)
 		head_origin_multiplier = Vector3(-1.0, 1.0, 1.0)
 		head_quat_multiplier = [1.0, -1.0, -1.0, 1.0]
-
-		tracker_left = $Hand_Right
-		tracker_right = $Hand_Left
 
 		# -----------------------------------------------------------------------------------------
 		# Hand packets
@@ -1269,157 +976,13 @@ func _process(delta):
 		 ]
 
 		for hand_data in per_hand_data:
-
-			var time_since_last_update = hand_time_since_last_update[hand_data["index"]]
-			var time_since_last_missing = hand_time_since_last_missing[hand_data["index"]]
-
-			var hand_str = hand_data["side"]
-			var hand_str_lower = hand_str.to_lower()
-			var tracker_ob = hand_data["tracker_object"]
-
-			var hand_score_str = "hand_" + hand_str_lower + "_score"
-			var hand_origin_str = "hand_" + hand_str_lower + "_origin"
-			var hand_rotation_str = "hand_" + hand_str_lower + "_rotation"
-			
-			var hand_origin_array = parsed_data[hand_origin_str]
-			var hand_score = parsed_data[hand_score_str]
-		
-			# Apply thresholds to the confidence score.			
-			if parsed_data[hand_score_str] < score_threshold or not hand_tracking_enabed: # FIXME: Wrong place for the enabled check?
-				parsed_data[hand_score_str] = 0.0
-
-			# Track time since last visible or not.
-			if hand_score >= score_threshold:
-				time_since_last_update = 0.0
-				time_since_last_missing += delta
-			else:
-				time_since_last_update += delta
-				time_since_last_missing = 0.0
-
-			hand_time_since_last_update[hand_data["index"]] = time_since_last_update
-			hand_time_since_last_missing[hand_data["index"]] = time_since_last_missing
-
-			if time_since_last_update > arm_reset_time:
-				
-				var reference_ob = hand_data["rest_reference_object"]
-				# Move hand to rest position.
-				tracker_ob.global_transform.origin = tracker_ob.global_transform.origin.lerp(
-					reference_ob.global_transform.origin, arm_reset_speed) # FIXME: Hardcoded value.
-				
-				var rot_quat1 = tracker_ob.global_transform.basis.get_rotation_quaternion()
-				var rot_quat2 = reference_ob.global_transform.basis.get_rotation_quaternion()
-				tracker_ob.global_transform.basis = Basis(rot_quat1.slerp(rot_quat2, arm_reset_speed)) # FIXME: Hardcoded value
-				tracker_ob.global_transform.basis = tracker_ob.global_transform.basis.orthonormalized()
-
-			elif time_since_last_missing > 0.1: # FIXME: Hardcoded value.
-
-				# Stretch the last bit of the score out with an exponent.
-				parsed_data[hand_score_str] = pow(parsed_data[hand_score_str], score_exponent)
-			
-				# TODO: Replace the tracker object with just a Transform3D.
-				var target_origin = model_origin_offset + (Vector3(
-					hand_origin_array[0],
-					hand_origin_array[1],
-					hand_origin_array[2]) * hand_origin_multiplier) * arbitrary_scale
-				
-				# Attempt to move hand in front of model. Reaching behind is
-				# *usually* the results of bad data.
-				#
-				# FIXME: Ugly hack.
-				#   If we're going to do this, we need to make sure we do it in the model's forward
-				#   direction.
-				#
-				# FIXME: Hardcoded values all over this part.
-				#
-				var chest_transform_global_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
-				var min_z = (skel.global_transform * chest_transform_global_pose).origin
-				if target_origin.z < min_z.z + 0.2:
-					target_origin.z = min_z.z + 0.2
-
-				# Move tracker forward if we're reaching across the chest to see
-				# if we can fix some clipping-into-chest problems.
-				#
-				# FIXME: Hardcoded values all over this part.
-				#
-				
-				# FIXME: THIS IS BAD CODE AND YOU (KIRI) SHOULD FEEL BAD ABOUT IT.
-				var tracker_in_chest_space = chest_transform_global_pose.inverse() * target_origin
-				# FIXME: Hack for mirror.
-				var swap_tracker = tracker_right
-				if tracker_ob == swap_tracker:
-					tracker_in_chest_space.x *= -1
-				# Just clamp the overall reach, first.
-
-				# Clamp tracker reach.
-				# FIXME: Hardcoded value.
-				if tracker_in_chest_space.x < -0.2:
-					tracker_in_chest_space.x = -0.2
-
-				# Now move forward.
-				if tracker_in_chest_space.x < 0.0:
-					# FIXME: Hardcoded scaling value.
-					tracker_in_chest_space.z += -(tracker_in_chest_space.x - 0.1) * 0.2
-				# FIXME: Hack for mirror.
-				if tracker_ob == swap_tracker:
-					tracker_in_chest_space.x *= -1
-				
-				target_origin = chest_transform_global_pose * tracker_in_chest_space
-
-				var rotation_basis_array = parsed_data[hand_rotation_str]
-
-				var rotation_basis = Basis(
-					Vector3(rotation_basis_array[0][0], rotation_basis_array[0][1], rotation_basis_array[0][2]),
-					Vector3(rotation_basis_array[1][0], rotation_basis_array[1][1], rotation_basis_array[1][2]),
-					Vector3(rotation_basis_array[2][0], rotation_basis_array[2][1], rotation_basis_array[2][2]))
-
-				var new_rotation : Basis = (rotation_basis * Basis()).orthonormalized()
-
-				# If we don't do this, the hands often don't rotate. !?!?!?!?!
-				var new_rot_quat = new_rotation.get_rotation_quaternion()
-				#new_rot_quat.y *= -1.0
-				#new_rot_quat.z *= -1.0
-				#new_rot_quat.w *= -1.0
-				#new_rot_quat.x *= -1.0
-				new_rotation = Basis(new_rot_quat)
-
-				# Why do we have to go through the global transform? I guess we need like a "baked"
-				# version of the transform that handles all of our weird axis flipping.
-				
-				var old_world_transform = tracker_ob.get_global_transform()
-
-				#tracker_ob.transform.basis = new_rotation # Basis(new_rotation.orthonormalized().get_rotation_quaternion())
-				
-				# FIXME: Can't work due to variability in chest bone location?
-				#   (problem with new model rigging that wasn't a problem with the old)
-#				# Snap tracker to rest position if we're below a certain
-#				# threshold
-#				#
-#				# FIXME: Hardcoded threshold.
-#				if tracker_in_chest_space.y < 0.0:
-#					var reference_ob = hand[3]
-#					target_origin = reference_ob.global_transform.origin
-#					#tracker_ob.transform.basis = reference_ob.transform.basis
-#					new_rotation = reference_ob.transform.basis
-					
-				var lerp_scale = 1.0 / hand_position_smoothing
-				tracker_ob.transform.origin = tracker_ob.transform.origin.lerp(
-					target_origin,
-					hand_score * delta_scale * lerp_scale)
-				
-				# FIXME: Hardcoded SLERP speed. Make configurable.
-				tracker_ob.transform.basis = Basis(
-					tracker_ob.transform.basis.orthonormalized().get_rotation_quaternion().slerp(
-					new_rotation, 1.0 / hand_rotation_smoothing)) # Basis(new_rotation.orthonormalized().get_rotation_quaternion())
-				
-				var new_world_transform = tracker_ob.get_global_transform()
-				
-				# FIXME: Hardcoded smoothing value.
-				var interped_transform = old_world_transform.interpolate_with(new_world_transform, 0.75)
-				tracker_ob.global_transform.basis = interped_transform.basis
-
-				#tracker_ob.transform.basis = new_rotation
-				if tracker_ob.mesh:
-					tracker_ob.mesh.material.albedo_color.a = 0.25 + hand_score * 0.75
+			# FIXME: We moved this out of the main function here into another
+			# function and just copied all the variables it used. We NEED to
+			# clean that up.
+			_update_hand_tracker(
+				delta, hand_data, parsed_data, score_threshold,
+				score_exponent, model_origin_offset, hand_origin_multiplier,
+				skel, delta_scale);
 
 		# -----------------------------------------------------------------------------------------
 		# Head packets
@@ -1432,7 +995,7 @@ func _process(delta):
 				(Vector3(
 					head_origin_array[0],
 					head_origin_array[1],
-					head_origin_array[2]) * head_origin_multiplier) * arbitrary_scale,
+					head_origin_array[2]) * head_origin_multiplier),
 					delta_scale * 0.5) # FIXME: Hardcoded smoothing.
 			var head_quat_array = parsed_data["head_quat"]
 			var head_euler = Basis(Quaternion(
@@ -1468,17 +1031,15 @@ func _process(delta):
 		# FIXME: MIRRORING MESS
 		var tracker_to_use_right = tracker_right
 		var tracker_to_use_left = tracker_left
-		tracker_to_use_right = tracker_left
-		tracker_to_use_left = tracker_right
 		
 		# FIXME: Hack hack hack hack hack hack
 		for k in range(1, 3):
 
-			var tracker_to_use = tracker_to_use_right
+			var tracker_to_use = tracker_to_use_left
 			var compensation_alpha_scale = 1.0
 			var pole_target_x = x_pole_dist
 			if k == 2: # FIXME: Hack.
-				tracker_to_use = tracker_to_use_left
+				tracker_to_use = tracker_to_use_right
 				compensation_alpha_scale *= -1.0
 				pole_target_x = -x_pole_dist
 		
@@ -1494,18 +1055,11 @@ func _process(delta):
 
 				# FIXME: We really need to parameterize this all in a less
 				# silly way.
-				var rotation_scale = -1.0
-				var shoulder_bone = "RightShoulder"
+				var rotation_scale = 1.0
+				var shoulder_bone = "LeftShoulder"
 				if tracker_to_use == tracker_right:
-					shoulder_bone = "LeftShoulder"
-					rotation_scale = -rotation_scale
-				
-				# FIXME: MIRRORING MESS
-				rotation_scale = -rotation_scale
-				if shoulder_bone == "RightShoulder":
-					shoulder_bone = "LeftShoulder"
-				else:
 					shoulder_bone = "RightShoulder"
+					rotation_scale = -rotation_scale
 				
 				var shoulder_bone_index = skel.find_bone(shoulder_bone)
 				var shoulder_pose = skel.get_bone_global_pose(shoulder_bone_index)
@@ -1552,8 +1106,8 @@ func _process(delta):
 		if do_hands:
 	
 			var hands = [ \
-				[ "Left", hand_landmarks_left, tracker_right, Basis() ], # FIXME: Remove the last value.
-				[ "Right", hand_landmarks_right, tracker_left, Basis() ]]  # FIXME: Remove the last value.
+				[ "Left", hand_landmarks_left, tracker_left, Basis() ], # FIXME: Remove the last value.
+				[ "Right", hand_landmarks_right, tracker_right, Basis() ]]  # FIXME: Remove the last value.
 
 			for hand in hands:
 				update_hand(hand, parsed_data, skel)
@@ -1575,7 +1129,6 @@ func _process(delta):
 	var head_offset : Vector3 = $Head.transform.origin - model_root.transform.origin
 	var lean_amount : float = sin(lean_check_axis.dot(head_offset))
 	handle_lean(skel, lean_amount * lean_scale)
-
 
 
 func _reset_hand_landmarks():
@@ -1610,14 +1163,12 @@ func _reset_hand_landmarks():
 func update_hand(hand, parsed_data, skel : Skeleton3D):
 	var mark_counter = 0
 
-	var flipped_hand = "left"
-	if hand[0] == "Left":
-		flipped_hand = "right"
+	var which_hand = hand[0].to_lower()
 
 	var hand_landmark_rotation_to_use = hand[3]
 	var hand_landmarks = hand[1]
 
-	for mark in parsed_data["hand_landmarks_" + flipped_hand]:
+	for mark in parsed_data["hand_landmarks_" + which_hand]:
 		
 		# FIXME: Remove this.
 		## Add any missing landmarks
@@ -1644,7 +1195,7 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 		var marker_original_local = Vector3(mark[0], mark[1], mark[2]) # FIXME: Add a scaling value.
 
 		# FIXME: WHY THE HECK DO WE HAVE TO DO DO THIS!?!?!?!?!?!?!?!?!?!?!?!?!!!??!?!?!?!?!?!
-		if flipped_hand == "right":
+		if which_hand == "right":
 			marker_original_local[0] *= -1
 			marker_original_local[1] *= -1
 			marker_original_local[2] *= -1
@@ -1706,12 +1257,6 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 		[ "ThumbDistal",        3,  4,  "ThumbDistal", "ThumbProximal" ],
 	]
 
-	# FIXME: MIRROR MESS
-	if hand_landmarks == hand_landmarks_left:
-		hand_landmarks = hand_landmarks_right
-	elif hand_landmarks == hand_landmarks_right:
-		hand_landmarks = hand_landmarks_left
-			
 	if len(hand_landmarks) < 21:
 		return
 	
@@ -1763,9 +1308,9 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 
 		var global_rotation_from_rest = skel.get_bone_global_rest(test_bone_index).basis * rotation_axis_local
 		
-		var hand_index = 0
-		if flipped_hand == "left":
-			hand_index = 1
+		var hand_index = 1
+		if which_hand == "left":
+			hand_index = 0
 
 		if hand_time_since_last_update[hand_index] > arm_reset_time:
 			#skel.set_bone_pose_rotation(test_bone_index,
@@ -1787,3 +1332,160 @@ func check_configuration() -> PackedStringArray:
 		errors.append("No AnimationApplier detected, or detected before MediaPipeController. Blend shapes will not function as expected.")
 
 	return errors
+
+func _update_hand_tracker(
+	delta, hand_data, parsed_data, score_threshold, score_exponent,
+	model_origin_offset, hand_origin_multiplier, skel,
+	delta_scale):
+
+	var time_since_last_update = hand_time_since_last_update[hand_data["index"]]
+	var time_since_last_missing = hand_time_since_last_missing[hand_data["index"]]
+
+	var hand_str = hand_data["side"]
+	var hand_str_lower = hand_str.to_lower()
+	var tracker_ob = hand_data["tracker_object"]
+
+	var hand_score_str = "hand_" + hand_str_lower + "_score"
+	var hand_origin_str = "hand_" + hand_str_lower + "_origin"
+	var hand_rotation_str = "hand_" + hand_str_lower + "_rotation"
+	
+	var hand_origin_array = parsed_data[hand_origin_str]
+	var hand_score = parsed_data[hand_score_str]
+
+	# Apply thresholds to the confidence score.			
+	if parsed_data[hand_score_str] < score_threshold or not hand_tracking_enabed: # FIXME: Wrong place for the enabled check?
+		parsed_data[hand_score_str] = 0.0
+
+	# Track time since last visible or not.
+	if hand_score >= score_threshold:
+		time_since_last_update = 0.0
+		time_since_last_missing += delta
+	else:
+		time_since_last_update += delta
+		time_since_last_missing = 0.0
+
+	hand_time_since_last_update[hand_data["index"]] = time_since_last_update
+	hand_time_since_last_missing[hand_data["index"]] = time_since_last_missing
+
+	if time_since_last_update > arm_reset_time:
+		
+		var reference_ob = hand_data["rest_reference_object"]
+		# Move hand to rest position.
+		tracker_ob.global_transform.origin = tracker_ob.global_transform.origin.lerp(
+			reference_ob.global_transform.origin, arm_reset_speed) # FIXME: Hardcoded value.
+		
+		var rot_quat1 = tracker_ob.global_transform.basis.get_rotation_quaternion()
+		var rot_quat2 = reference_ob.global_transform.basis.get_rotation_quaternion()
+		tracker_ob.global_transform.basis = Basis(rot_quat1.slerp(rot_quat2, arm_reset_speed)) # FIXME: Hardcoded value
+		tracker_ob.global_transform.basis = tracker_ob.global_transform.basis.orthonormalized()
+
+	elif time_since_last_missing > 0.1: # FIXME: Hardcoded value.
+
+		# Stretch the last bit of the score out with an exponent.
+		parsed_data[hand_score_str] = pow(parsed_data[hand_score_str], score_exponent)
+	
+		# TODO: Replace the tracker object with just a Transform3D.
+		var target_origin = model_origin_offset + (Vector3(
+			hand_origin_array[0],
+			hand_origin_array[1],
+			hand_origin_array[2]) * hand_origin_multiplier)
+		
+		# Attempt to move hand in front of model. Reaching behind is
+		# *usually* the results of bad data.
+		#
+		# FIXME: Ugly hack.
+		#   If we're going to do this, we need to make sure we do it in the model's forward
+		#   direction.
+		#
+		# FIXME: Hardcoded values all over this part.
+		#
+		var chest_transform_global_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
+		var min_z = (skel.global_transform * chest_transform_global_pose).origin
+		if target_origin.z < min_z.z + 0.2:
+			target_origin.z = min_z.z + 0.2
+
+		# Move tracker forward if we're reaching across the chest to see
+		# if we can fix some clipping-into-chest problems.
+		#
+		# FIXME: Hardcoded values all over this part.
+		#
+
+		# FIXME: THIS IS BAD CODE AND YOU (KIRI) SHOULD FEEL BAD ABOUT IT.
+		var tracker_in_chest_space = chest_transform_global_pose.inverse() * target_origin
+		# FIXME: Hack for mirror.
+		if hand_str_lower == "right":
+			tracker_in_chest_space.x *= -1
+
+		# Just clamp the overall reach, first.
+
+		# Clamp tracker reach.
+		# FIXME: Hardcoded value.
+		if tracker_in_chest_space.x < -0.2:
+			tracker_in_chest_space.x = -0.2
+
+		# Now move forward.
+		if tracker_in_chest_space.x < 0.0:
+			# FIXME: Hardcoded scaling value.
+			tracker_in_chest_space.z += -(tracker_in_chest_space.x - 0.1) * 0.2
+
+		# FIXME: Hack for mirror.
+		if hand_str_lower == "right":
+			tracker_in_chest_space.x *= -1
+
+		target_origin = chest_transform_global_pose * tracker_in_chest_space
+
+		var rotation_basis_array = parsed_data[hand_rotation_str]
+
+		var rotation_basis = Basis(
+			Vector3(rotation_basis_array[0][0], rotation_basis_array[0][1], rotation_basis_array[0][2]),
+			Vector3(rotation_basis_array[1][0], rotation_basis_array[1][1], rotation_basis_array[1][2]),
+			Vector3(rotation_basis_array[2][0], rotation_basis_array[2][1], rotation_basis_array[2][2]))
+
+		var new_rotation : Basis = (rotation_basis * Basis()).orthonormalized()
+
+		# If we don't do this, the hands often don't rotate. !?!?!?!?!
+		var new_rot_quat = new_rotation.get_rotation_quaternion()
+		#new_rot_quat.y *= -1.0
+		#new_rot_quat.z *= -1.0
+		#new_rot_quat.w *= -1.0
+		#new_rot_quat.x *= -1.0
+		new_rotation = Basis(new_rot_quat)
+
+		# Why do we have to go through the global transform? I guess we need like a "baked"
+		# version of the transform that handles all of our weird axis flipping.
+		
+		var old_world_transform = tracker_ob.get_global_transform()
+
+		#tracker_ob.transform.basis = new_rotation # Basis(new_rotation.orthonormalized().get_rotation_quaternion())
+		
+		# FIXME: Can't work due to variability in chest bone location?
+		#   (problem with new model rigging that wasn't a problem with the old)
+#				# Snap tracker to rest position if we're below a certain
+#				# threshold
+#				#
+#				# FIXME: Hardcoded threshold.
+#				if tracker_in_chest_space.y < 0.0:
+#					var reference_ob = hand[3]
+#					target_origin = reference_ob.global_transform.origin
+#					#tracker_ob.transform.basis = reference_ob.transform.basis
+#					new_rotation = reference_ob.transform.basis
+			
+		var lerp_scale = 1.0 / hand_position_smoothing
+		tracker_ob.transform.origin = tracker_ob.transform.origin.lerp(
+			target_origin,
+			hand_score * delta_scale * lerp_scale)
+		
+		# FIXME: Hardcoded SLERP speed. Make configurable.
+		tracker_ob.transform.basis = Basis(
+			tracker_ob.transform.basis.orthonormalized().get_rotation_quaternion().slerp(
+			new_rotation, 1.0 / hand_rotation_smoothing)) # Basis(new_rotation.orthonormalized().get_rotation_quaternion())
+		
+		var new_world_transform = tracker_ob.get_global_transform()
+		
+		# FIXME: Hardcoded smoothing value.
+		var interped_transform = old_world_transform.interpolate_with(new_world_transform, 0.75)
+		tracker_ob.global_transform.basis = interped_transform.basis
+
+		#tracker_ob.transform.basis = new_rotation
+		if tracker_ob.mesh:
+			tracker_ob.mesh.material.albedo_color.a = 0.25 + hand_score * 0.75

@@ -1,0 +1,37 @@
+[gd_scene load_steps=8 format=3 uid="uid://da81181byx5sy"]
+
+[ext_resource type="PackedScene" uid="uid://fhm0lw7jf81x" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject.tscn" id="1_c7ok8"]
+[ext_resource type="AudioStream" uid="uid://ck6s4l8wot1fp" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_Sound_HitHurt2.wav" id="2_qut1m"]
+[ext_resource type="Shader" uid="uid://bk88vaf1p35ef" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteShader.gdshader" id="2_qyi6m"]
+[ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="3_qut1m"]
+[ext_resource type="PackedScene" uid="uid://doet1eg1yf7hi" path="res://Mods/ThrownObjects/Objects/Hand/hand.glb" id="5_qut1m"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_tet7i"]
+radius = 0.15
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tet7i"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("2_qyi6m")
+shader_parameter/texture_albedo = ExtResource("3_qut1m")
+shader_parameter/rotation = 0.0
+shader_parameter/uniform_scale = 1.0
+
+[node name="ThrownObject" instance=ExtResource("1_c7ok8")]
+sticky = false
+stickiness_chance = 0.0
+collision_sound = ExtResource("2_qut1m")
+collision_force = 0.1
+
+[node name="MeshInstance" parent="." index="0"]
+visible = false
+
+[node name="CollisionShape" parent="." index="1"]
+shape = SubResource("SphereShape3D_tet7i")
+
+[node name="Sprite3D" parent="." index="3"]
+visible = false
+material_override = SubResource("ShaderMaterial_tet7i")
+
+[node name="hand" parent="." index="5" instance=ExtResource("5_qut1m")]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, -0.0465245, -0.0127106)
