@@ -41,7 +41,7 @@ func _ready():
 
 func _get_camera() -> Node3D:
 	var app = get_app()
-	var cam_child = app.find_child("CameraBoom", false)
+	var cam_child: Node3D = app.camera_boom
 	assert(cam_child != null)
 	return cam_child
 

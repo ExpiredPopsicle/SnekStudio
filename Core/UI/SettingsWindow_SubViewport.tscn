@@ -1,0 +1,103 @@
+[gd_scene load_steps=4 format=3 uid="uid://dgdjey7i38bgl"]
+
+[ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_opk6d"]
+[ext_resource type="Script" uid="uid://lg10e4ba8d5h" path="res://Core/UI/SettingsWindow_SubViewport.gd" id="2_smg30"]
+[ext_resource type="PackedScene" uid="uid://deopl3p3blrra" path="res://Core/UI/VectorSettingWidget.tscn" id="3_wtwjh"]
+
+[node name="SettingsWindow_SubViewport" instance=ExtResource("1_opk6d")]
+script = ExtResource("2_smg30")
+label_text = "SubViewport"
+
+[node name="GridContainer" type="GridContainer" parent="." index="2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 2
+
+[node name="LabelResolutionChoice" type="Label" parent="GridContainer" index="0"]
+layout_mode = 2
+text = "Resolution"
+
+[node name="OptionButtonRes" type="OptionButton" parent="GridContainer" index="1"]
+layout_mode = 2
+size_flags_horizontal = 10
+selected = 0
+item_count = 5
+popup/item_0/text = "Fit to window"
+popup/item_0/id = 0
+popup/item_1/text = "1152x648 (default)"
+popup/item_1/id = 1
+popup/item_2/text = "1280x720"
+popup/item_2/id = 2
+popup/item_3/text = "1440x900"
+popup/item_3/id = 3
+popup/item_4/text = "1920x1080"
+popup/item_4/id = 4
+
+[node name="CheckButtonCustomRes" type="CheckButton" parent="GridContainer" index="2"]
+layout_mode = 2
+text = "Custom Resolution"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GridContainer" index="3"]
+layout_mode = 2
+
+[node name="VectorSettingWidget" parent="GridContainer/HBoxContainer" index="0" instance=ExtResource("3_wtwjh")]
+layout_mode = 2
+vector2 = true
+custom_step = 1.0
+custom_min = 8.0
+custom_max = 4096.0
+
+[node name="ButtonSetCustomRes" type="Button" parent="GridContainer/HBoxContainer" index="1"]
+layout_mode = 2
+text = "Apply"
+
+[node name="LabelMSAA" type="Label" parent="GridContainer" index="4"]
+layout_mode = 2
+text = "MSAA"
+
+[node name="OptionButtonMSAA" type="OptionButton" parent="GridContainer" index="5"]
+layout_mode = 2
+selected = 3
+fit_to_longest_item = false
+item_count = 4
+popup/item_0/text = "Off"
+popup/item_0/id = 0
+popup/item_1/text = "2x"
+popup/item_1/id = 1
+popup/item_2/text = "4x"
+popup/item_2/id = 2
+popup/item_3/text = "8x"
+popup/item_3/id = 3
+
+[node name="LabelFilter" type="Label" parent="GridContainer" index="6"]
+layout_mode = 2
+text = "Texture Filter"
+
+[node name="OptionButtonFilter" type="OptionButton" parent="GridContainer" index="7"]
+layout_mode = 2
+selected = 1
+fit_to_longest_item = false
+item_count = 2
+popup/item_0/text = "Nearest"
+popup/item_0/id = 0
+popup/item_1/text = "Linear"
+popup/item_1/id = 1
+
+[node name="LabelDebugDraw" type="Label" parent="GridContainer" index="8"]
+layout_mode = 2
+text = "Debug Draw"
+
+[node name="OptionButtonDebugDraw" type="OptionButton" parent="GridContainer" index="9"]
+layout_mode = 2
+fit_to_longest_item = false
+
+[connection signal="item_selected" from="GridContainer/OptionButtonRes" to="." method="_any_value_changed"]
+[connection signal="toggled" from="GridContainer/CheckButtonCustomRes" to="." method="_any_value_changed"]
+[connection signal="pressed" from="GridContainer/HBoxContainer/ButtonSetCustomRes" to="." method="_on_button_set_custom_res_pressed"]
+[connection signal="item_selected" from="GridContainer/OptionButtonMSAA" to="." method="_any_value_changed"]
+[connection signal="item_selected" from="GridContainer/OptionButtonFilter" to="." method="_any_value_changed"]
+[connection signal="item_selected" from="GridContainer/OptionButtonDebugDraw" to="." method="_any_value_changed"]
