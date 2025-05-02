@@ -1,0 +1,3 @@
+Adjust blend shape scaling, offset, and smoothing.
+
+Note: This will only affect blend shapes set higher in the mods list. Make sure this is below any mods that may set blend shapes, and above the AnimationApplier.
