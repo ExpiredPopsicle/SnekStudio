@@ -34,7 +34,7 @@ var engine_viseme_weight_multiplier : float = 4.0:
 
 var viseme_progressbars : Dictionary = {}
 
-var vrm_mapping = [
+var vrm_mapping : Array[String] = [
 	"sil",
 	"",
 	"",
@@ -51,7 +51,7 @@ var vrm_mapping = [
 	"",
 	""
 ]
-var vrm_mapping_basic = [
+var vrm_mapping_basic : Array[String] = [
 	"sil",
 	"",
 	"",
@@ -69,26 +69,23 @@ var vrm_mapping_basic = [
 	""
 ]
 
-func scene_shutdown():
-	get_global_mod_data("VisemeBlendShapes").clear()
-	
 func _ready():
 	add_tracked_setting("is_basic_vrm_shapes", "Use basic VRM shapes")
-	add_tracked_setting("prefer_mediapipe_tracker", "Prefer real tracker over lipsync")
-	add_tracked_setting("prefer_mediapipe_greater_than_value_perc", "Prefer lipsync when tracking value is less than ...", { "min": 1.0, "max": 100.0 })
+	add_tracked_setting("prefer_mediapipe_tracker", "Prefer MediaPipe data over lipsync")
+	add_tracked_setting("prefer_mediapipe_greater_than_value_perc", "Prefer lipsync data when MediaPipe blendshape value is less than ...", { "min": 1.0, "max": 100.0 })
 	add_setting_group("lipsync_engine", "Engine")
 	add_tracked_setting("engine_precision", "Precision (higher is better)", { "min": 0.01, "max": 1.0 }, "lipsync_engine")
 	add_tracked_setting("engine_slew", "Slew (lower is better)", { "min": 1, "max": 100 }, "lipsync_engine")
 	add_tracked_setting("engine_viseme_weight_multiplier", "Viseme weight multiplier", { "min": 1, "max": 20 }, "lipsync_engine")
-	
+
 	add_setting_group("lipsync_visemes", "Visemes")
-	
+
 	# Add the visemes to the settings UI for debug.
 	for vis in range(Visemes.VISEME.COUNT):
-		var name = engine.VISEME_NAMES[vis]
+		var vis_name = engine.VISEME_NAMES[vis]
 		var label : Label = Label.new()
 		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		label.text = name + " Value"
+		label.text = vis_name + " Value"
 		# FIXME: Direct use of internal (indented private, not protected) variables.
 		_settings_groups["lipsync_visemes"].add_setting_control(label)
 
@@ -101,31 +98,30 @@ func _ready():
 		progressbar.custom_minimum_size = Vector2(0, 32.0)
 		# FIXME: Direct use of internal variables.
 		_settings_groups["lipsync_visemes"].add_setting_control(progressbar)
-		
-		viseme_progressbars[name] = progressbar
-		
+
+		viseme_progressbars[vis_name] = progressbar
+
 	update_settings_ui()
 
-func _process(delta : float):
+func _process(_delta : float):
 	for vis in range(Visemes.VISEME.COUNT):
 		var viseme_value = clampf(engine.visemes[vis] * 5, -1.0, 1.0)
-		var name = engine.VISEME_NAMES[vis]
-		var progressbar : ProgressBar = viseme_progressbars[name]
+		var vis_name = engine.VISEME_NAMES[vis]
+		var progressbar : ProgressBar = viseme_progressbars[vis_name]
 		progressbar.value = viseme_value
-		
+
 	var blendshapes : Dictionary =  get_global_mod_data("BlendShapes")
-	
-	var mediapipe_vals = engine.current_mediapipe_values
+
+	var mediapipe_vals : Dictionary = engine.current_mediapipe_values
 	if is_basic_vrm_shapes:
 		mediapipe_vals = engine.current_basic_vrm_values
 
 	if prefer_mediapipe_tracker:
-		for val in mediapipe_vals.duplicate():
+		for val : String in mediapipe_vals.duplicate():
 			# Check to see if we have significant differences.
 			if mediapipe_vals[val] < 0.001 or not blendshapes.has(val) \
 				or blendshapes[val] > (prefer_mediapipe_greater_than_value_perc / 100.0):
 				mediapipe_vals.erase(val)
-			
 
 	# Always merge at the end.
 	blendshapes.merge(mediapipe_vals, true)

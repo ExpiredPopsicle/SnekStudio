@@ -449,7 +449,11 @@ func _process(_delta: float) -> void:
 	for i in BANDS_COUNT:
 		var center_hz: float = BANDS_RANGE[i][0]
 		var width_hz: float = BANDS_RANGE[i][1]
-		var magnitude := _effect.get_magnitude_for_frequency_range(center_hz - width_hz, center_hz + width_hz, 0)
+		var magnitude := _effect\
+			.get_magnitude_for_frequency_range(center_hz - width_hz, 
+											center_hz + width_hz, 
+											AudioEffectSpectrumAnalyzerInstance
+												.MagnitudeMode.MAGNITUDE_AVERAGE)
 		var e := magnitude.length() * center_hz
 		energy[i] = e
 		energy_sum += e
