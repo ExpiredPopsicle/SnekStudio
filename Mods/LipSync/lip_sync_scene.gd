@@ -37,11 +37,23 @@ var viseme_progressbars : Dictionary = {}
 func _ready():
 	add_tracked_setting("is_basic_vrm_shapes", "Use basic VRM shapes")
 	add_tracked_setting("prefer_mediapipe_tracker", "Prefer MediaPipe data over lipsync")
-	add_tracked_setting("prefer_mediapipe_greater_than_value_perc", "Prefer lipsync data when MediaPipe blendshape value is less than ...", { "min": 1.0, "max": 100.0 })
+	add_tracked_setting("prefer_mediapipe_greater_than_value_perc", 
+		"Prefer lipsync data when MediaPipe blendshape value is less than ...", 
+		{ "min": 1.0, "max": 100.0 })
+
 	add_setting_group("lipsync_engine", "Engine")
-	add_tracked_setting("engine_precision", "Precision (higher is better)", { "min": 0.01, "max": 1.0 }, "lipsync_engine")
-	add_tracked_setting("engine_slew", "Slew (lower is better)", { "min": 1, "max": 100 }, "lipsync_engine")
-	add_tracked_setting("engine_viseme_weight_multiplier", "Viseme weight multiplier", { "min": 1, "max": 20 }, "lipsync_engine")
+	add_tracked_setting("engine_precision", 
+		"Precision (higher is better)", 
+		{ "min": 0.01, "max": 1.0 }, 
+		"lipsync_engine")
+	add_tracked_setting("engine_slew", 
+		"Slew (lower is better)", 
+		{ "min": 1, "max": 100 }, 
+		"lipsync_engine")
+	add_tracked_setting("engine_viseme_weight_multiplier", 
+		"Viseme weight multiplier", 
+		{ "min": 1, "max": 20 }, 
+		"lipsync_engine")
 
 	add_setting_group("lipsync_visemes", "Visemes")
 
