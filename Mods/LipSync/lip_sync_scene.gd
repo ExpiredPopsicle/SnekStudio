@@ -82,7 +82,8 @@ func _ready():
 
 func _process(_delta : float):
 	for vis in range(Visemes.VISEME.COUNT):
-		var viseme_value = clampf(engine.visemes[vis] * 5, -1.0, 1.0)
+		var viseme_value = clampf(engine.visemes[vis] * 
+								engine_viseme_weight_multiplier, -1.0, 1.0)
 		var vis_name = engine.VISEME_NAMES[vis]
 		var progressbar : ProgressBar = viseme_progressbars[vis_name]
 		progressbar.value = viseme_value
