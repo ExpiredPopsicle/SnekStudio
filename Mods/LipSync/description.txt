@@ -1,0 +1,5 @@
+Real-time lip synchronization based on your microphone input, 
+making sure your avatar's mouth movements match your speech.
+
+It enhances existing MediaPipe tracking for accurate mouth movement and 
+maintains tracking even when the camera is blocked or obscured.
