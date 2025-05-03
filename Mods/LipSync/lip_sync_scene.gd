@@ -34,41 +34,6 @@ var engine_viseme_weight_multiplier : float = 4.0:
 
 var viseme_progressbars : Dictionary = {}
 
-var vrm_mapping : Array[String] = [
-	"sil",
-	"",
-	"",
-	"E",
-	"",
-	"ih",
-	"oh",
-	"",
-	"",
-	"",
-	"",
-	"ou",
-	"aa",
-	"",
-	""
-]
-var vrm_mapping_basic : Array[String] = [
-	"sil",
-	"",
-	"",
-	"ee",
-	"",
-	"ih",
-	"oh",
-	"",
-	"",
-	"",
-	"",
-	"ou",
-	"aa",
-	"",
-	""
-]
-
 func _ready():
 	add_tracked_setting("is_basic_vrm_shapes", "Use basic VRM shapes")
 	add_tracked_setting("prefer_mediapipe_tracker", "Prefer MediaPipe data over lipsync")
