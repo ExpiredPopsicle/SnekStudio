@@ -1,6 +1,7 @@
 # Author: Malcolm Nixon https://github.com/Malcolmnixon
 # GitHub Project Page: To be released as a addon for the Godot Engine
 # License: MIT
+# Slight edits by Elliesaur to integrate mediapipe/basic vrm shapes.
 
 class_name LipSync
 extends Node
@@ -211,6 +212,7 @@ const VISEMES_DEF = [
 ## Silence threshold
 @export var silence := 0.15
 
+@export var viseme_weight_multiplier : float = 4.0
 
 # Raw energy for each band (0..1)
 var energy_raw := BANDS_DEF.duplicate()
@@ -233,6 +235,173 @@ var _player : AudioStreamPlayer
 # Spectrum analyzer effect instance
 var _effect : AudioEffectSpectrumAnalyzerInstance
 
+const VISEME_NAMES_LOWER : Array[String] = [
+	"silent",
+	"ch",
+	"dd",
+	"e",
+	"ff",
+	"i",
+	"o",
+	"pp",
+	"rr",
+	"ss",
+	"th",
+	"u",
+	"aa",
+	"kk",
+	"nn"
+]
+
+const VISEME_NAMES : Array[String] = [
+	"Silent",
+	"CH",
+	"DD",
+	"E",
+	"Ff",
+	"I",
+	"O",
+	"PP",
+	"RR",
+	"SS",
+	"TH",
+	"U",
+	"AA",
+	"KK",
+	"NN"
+]
+const BASIC_VRM_MAPPING = [
+	"sil",
+	"",
+	"",
+	"E",
+	"",
+	"ih",
+	"oh",
+	"",
+	"",
+	"",
+	"",
+	"ou",
+	"aa",
+	"",
+	""
+]
+
+var viseme_to_mediapipe_map = {
+	"ch": {
+		"mouthPucker": 0.4,
+		"mouthFunnel": 0.1,
+		"mouthLeft": 0.0, "mouthRight": 0.0,
+		"mouthLowerDownLeft": 0.1, "mouthLowerDownRight": 0.1,
+		"jawOpen": 0.15
+	},
+	"dd": {
+		"mouthPucker": 0.0,
+		"mouthFunnel": 0.0,
+		"mouthLeft": 0.0, "mouthRight": 0.0,
+		"mouthLowerDownLeft": 0.0, "mouthLowerDownRight": 0.0,
+		"jawOpen": 0.1
+	},
+	"th": {
+		"mouthPucker": 0.0,
+		"mouthFunnel": 0.0,
+		"mouthLeft": 0.0, "mouthRight": 0.0,
+		"mouthLowerDownLeft": 0.0, "mouthLowerDownRight": 0.0,
+		"jawOpen": 0.1
+	},
+ 	"nn": {
+		"mouthPucker": 0.0,
+		"mouthFunnel": 0.0,
+		"mouthLeft": 0.0, "mouthRight": 0.0,
+		"mouthLowerDownLeft": 0.0, "mouthLowerDownRight": 0.0,
+		"jawOpen": 0.0
+	},
+	"ss": {
+		"mouthPucker": 0.0,
+		"mouthFunnel": 0.0,
+		"mouthLeft": 0.3, "mouthRight": 0.3,
+		"mouthLowerDownLeft": 0.0, "mouthLowerDownRight": 0.0,
+		"jawOpen": 0.05
+	},
+	 "kk": {
+		"mouthPucker": 0.0,
+		"mouthFunnel": 0.0,
+		"mouthLeft": 0.0, "mouthRight": 0.0,
+		"mouthLowerDownLeft": 0.0, "mouthLowerDownRight": 0.0,
+		"jawOpen": 0.15
+	},
+	 "ff": {
+		"mouthPucker": 0.0,
+		"mouthFunnel": 0.0,
+		"mouthLeft": 0.1, "mouthRight": 0.1,
+		# Might need 'mouthShrugLower' if available, or simulate by slightly lowering lip
+		"mouthLowerDownLeft": 0.1, "mouthLowerDownRight": 0.1,
+		"jawOpen": 0.1
+	},
+	"rr": {
+		"mouthPucker": 0.1,
+		"mouthFunnel": 0.2,
+		"mouthLeft": 0.0, "mouthRight": 0.0,
+		"mouthLowerDownLeft": 0.0, "mouthLowerDownRight": 0.0,
+		"jawOpen": 0.1
+	},
+	"e": {
+		"mouthPucker": 0.0,
+		"mouthFunnel": 0.0,
+		"mouthLeft": 0.7, "mouthRight": 0.7,
+		"mouthLowerDownLeft": 0.1, "mouthLowerDownRight": 0.1,
+		"jawOpen": 0.1
+	},
+	"i": {
+		"mouthPucker": 0.0,
+		"mouthFunnel": 0.0,
+		"mouthLeft": 0.4, "mouthRight": 0.4,
+		"mouthLowerDownLeft": 0.1, "mouthLowerDownRight": 0.1,
+		"jawOpen": 0.2
+	},
+	"aa": {
+		"mouthPucker": 0.0,
+		"mouthFunnel": 0.0,
+		"mouthLeft": 0.0, "mouthRight": 0.0,
+		"mouthLowerDownLeft": 0.2, "mouthLowerDownRight": 0.2,
+		"jawOpen": 0.8
+	},
+	"u": {
+		"mouthPucker": 0.9,
+		"mouthFunnel": 0.1,
+		"mouthLeft": 0.0, "mouthRight": 0.0,
+		"mouthLowerDownLeft": 0.0, "mouthLowerDownRight": 0.0,
+		"jawOpen": 0.1
+	},
+	"o": {
+		"mouthPucker": 0.1,
+		"mouthFunnel": 0.8,
+		"mouthLeft": 0.0, "mouthRight": 0.0,
+		"mouthLowerDownLeft": 0.1, "mouthLowerDownRight": 0.1,
+	 	"jawOpen": 0.3
+	},
+	"silent": {
+		"mouthPucker": 0.0,
+		"mouthFunnel": 0.0,
+		"mouthLeft": 0.0, "mouthRight": 0.0,
+		"mouthLowerDownLeft": 0.0, "mouthLowerDownRight": 0.0,
+		"jawOpen": 0.0
+	}
+}
+
+var all_mediapipe_keys : Array = [
+	"mouthPucker",
+	"mouthFunnel",
+	"mouthLeft",
+	"mouthRight",
+	"mouthLowerDownLeft",
+	"mouthLowerDownRight",
+	"jawOpen"
+]
+
+var current_mediapipe_values : Dictionary = {}
+var current_basic_vrm_values : Dictionary = {}
 
 # Sort class for sorting [shape,distance] array by distance
 class DistanceSorter:
@@ -271,7 +440,6 @@ func _ready() -> void:
 	
 		# Start playing the microphone into the audio bus
 		_player.play()
-
 
 # Process the lip-sync audio
 func _process(_delta: float) -> void:
@@ -318,9 +486,42 @@ func _process(_delta: float) -> void:
 		var old_weight: float = visemes[i]
 		var new_weight: float = scores[i] * score_scale
 		visemes[i] = lerp(old_weight, new_weight, slew_scale)
-	
+		if BASIC_VRM_MAPPING[i] == "":
+			continue
+		current_basic_vrm_values[BASIC_VRM_MAPPING[i]] = visemes[i]
+		
+	_convert_visemes_to_mediapipe_shapes()
+
 	prev_energy_sum = current_energy_sum
 
+func _convert_visemes_to_mediapipe_shapes():
+	for mp_key in all_mediapipe_keys:
+		current_mediapipe_values[mp_key] = 0.0
+
+	for i in range(VISEME.COUNT):
+		var viseme_weight: float = visemes[i]
+
+		# Skip if this viseme has negligible weight
+		if viseme_weight < 0.001:
+			continue
+
+		var viseme_name: String = VISEME_NAMES_LOWER[i]
+
+		if not viseme_to_mediapipe_map.has(viseme_name):
+			continue
+			
+		viseme_weight *= viseme_weight_multiplier
+		
+		var target_shapes_for_this_viseme: Dictionary = viseme_to_mediapipe_map[viseme_name]
+
+		for mediapipe_shape_name in target_shapes_for_this_viseme:
+			# Check if this MediaPipe shape is one we are tracking (it should be if all_mediapipe_keys is correct)
+			if current_mediapipe_values.has(mediapipe_shape_name):
+				var target_value: float = target_shapes_for_this_viseme[mediapipe_shape_name]
+				# Add the contribution: (viseme's weight) * (target value for this shape in this viseme)
+				current_mediapipe_values[mediapipe_shape_name] += viseme_weight * target_value
+				current_mediapipe_values[mediapipe_shape_name] = clampf(current_mediapipe_values[mediapipe_shape_name], -1.0, 1.0)
+			
 # Get or create an audio bus with the specified name
 static func _get_or_create_audio_bus(name: String) -> int:
 	# Find the audio bus

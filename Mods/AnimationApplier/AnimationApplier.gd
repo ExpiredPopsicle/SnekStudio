@@ -3,10 +3,7 @@ class_name Mod_AnimationApplier
 
 func _process(delta: float) -> void:
 	var blend_shapes_to_apply : Dictionary = get_global_mod_data("BlendShapes")
-	var viseme_to_apply : Dictionary = get_global_mod_data("VisemeBlendShapes")
 
-	blend_shapes_to_apply.merge(viseme_to_apply, true)
-	
 	var model : Node3D = get_model()
 
 	apply_animations(model, blend_shapes_to_apply)
