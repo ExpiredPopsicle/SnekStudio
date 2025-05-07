@@ -33,12 +33,12 @@ var engine_viseme_weight_multiplier : float = 4.0:
 		return engine_viseme_weight_multiplier
 
 var viseme_progressbars : Dictionary = {}
-
+var has_mediapipe_controller : bool = false
 func _ready():
 	add_tracked_setting("is_basic_vrm_shapes", "Use basic VRM shapes")
-	add_tracked_setting("prefer_mediapipe_tracker", "Prefer MediaPipe data over lipsync")
+	add_tracked_setting("prefer_mediapipe_tracker", "Prefer MediaPipe data (must be enabled) over lipsync")
 	add_tracked_setting("prefer_mediapipe_greater_than_value_perc", 
-		"Prefer lipsync data when MediaPipe blendshape value is less than ...", 
+		"Prefer lipsync data when MediaPipe blendshape value is less than X%", 
 		{ "min": 1.0, "max": 100.0 })
 
 	add_setting_group("lipsync_engine", "Engine")
@@ -94,7 +94,7 @@ func _process(_delta : float):
 	if is_basic_vrm_shapes:
 		mediapipe_vals = engine.current_basic_vrm_values
 
-	if prefer_mediapipe_tracker:
+	if prefer_mediapipe_tracker and has_mediapipe_controller:
 		for val : String in mediapipe_vals.duplicate():
 			# Check to see if we have significant differences.
 			if mediapipe_vals[val] < 0.001 or not blendshapes.has(val) \
@@ -103,3 +103,13 @@ func _process(_delta : float):
 
 	# Always merge at the end.
 	blendshapes.merge(mediapipe_vals, true)
+
+func check_configuration() -> PackedStringArray:
+	var errors : PackedStringArray = []
+
+	if not check_mod_dependency("Mod_AnimationApplier", true):
+		errors.append("No AnimationApplier detected, or detected before LipSync. Blend shapes will not function as expected.")
+
+	has_mediapipe_controller = check_mod_dependency("Mod_MediaPipeController", false)
+
+	return errors
