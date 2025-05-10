@@ -9,6 +9,6 @@ func _ready() -> void:
 func _process(_delta : float) -> void:
 	pass
 
-func _dns_packet(packet : MulticastDNS.DNSPacket, raw_packet : StreamPeerBuffer) -> void:
+func _dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> void:
 	pass
 	
