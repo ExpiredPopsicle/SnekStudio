@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://cpe3ulnjnrapo"]
+
+[ext_resource type="Script" uid="uid://ysgfrvghy1n5" path="res://Mods/VRChatOSC/VRChatOSC.gd" id="1_x840n"]
+[ext_resource type="Script" uid="uid://bfemeu7ysbxwc" path="res://Mods/VRChatOSC/godot-multicast-dns/MulticastDNS.gd" id="2_b4fua"]
+
+[node name="VrChatOsc" type="Node" node_paths=PackedStringArray("dns_service")]
+script = ExtResource("1_x840n")
+dns_service = NodePath("MulticastDNS")
+metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
+
+[node name="MulticastDNS" type="Node" parent="."]
+script = ExtResource("2_b4fua")
+metadata/_custom_type_script = "uid://bfemeu7ysbxwc"
