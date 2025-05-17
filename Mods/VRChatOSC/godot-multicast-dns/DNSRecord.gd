@@ -45,6 +45,7 @@ func _a_record(packet : StreamPeerBuffer) -> void:
 
 func _ptr_record(packet : StreamPeerBuffer) -> void:
 	data["domain_labels"] = _read_labels(packet)
+	data["full_label"] = ".".join(data["domain_labels"])
 
 func _srv_record(packet : StreamPeerBuffer) -> void:
 	data["priority"] = packet.get_u16()

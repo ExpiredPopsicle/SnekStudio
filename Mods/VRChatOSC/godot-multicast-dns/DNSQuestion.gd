@@ -6,6 +6,8 @@ var dns_type : int
 var dns_class : int
 ## Labels for the question
 var labels : Array[String] = []
+## The full label is just the labels joined.
+var full_label : String
 ## The cache MUST be the same across the entire packet deserialization.
 var _cache : Dictionary
 
@@ -15,6 +17,7 @@ static func from_packet(packet : StreamPeerBuffer, cache: Dictionary) -> DNSQues
 
 	dns_question._cache = cache
 	dns_question.labels = dns_question._read_labels(packet)
+	dns_question.full_label = ".".join(dns_question.labels)
 	dns_question.dns_type = packet.get_u16()
 	dns_question.dns_class = packet.get_u16()
 
@@ -24,6 +27,7 @@ static func from_packet(packet : StreamPeerBuffer, cache: Dictionary) -> DNSQues
 static func from_packet_for_record(packet : StreamPeerBuffer, cache: Dictionary, record : DNSRecord):
 	record._cache = cache
 	record.labels = record._read_labels(packet)
+	record.full_label = ".".join(record.labels)
 	record.dns_type = packet.get_u16()
 	record.dns_class = packet.get_u16()
 

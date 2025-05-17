@@ -1,13 +1,19 @@
-[gd_scene load_steps=3 format=3 uid="uid://cpe3ulnjnrapo"]
+[gd_scene load_steps=4 format=3 uid="uid://cpe3ulnjnrapo"]
 
 [ext_resource type="Script" uid="uid://ysgfrvghy1n5" path="res://Mods/VRChatOSC/VRChatOSC.gd" id="1_x840n"]
 [ext_resource type="Script" uid="uid://bfemeu7ysbxwc" path="res://Mods/VRChatOSC/godot-multicast-dns/MulticastDNS.gd" id="2_b4fua"]
+[ext_resource type="Script" uid="uid://goefhxca5k8g" path="res://Mods/VMCController/KiriOSC/KiriOSCClient.gd" id="3_faft7"]
 
-[node name="VrChatOsc" type="Node" node_paths=PackedStringArray("dns_service")]
+[node name="VrChatOsc" type="Node" node_paths=PackedStringArray("dns_service", "osc_client")]
 script = ExtResource("1_x840n")
 dns_service = NodePath("MulticastDNS")
+osc_client = NodePath("KiriOSClient")
 metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
 
 [node name="MulticastDNS" type="Node" parent="."]
 script = ExtResource("2_b4fua")
 metadata/_custom_type_script = "uid://bfemeu7ysbxwc"
+
+[node name="KiriOSClient" type="Node" parent="."]
+script = ExtResource("3_faft7")
+metadata/_custom_type_script = "uid://goefhxca5k8g"
