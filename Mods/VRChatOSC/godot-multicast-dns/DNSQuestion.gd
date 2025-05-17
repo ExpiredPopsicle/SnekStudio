@@ -8,12 +8,24 @@ var dns_class : int
 var labels : Array[String] = []
 ## The cache MUST be the same across the entire packet deserialization.
 var _cache : Dictionary
-## Initialize the properties.
-func _init(packet : StreamPeerBuffer, cache: Dictionary) -> void:
-	_cache = cache
-	labels = _read_labels(packet)
-	dns_type = packet.get_u16()
-	dns_class = packet.get_u16()
+
+## Extract a DNS Question from the provided packet with the label cache.
+static func from_packet(packet : StreamPeerBuffer, cache: Dictionary) -> DNSQuestion:
+	var dns_question : DNSQuestion = DNSQuestion.new()
+
+	dns_question._cache = cache
+	dns_question.labels = dns_question._read_labels(packet)
+	dns_question.dns_type = packet.get_u16()
+	dns_question.dns_class = packet.get_u16()
+
+	return dns_question
+
+## Extract a DNS Question from the provided packet with the label cache, applying to the record.
+static func from_packet_for_record(packet : StreamPeerBuffer, cache: Dictionary, record : DNSRecord):
+	record._cache = cache
+	record.labels = record._read_labels(packet)
+	record.dns_type = packet.get_u16()
+	record.dns_class = packet.get_u16()
 
 ## Recursively read all labels
 func _read_labels(packet : StreamPeerBuffer) -> Array[String]:

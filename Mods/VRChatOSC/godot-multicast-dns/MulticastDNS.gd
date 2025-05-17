@@ -45,6 +45,6 @@ func _process(delta : float) -> void:
 		packet.data_array = packet_bytes
 		packet.big_endian = true
 		
-		var dns_packet : DNSPacket = DNSPacket.new(packet)
+		var dns_packet : DNSPacket = DNSPacket.from_packet(packet)
 		
 		on_receive.emit(dns_packet, packet)
