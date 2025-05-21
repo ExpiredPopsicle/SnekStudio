@@ -1375,6 +1375,7 @@ func _update_hand_tracker(
 
 		# Stretch the last bit of the score out with an exponent.
 		hand_score = pow(hand_score, score_exponent)
+		parsed_data[hand_score_str] = hand_score
 	
 		# TODO: Replace the tracker object with just a Transform3D.
 		var target_origin = model_origin_offset + (Vector3(
