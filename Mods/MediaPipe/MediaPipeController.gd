@@ -1345,8 +1345,8 @@ func _update_hand_tracker(
 	var hand_score = parsed_data[hand_score_str]
 
 	# Apply thresholds to the confidence score.			
-	if parsed_data[hand_score_str] < score_threshold or not hand_tracking_enabed: # FIXME: Wrong place for the enabled check?
-		parsed_data[hand_score_str] = 0.0
+	if hand_score < score_threshold or not hand_tracking_enabed: # FIXME: Wrong place for the enabled check?
+		hand_score = 0.0
 
 	# Track time since last visible or not.
 	if hand_score >= score_threshold:
@@ -1374,7 +1374,7 @@ func _update_hand_tracker(
 	elif time_since_last_missing > 0.1: # FIXME: Hardcoded value.
 
 		# Stretch the last bit of the score out with an exponent.
-		parsed_data[hand_score_str] = pow(parsed_data[hand_score_str], score_exponent)
+		hand_score = pow(hand_score, score_exponent)
 	
 		# TODO: Replace the tracker object with just a Transform3D.
 		var target_origin = model_origin_offset + (Vector3(
