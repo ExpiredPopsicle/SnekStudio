@@ -416,9 +416,6 @@ func _setup_ik_chains():
 	var y_pole_dist = 5.0
 	
 	var arm_rotation_axis = Vector3(0.0, 1.0, 0.0).normalized()
-	var finger_rotation_axis = Vector3(0.0, 0.0, 1.0).normalized()
-
-
 
 	var hand_tracker_left : Node3D = $Hand_Left
 	var hand_tracker_right : Node3D = $Hand_Right
@@ -453,117 +450,6 @@ func _setup_ik_chains():
 			chain_hand.tracker_object = hand_tracker_right
 			
 		_ikchains.append(chain_hand)
-
-	return
-
-	# See here for where these numbers come from:
-	#   https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker
-	var fingertip_tracking_mappings = {
-		"Index" : 8,
-		"Middle" : 12,
-		"Ring" : 16,
-		"Little" : 20,
-		"Thumb" : 4
-	}
-
-	for side in [ "Left", "Right" ]:
-
-		var hand_tracker_object = hand_tracker_left
-		if side == "Right":
-			hand_tracker_object = hand_tracker_right
-
-		for finger in [ "Index", "Middle", "Ring", "Little" ]:
-
-			var chain_finger : MediaPipeController_IKChain = \
-				MediaPipeController_IKChain.new()
-			chain_finger.skeleton = get_skeleton()
-
-			# Attempt to find finger root bone.
-			chain_finger.base_bone = side + finger + "Proximal"
-			if chain_finger.skeleton.find_bone(chain_finger.base_bone) == -1:
-				# Finger missing entirely? Bail out.
-				continue
-
-			# Attempt to find finger most-distal bone.
-			chain_finger.tip_bone = side + finger + "Distal"
-			if chain_finger.skeleton.find_bone(chain_finger.tip_bone) == -1:
-				chain_finger.tip_bone = side + finger + "Intermediate"
-			if chain_finger.skeleton.find_bone(chain_finger.tip_bone) == -1:
-				# Can't find needed bones. Bail.
-				continue
-			
-			# Keep looking and see if we can find something beyond the most
-			# distant bone.
-			while true:
-				var child_bones : PackedInt32Array = chain_finger.skeleton.get_bone_children(
-					chain_finger.skeleton.find_bone(chain_finger.tip_bone))
-				if child_bones.size() == 1:
-					chain_finger.tip_bone = chain_finger.skeleton.get_bone_name(child_bones[0])
-				else:
-					break
-			
-			chain_finger.tracker_object = hand_tracker_object.get_child(
-				fingertip_tracking_mappings[finger])
-			if side == "Left":
-				chain_finger.main_axis_of_rotation = -finger_rotation_axis
-				chain_finger.secondary_axis_of_rotation = Vector3(0.0, 1.0, 0.0)
-			else:
-				chain_finger.main_axis_of_rotation = finger_rotation_axis
-				chain_finger.secondary_axis_of_rotation = Vector3(0.0, 1.0, 0.0)
-
-			chain_finger.rotation_low = 0.05 * PI
-			chain_finger.rotation_high = 1.0 * 0.99 * PI
-			chain_finger.do_yaw = false
-			chain_finger.do_bone_roll = false
-			chain_finger.do_rotate_to_match_tracker = false
-			chain_finger.do_point_tracker = false
-			
-			chain_finger.do_pole_targets = false
-			#chain_finger.pole_direction_target = Vector3(0.0, 10.0, 0.0)
-			#chain_finger.pole_direction_rotation_object = hand_tracker_object
-			_ikchains.append(chain_finger)
-
-
-		var chain_thumb : MediaPipeController_IKChain = \
-				MediaPipeController_IKChain.new()
-		chain_thumb.skeleton = get_skeleton()
-
-		# Attempt to find finger root bone.
-		chain_thumb.base_bone = side + "ThumbMetacarpal"
-		#chain_thumb.base_bone = side + "ThumbProximal"
-		if chain_thumb.skeleton.find_bone(chain_thumb.base_bone) == -1:
-			# Finger missing entirely? Bail out.
-			continue
-
-		print(chain_thumb.skeleton.get_concatenated_bone_names())
-
-		# Attempt to find finger most-distal bone.
-		chain_thumb.tip_bone = side + "ThumbDistal"
-		if chain_thumb.skeleton.find_bone(chain_thumb.tip_bone) == -1:
-			chain_thumb.tip_bone = side + "ThumbIntermediate"
-		if chain_thumb.skeleton.find_bone(chain_thumb.tip_bone) == -1:
-			chain_thumb.tip_bone = side + "ThumbProximal"
-		if chain_thumb.skeleton.find_bone(chain_thumb.tip_bone) == -1:
-			# Can't find needed bones. Bail.
-			continue
-
-
-
-		chain_thumb.tracker_object = hand_tracker_object.get_child(
-			fingertip_tracking_mappings["Thumb"])
-		if side == "Left":
-			chain_thumb.main_axis_of_rotation = -finger_rotation_axis
-		else:
-			chain_thumb.main_axis_of_rotation = finger_rotation_axis
-
-		chain_thumb.rotation_low = 0.05 * PI
-		chain_thumb.rotation_high = 0.5 * 0.99 * PI
-		chain_thumb.do_yaw = false
-		chain_thumb.do_bone_roll = false
-		chain_thumb.do_rotate_to_match_tracker = false
-		chain_thumb.do_pole_targets = false
-		_ikchains.append(chain_thumb)
-
 
 func _update_for_new_model_if_needed():
 	_setup_ik_chains()
@@ -713,7 +599,7 @@ func mirror_parsed_data(parsed_data : Dictionary) -> Dictionary:
 
 	return new_parsed_data
 
-func _process_single_packet(model : Node3D, delta : float, parsed_data : Dictionary):
+func _process_single_packet(delta : float, parsed_data : Dictionary):
 
 	if "status" in parsed_data:
 		set_status(parsed_data["status"])
@@ -776,7 +662,7 @@ func _process_single_packet(model : Node3D, delta : float, parsed_data : Diction
 
 	_current_error_to_show = ""
 
-func process_new_packets(model, delta):
+func process_new_packets(delta):
 	var most_recent_packet = null
 	var dropped_packets = 0
 
@@ -793,7 +679,7 @@ func process_new_packets(model, delta):
 
 		if parsed_data:
 			last_packet_received = parsed_data.duplicate(true)
-			_process_single_packet(model, delta, parsed_data)
+			_process_single_packet(delta, parsed_data)
 
 		if len(packet) > 0:
 			if most_recent_packet != null:
@@ -916,7 +802,7 @@ func _process(delta):
 			model_pos.y, head_pos.y - head_rest_transform.origin.y + head_vertical_offset,
 			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
 
-	process_new_packets(model_root, delta)
+	process_new_packets(delta)
 
 	var delta_scale = delta * 60.0
 	if delta_scale > 1.0:
