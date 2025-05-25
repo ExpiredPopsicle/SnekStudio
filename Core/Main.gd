@@ -567,6 +567,24 @@ func load_settings(path : String = ""):
 				}
 			},
 			{
+				"name": "EyeAdjustments",
+				"scene_path": "res://Mods/EyeAdjustments/EyeAdjustments.tscn",
+				"settings": {
+				}
+			},
+			{
+				"name": "MediaPipeToVrmBlendShapes",
+				"scene_path": "res://Mods/MediaPipeToVRMBlendShapes/MediaPipeToVRMBlendShapes.tscn",
+				"settings": {
+				}
+			},
+			{
+				"name": "BlendShapeScalingAndOffset",
+				"scene_path": "res://Mods/BlendShapeScalingAndOffset/BlendShapeScalingAndOffset.tscn",
+				"settings": {
+				}
+			},
+			{
 				"name": "SceneBasic",
 				"scene_path": "res://Mods/Scene_Basic/Scene_Basic.tscn",
 				"settings": {

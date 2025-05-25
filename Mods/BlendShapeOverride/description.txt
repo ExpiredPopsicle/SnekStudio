@@ -1,1 +1,3 @@
 A mod that just activates a blend shape by name, at 100%.
+
+WARNING (FIXME): Activates animations directly. Use at your own risk, and make sure it goes after the AnimationApplier.

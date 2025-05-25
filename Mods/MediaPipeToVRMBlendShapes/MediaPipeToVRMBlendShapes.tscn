@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://bjhuoqtc8xous"]
+
+[ext_resource type="Script" uid="uid://pxrgrd5jawpp" path="res://Mods/MediaPipeToVRMBlendShapes/MediaPipeToVRMBlendShapes.gd" id="1_1l88q"]
+
+[node name="MediaPipeToVrmBlendShapes" type="Node"]
+script = ExtResource("1_1l88q")
+metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
