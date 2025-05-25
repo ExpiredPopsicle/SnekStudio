@@ -18,7 +18,7 @@ func initialize(raw_avatar_params : Dictionary, avatar_id : String, has_changed_
 	_raw_params = raw_avatar_params
 	_avatar_id = avatar_id
 	_has_changed_avi = has_changed_avi
-	
+
 	if raw_avatar_params.has("v2"):
 		raw_avatar_params = raw_avatar_params["v2"]["CONTENTS"]
 		_raw_params = raw_avatar_params
@@ -29,7 +29,7 @@ func initialize(raw_avatar_params : Dictionary, avatar_id : String, has_changed_
 		# Verify this is a type/value parameter.
 		if not "TYPE" in raw_avatar_params[key] or not "VALUE" in raw_avatar_params[key]:
 			continue
-		# FIXME: Value can actually be >0, or == 0.
+		# FIXME: Len of Value can actually be >0, or == 0.
 		var param = VRCParam.new(
 				raw_avatar_params[key]["FULL_PATH"],
 				key, 
@@ -116,3 +116,7 @@ func get_dirty() -> Array[VRCParam]:
 
 func get_all() -> Array[VRCParam]:
 	return _params
+
+func has(shape_key : String) -> bool:
+	var params : Array[VRCParam] = _params.filter(func (p : VRCParam): return p.binary_key == shape_key)
+	return len(params) > 0

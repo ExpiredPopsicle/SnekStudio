@@ -10,8 +10,6 @@ var vrchat_osc_query_endpoint : String = ""
 var current_avatar_id : String
 ## The previous value of the avatar ID.
 var previous_avatar_id : String
-## Dictionary of avatar parameters and their current values.
-var raw_avatar_params : Dictionary
 ## Parsed VRChat parameters.
 var vrc_params : VRCParams = VRCParams.new()
 ## Keys for quick lookup and verification.
@@ -19,6 +17,7 @@ var vrc_param_keys : Array[String] = []
 var avatar_req : HTTPRequest
 var client_send_rate_limit_ms : int = 500
 var curr_client_send_time : float
+var processing_request : bool = false
 # Can we not JUST USE THE SAME MAPPING
 # WHY DOES EVERY APP NEED THEIR OWN WAY
 var unified_to_arkit_mapping : Dictionary = {
@@ -74,6 +73,269 @@ var unified_to_arkit_mapping : Dictionary = {
 	"TongueOut": "tongueOut"
 }
 var arkit_to_unified_mapping : Dictionary = {}
+enum COMBINATION_TYPE {
+	RANGE = 1,
+	COPY = 2,
+	AVERAGE = 3
+}
+enum SHAPE_KEY_TYPE {
+	MEDIAPIPE = 1,
+	UNIFIED = 2
+}
+enum DIRECTION { 
+	POSITIVE = 1,
+	NEGATIVE = 2
+}
+var simplified_parameter_mapping : Dictionary = {
+	"JawX": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "JawRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "JawLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			},
+		]
+	},
+	"JawZ": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "JawForward",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "JawBackward",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			},
+		]
+	},
+	"EyeLidRight": {
+		"combination_type": COMBINATION_TYPE.COPY,
+		"combination_shapes": [
+			{
+				"shape": "EyeClosedRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"inverse": true
+			},
+			{
+				"shape": "EyeLidRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+			},
+		]
+	},
+	"EyeLidLeft": {
+		"combination_type": COMBINATION_TYPE.COPY,
+		"combination_shapes": [
+			{
+				"shape": "EyeClosedLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"inverse": true
+			},
+			{
+				"shape": "EyeLidLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+			},
+		]
+	},
+	"EyeLid": {
+		"combination_type": COMBINATION_TYPE.AVERAGE,
+		"combination_shapes": [
+			{
+				"shape": "EyeLidLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+			},
+			{
+				"shape": "EyeLidRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+			},
+		]
+	},
+	"EyeRightX": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "EyeLookOutRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "EyeLookInRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			},
+		]
+	},
+	"EyeRightY": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "EyeLookUpRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "EyeLookDownRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			},
+		]
+	},
+	"EyeLeftX": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "EyeLookInLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "EyeLookOutLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			},
+		]
+	},
+	"EyeLeftY": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "EyeLookUpLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "EyeLookDownLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			},
+		]
+	},
+	"EyeX": {
+		"combination_type": COMBINATION_TYPE.AVERAGE,
+		"combination_shapes": [
+			{
+				"shape": "EyeRightX",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED
+			},
+			{
+				"shape": "EyeLeftX",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED
+			},
+		]
+	},
+	"EyeY": {
+		"combination_type": COMBINATION_TYPE.AVERAGE,
+		"combination_shapes": [
+			{
+				"shape": "EyeRightY",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED
+			},
+			{
+				"shape": "EyeLeftY",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED
+			},
+		]
+	},
+}
+
+func _apply_transform_rules_a(unified_blendshapes : Dictionary):
+	# Take in the simplified_parameter_mapping dictionary,
+	# For each rule in this, identify the rule type then apply the action of the combination type
+	# Store the resulting value or changes in the unified blendshapes parameter
+
+	# For example:
+	# EyeLidLeft is a copy of EyeClosedLeft, so it processes the combination type of copy
+	# Once identified as copy operation, it takes the first combination_shapes item and copies it to last shape
+	# This copy operation MUST take into consideration what the shape type is.
+	#   You can use the arkit_to_unified_mapping dictionary to map arkit (mediapipe) to unified.
+	#     This dictionary has the key as arkit (mediapipe) and the value as the associated unified shape key.
+	#   You can use the unified_to_arkit_mapping dictionary to map a unified to arkit.
+	#   Current values are always stored in the passed in parameter (unified format)
+	
+	# Another example:
+	# JawX is defined as a value (float) that uses JawRight and JawLeft to form the value
+	#   <0.0 -> 1.0> Jaw Right
+	#   <0.0 -> -1.0> Jaw Left
+	# Notice the value shifts in direction from positive to negative 1.
+	# This direction is defined in the particular combination shape, as "direction".
+	# The final JawX value will reflect the current values of JawRight/JawLeft
+	# These values must be resolved in the parameter provided to this func.
+	# All inputs are stored as unified, but shape keys might need to be converted from MediaPipe to Unified.
+	# See previous example for how to do this.
+	return {}
+
+func _get_unified_value(shape : String, shape_type : SHAPE_KEY_TYPE, unified_blendshapes : Dictionary) -> float:
+	if shape_type == SHAPE_KEY_TYPE.UNIFIED:
+		return unified_blendshapes.get(shape, 0.0)
+	elif shape_type == SHAPE_KEY_TYPE.MEDIAPIPE:
+		var unified_shape: String = arkit_to_unified_mapping.get(shape, shape)
+		return unified_blendshapes.get(unified_shape, 0.0)
+	return 0.0
+	
+func _get_unified_shape(shape: String, shape_type: SHAPE_KEY_TYPE) -> String:
+	if shape_type == SHAPE_KEY_TYPE.UNIFIED:
+		return shape
+	elif shape_type == SHAPE_KEY_TYPE.MEDIAPIPE:
+		return arkit_to_unified_mapping.get(shape, shape)
+	return shape
+
+func _apply_transform_rules(unified_blendshapes : Dictionary) -> void:
+	for param_name : String in simplified_parameter_mapping.keys():
+		var rule : Dictionary = simplified_parameter_mapping[param_name]
+		var comb_type : int = rule["combination_type"]
+		var shapes : Array = rule["combination_shapes"]
+
+		match comb_type:
+			COMBINATION_TYPE.COPY:
+				var src_shape_info : Dictionary = shapes[0]
+				var src_shape : String = src_shape_info["shape"]
+				var src_type : SHAPE_KEY_TYPE = src_shape_info.get("shape_type", SHAPE_KEY_TYPE.UNIFIED)
+				var src_value : float = _get_unified_value(src_shape, src_type, unified_blendshapes)
+				var src_inverse : bool = src_shape_info.get("inverse", false)
+				if src_inverse:
+					if src_value < 0:
+						src_value = abs(src_value)
+					else:
+						src_value *= -1
+						
+				for i in range(1, shapes.size()):
+					var dst_shape_info : Dictionary = shapes[i]
+					var dst_shape : String = dst_shape_info["shape"]
+					var dst_type : SHAPE_KEY_TYPE = dst_shape_info.get("shape_type", SHAPE_KEY_TYPE.UNIFIED)
+					var unified_shape : String = _get_unified_shape(dst_shape, dst_type)
+					unified_blendshapes[unified_shape] = src_value
+
+			COMBINATION_TYPE.AVERAGE:
+				var sum : float = 0.0
+				var count : int = 0
+				for shape_info : Dictionary in shapes:
+					var shape : String = shape_info["shape"]
+					var shape_type : SHAPE_KEY_TYPE = shape_info.get("shape_type", SHAPE_KEY_TYPE.UNIFIED)
+					var value : float = _get_unified_value(shape, shape_type, unified_blendshapes)
+					sum += value
+					count += 1
+				unified_blendshapes[param_name] = sum / max(count, 1)
+
+			COMBINATION_TYPE.RANGE:
+				var total : float = 0.0
+				for shape_info : Dictionary in shapes:
+					var shape : String = shape_info["shape"]
+					var shape_type : SHAPE_KEY_TYPE = shape_info.get("shape_type", SHAPE_KEY_TYPE.UNIFIED)
+					var direction : DIRECTION = shape_info.get("direction", DIRECTION.POSITIVE)
+					var value : float = _get_unified_value(shape, shape_type, unified_blendshapes)
+					if direction == DIRECTION.POSITIVE:
+						total += value
+					else:
+						total -= value
+				unified_blendshapes[param_name] = total
 
 func _ready() -> void:
 	avatar_req = HTTPRequest.new()
@@ -95,37 +357,59 @@ func _process(delta : float) -> void:
 	curr_client_send_time += delta
 	if curr_client_send_time > client_send_rate_limit_ms / 1000:
 		curr_client_send_time = 0
-		var blendshapes : Dictionary = get_global_mod_data("BlendShapes")
+
+		# Map the blendshapes we have from mediapipe to the unified versions.
+		var unified_blendshapes : Dictionary = _map_blendshapes_to_unified()
 		
-		var unified_blendshapes : Dictionary = {}
-		for blendshape in blendshapes:
-			if not arkit_to_unified_mapping.has(blendshape):
-				continue
-			var unified_blendshape = arkit_to_unified_mapping[blendshape]
-			unified_blendshapes[unified_blendshape] = blendshapes[blendshape]
+		_apply_transform_rules(unified_blendshapes)
 		
+		# Handle mapping simplified parameters
+		
+		# TODO: Eye parameters
+		
+		# TODO: Brow parameters
+		
+		# TODO: Mouth parameters
+		
+		# TODO: Lip parameters
+		
+		# TODO: Nose and cheek parameters
+		
+		
+		# Set params to values
 		for shape in unified_blendshapes:
 			vrc_params.update_value(shape, unified_blendshapes[shape])
 
-		var to_send_osc : Array[VRCParam] = vrc_params.get_dirty()
-		#print(len(to_send_osc))
+		# Finally, send all dirty params off to VRC
+		_send_dirty_params()
 
-		for param in to_send_osc:
-			param.reset_dirty()
-			# We send the message with the full path for the avatar parameter, and type.
-			var type = param.type
-			if param.type == "T":
-				if param.value == true:
-					type = "T"
-				else:
-					type = "F"
-			osc_client.send_osc_message(param.full_path, type, [param.value])
 
-		await get_tree().create_timer(10).timeout
-		if not get_a:
-			return
-		get_a = false
-		_get_avatar_params()
+func _map_blendshapes_to_unified() -> Dictionary:
+	var blendshapes : Dictionary = get_global_mod_data("BlendShapes")
+	var unified_blendshapes : Dictionary = {}
+	for blendshape in blendshapes:
+		if not arkit_to_unified_mapping.has(blendshape):
+			continue
+		var unified_blendshape = arkit_to_unified_mapping[blendshape]
+		unified_blendshapes[unified_blendshape] = blendshapes[blendshape]
+
+	return unified_blendshapes
+
+func _send_dirty_params():
+	var to_send_osc : Array[VRCParam] = vrc_params.get_dirty()
+
+	for param in to_send_osc:
+		param.reset_dirty()
+		# We send the message with the full path for the avatar parameter, and type.
+		var type = param.type
+		if param.type == "T":
+			# Param value is true? Send as type "T" representing "True" in OSC.
+			if param.value:
+				type = "T"
+			else:
+				type = "F"
+		osc_client.send_osc_message(param.full_path, type, [param.value])
+
 
 func _dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> void:
 	if not packet.query_response:
@@ -168,19 +452,24 @@ func _dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> void:
 		osc_client.start_client()
 
 	print("[VRChat OSC] Found VRChat OSC Query Endpoint: %s" % vrchat_osc_query_endpoint)
+	_get_avatar_params()
 
 func _get_avatar_params():
 	if vrchat_osc_query_endpoint == "":
-		return null
+		return
+	if processing_request:
+		return
 	var err = avatar_req.request(vrchat_osc_query_endpoint + "/avatar")
+	processing_request = true
 	if err != OK:
 		printerr("[VRChat OSC] Failed to request VRC avatar parameters with error code: %d" % err)
 
 func _avatar_params_request_complete(result : int, response_code : int, 
 									headers: PackedStringArray, body: PackedByteArray) -> void:
-	if result != HTTPRequest.RESULT_SUCCESS:
+	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
 		printerr("Request for VRC avatar params failed.")
 		return
+	print("[VRChat OSC] Avatar param request complete.")
 	
 	var json = JSON.parse_string(body.get_string_from_utf8())
 	# Uh oh... that's a lot of hardcoded values.
@@ -194,7 +483,9 @@ func _avatar_params_request_complete(result : int, response_code : int,
 		vrc_params.reset()
 
 	# We always pull raw avatar params to update the current value.
-	raw_avatar_params = json["CONTENTS"]["parameters"]["CONTENTS"]
+	var raw_avatar_params = json["CONTENTS"]["parameters"]["CONTENTS"]
+
+	processing_request = false
 
 	if not update_vrc_param_values and not has_changed_avi:
 		previous_avatar_id = current_avatar_id
