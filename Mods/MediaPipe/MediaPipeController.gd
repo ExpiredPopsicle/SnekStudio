@@ -16,7 +16,11 @@ var hand_landmarks_right = []
 var hand_time_since_last_update = [0.0, 0.0]
 var hand_time_since_last_missing = [0.0, 0.0]
 var mirrored_last_frame = true
+
+## Last values for each blendshape from the tracker, including things that we
+## haven't received recent tracking data for.
 var blend_shape_last_values = {}
+
 var hand_rest_trackers = {}
 var _init_complete = false
 
@@ -768,12 +772,7 @@ func _process_single_packet(model : Node3D, delta : float, parsed_data : Diction
 			shape_dict_new = functions_blendshapes.apply_rest_shapes(
 				blend_shape_last_values, delta, blend_to_rest_speed)
 
-		# Send it over to the AnimationApplier.
-		var blend_shapes_to_apply : Dictionary = get_global_mod_data("BlendShapes")
-		blend_shapes_to_apply.clear()
-		blend_shapes_to_apply.merge(shape_dict_new)
-
-		blend_shape_last_values = shape_dict_new
+		blend_shape_last_values.merge(shape_dict_new, true)
 
 	_current_error_to_show = ""
 
@@ -803,16 +802,16 @@ func process_new_packets(model, delta):
 		else:
 			break
 
-	# FIXME: Kind of a hack. Reprocess last parsed data again so that smoothing
-	#   can continue even in the lack of actual input.
-	if not most_recent_packet and last_packet_received:
-		_process_single_packet(model, delta, last_packet_received.duplicate(true))
-
 	if dropped_packets > 0:
 		if dropped_packets <= 2:
 			print_log(["Dropped packets (within tolerance): ", dropped_packets])
 		else:
 			print_log(["Dropped packets (WARNING): ", dropped_packets])
+
+	# Write blendshapes (even if we didn't get any packets).
+	var blend_shapes_to_apply : Dictionary = get_global_mod_data("BlendShapes")
+	blend_shapes_to_apply.clear()
+	blend_shapes_to_apply.merge(blend_shape_last_values, true)
 
 # -----------------------------------------------------------------------------
 # Actual update code.
