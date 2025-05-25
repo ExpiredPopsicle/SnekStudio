@@ -147,10 +147,19 @@ func _update_action(new_item : Dictionary, old_item : Dictionary) -> void:
 			InputMap.action_add_event(KEYBIND_PREFIX + new_action, new_key_event)
 
 func _input(event : InputEvent) -> void:
-	if InputMap.has_action(KEYBIND_PREFIX + "ping") \
-		and event.is_action_pressed(KEYBIND_PREFIX + "ping"):
-		print_log("pong!")
-		set_status("Pong!")
+	for action in InputMap.get_actions():
+		if event.is_action_pressed(action):
+			send_global_mod_message("KeybindsActionPressed", 
+			{
+				"action": action.replace(KEYBIND_PREFIX, ""),
+				 "event": event
+			})
+
+	#if InputMap.has_action(KEYBIND_PREFIX + "ping") \
+		#and event.is_action_pressed(KEYBIND_PREFIX + "ping"):
+		#print_log("pong!")
+		#set_status("Pong!")
+
 	#if event is InputEventKey:
 		#print_log("Key pressed")
 		##if event.physical_keycode in key_actions:

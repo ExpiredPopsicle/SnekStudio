@@ -44,22 +44,18 @@ func handle_channel_point_redeem(_redeemer_username, _redeemer_display_name, _re
 		
 		_update_model()
 
-func _input(event: InputEvent) -> void:
-	if InputMap.has_action(keybind_prefix + keybind_action_name) \
-		and event.is_action_pressed(keybind_prefix + keybind_action_name):
+func _handle_global_mod_message(key : String, values : Dictionary):
+	if key == "KeybindsActionPressed" and values["action"] == keybind_action_name:
 		print_log("Toggling via keybind.")
 		currently_toggled = !currently_toggled
 		_update_model()
-
-func _handle_global_mod_message(key : String, values : Dictionary):
-	if not key == "Keybinds":
-		return
-	keybind_prefix = values["prefix"]
+	elif key == "Keybinds":
+		keybind_prefix = values["prefix"]
 
 func check_configuration() -> PackedStringArray:
 	var errors : PackedStringArray = []
-	
-	if keybind_prefix == "" and keybind_action_name != "":
+	var global_dict = get_global_mod_data("Keybinds")
+	if global_dict.get("prefix", "") == "" and keybind_action_name != "":
 		errors.append("No Keybinds mod installed. Keybind toggle for model will not work.")
 
 	return errors
