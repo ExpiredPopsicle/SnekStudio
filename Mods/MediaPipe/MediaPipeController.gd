@@ -87,6 +87,10 @@ var _current_error_to_show : String = ""
 
 var hack_reset_hips_every_frame : bool = true
 
+# FIXME: Not yet working.
+var lock_fingers_to_single_axis_of_rotation : bool = false
+var lock_fingers_to_z_axis : bool = false
+
 func _ready():
 
 	var script_path : String = self.get_script().get_path()
@@ -188,6 +192,17 @@ func _ready():
 	add_tracked_setting(
 		"hack_reset_hips_every_frame",
 		"Hack: Reset hips every frame (prevent drift)", {},
+		"advanced")
+
+	# FIXME: Not yet working.
+	#add_tracked_setting(
+		#"lock_fingers_to_single_axis_of_rotation",
+		#"Lock finger joints to a single axis of rotation per-finger", {},
+		#"advanced")
+
+	add_tracked_setting(
+		"lock_fingers_to_z_axis",
+		"Lock fingers to the local Z axis of rotation only", {},
 		"advanced")
 
 	hand_rest_trackers["Left"] = $LeftHandRestReference
@@ -1091,63 +1106,79 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 		
 		mark_counter += 1
 
-
-
-#					# First, we need to offset the metacarpal. We can't effectively change the
-#					# origin of this through rotations without affecting other bones as well.
-#					# Thankfully, we can just set it to the length of the rest offset times the 
-#					# direction of the tracker.
-#					var metacarpal_index = skel.find_bone(hand[0] + "ThumbMetacarpal")
-#					var metacarpal_rest_origin = skel.get_bone_rest(metacarpal_index).origin
-#					var metacarpal_tracker_delta_world = hand[1][1].global_transform.origin - hand[1][0].global_transform.origin
-#					var metacarpal_tracker_delta_global = skel.transform.basis.inverse() * metacarpal_tracker_delta_world
-#					var metacarpal_tracker_delta_bone = skel.get_bone_global_pose(metacarpal_index).basis.inverse() * metacarpal_tracker_delta_global
-#					print(metacarpal_tracker_delta_bone)
-#					skel.set_bone_pose_position( \
-#						metacarpal_index,
-#						metacarpal_rest_origin.length() * metacarpal_tracker_delta_bone.normalized())
-
-
-	#return
-
 	# FIXME: I have no idea what these columns mean anymore.
-	var finger_bone_array = [
-		[ "IndexProximal",      5,  6, "IndexIntermediate", "IndexProximal" ],
-		[ "IndexIntermediate",  6,  7, "IndexDistal",       "IndexIntermediate" ],
-		[ "IndexDistal",        7,  8, "IndexDistal",       "IndexIntermediate" ],
-		
-		[ "MiddleProximal",     9,  10, "MiddleIntermediate", "MiddleProximal" ],
-		[ "MiddleIntermediate", 10, 11, "MiddleDistal", "MiddleIntermediate" ],
-		[ "MiddleDistal",       11, 12, "MiddleDistal", "MiddleIntermediate" ],
-
-		[ "RingProximal",       13, 14, "RingIntermediate", "RingProximal" ],
-		[ "RingIntermediate",   14, 15, "RingDistal", "RingIntermediate" ],
-		[ "RingDistal",         15, 16, "RingDistal", "RingIntermediate" ],
-
-		[ "LittleProximal",     17, 18, "LittleIntermediate", "LittleProximal" ],
-		[ "LittleIntermediate", 18, 19, "LittleDistal", "LittleIntermediate" ],
-		[ "LittleDistal",       19, 20, "LittleDistal", "LittleIntermediate" ],
-
-		# FIXME: Metacarpal *origin* needs to change relative to hand as well.
-		[ "ThumbMetacarpal",    1,  2,  "ThumbProximal", "ThumbMetacarpal" ],
-		[ "ThumbProximal",      2,  3,  "ThumbDistal", "ThumbProximal" ],
-		[ "ThumbDistal",        3,  4,  "ThumbDistal", "ThumbProximal" ],
+	var finger_bone_array_array = [
+		[
+			[ "IndexProximal",      5,  6, "IndexIntermediate", "IndexProximal" ],
+			[ "IndexIntermediate",  6,  7, "IndexDistal",       "IndexIntermediate" ],
+			[ "IndexDistal",        7,  8, "IndexDistal",       "IndexIntermediate" ]
+		],
+		[
+			[ "MiddleProximal",     9,  10, "MiddleIntermediate", "MiddleProximal" ],
+			[ "MiddleIntermediate", 10, 11, "MiddleDistal", "MiddleIntermediate" ],
+			[ "MiddleDistal",       11, 12, "MiddleDistal", "MiddleIntermediate" ]
+		],
+		[
+			[ "RingProximal",       13, 14, "RingIntermediate", "RingProximal" ],
+			[ "RingIntermediate",   14, 15, "RingDistal", "RingIntermediate" ],
+			[ "RingDistal",         15, 16, "RingDistal", "RingIntermediate" ]
+		],
+		[
+			[ "LittleProximal",     17, 18, "LittleIntermediate", "LittleProximal" ],
+			[ "LittleIntermediate", 18, 19, "LittleDistal", "LittleIntermediate" ],
+			[ "LittleDistal",       19, 20, "LittleDistal", "LittleIntermediate" ]
+		],
+		[
+			# FIXME: Metacarpal *origin* needs to change relative to hand as well.
+			[ "ThumbMetacarpal",    1,  2,  "ThumbProximal", "ThumbMetacarpal" ],
+			[ "ThumbProximal",      2,  3,  "ThumbDistal", "ThumbProximal" ],
+			[ "ThumbDistal",        3,  4,  "ThumbDistal", "ThumbProximal" ],
+		]
 	]
 
-	if len(hand_landmarks) < 21:
-		return
-	
-	#var hand_basis = skel.get_bone_global_pose(skel.find_bone("LeftHand")).basis
+	for finger_bone_array in finger_bone_array_array:
+
+		for _temp_finger_bone_index : int in range(0, len(finger_bone_array)):
+			if finger_bone_array[_temp_finger_bone_index] is Array:
+				var a : Array = finger_bone_array[_temp_finger_bone_index]
+				finger_bone_array[_temp_finger_bone_index] = {
+					"bone_name_current" : a[0],
+					"landmark_index_start" : a[1],
+					"landmark_index_end" : a[2],
+					"bone_name_next" : a[3],
+					"bone_name_parent_of_next" : a[4]
+				}
+
+		if len(hand_landmarks) < 21:
+			return
+
+		update_finger_chain(finger_bone_array, hand, hand_landmarks, which_hand)
+
+func update_finger_chain(finger_bone_array : Array, hand, hand_landmarks, which_hand):
+
+	var skel : Skeleton3D = get_skeleton()
+	var finger_rotation_main_axis : Vector3 = Vector3(0, 0, 0)
+	var is_first_bone : bool = true
+
 	for finger_bone in finger_bone_array:
 
-		var finger_bone_to_modify = hand[0] + finger_bone[0]
-		var finger_bone_reference_1 = hand[0] + finger_bone[3]
-		var finger_bone_reference_2 = hand[0] + finger_bone[4]
-	
-		var test_bone_name = finger_bone_to_modify
-		var test_bone_index = skel.find_bone(test_bone_name)
+		var hand_name : String = hand[0]
+		var finger_bone_to_modify_base : String = finger_bone["bone_name_current"]
+		var finger_bone_to_modify : String = hand_name + finger_bone_to_modify_base
 
-		if test_bone_index == -1:
+		# bone_name_next could actually be the same bone that we're about to
+		# modify. This is normal. In that case we're re-using the parent->child
+		# vector from the last pair of bones in the chain so that the last bone
+		# has a direction reference when it normally wouldn't due to lack of the
+		# tip bone.
+		var bone_name_next : String = finger_bone["bone_name_next"]
+		var bone_name_parent_of_next : String = finger_bone["bone_name_parent_of_next"]
+		var finger_bone_reference_1 = hand_name + bone_name_next
+		var finger_bone_reference_2 = hand_name + bone_name_parent_of_next
+	
+		var bone_to_modify_index : int = skel.find_bone(finger_bone_to_modify)
+
+		if bone_to_modify_index == -1:
 			continue
 		if skel.find_bone(finger_bone_reference_2) == -1:
 			continue
@@ -1161,40 +1192,57 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 			else:
 				continue
 
+		skel.reset_bone_pose(bone_to_modify_index)
 
-
-		skel.reset_bone_pose(test_bone_index)
-			
-		var test_bone_pt_2 = hand_landmarks[finger_bone[2]].global_transform.origin
-		var test_bone_pt_1 = hand_landmarks[finger_bone[1]].global_transform.origin
-		
-		
+		# Find the object-space vector between the control points.
+		var control_point_end_index : int = finger_bone["landmark_index_end"]
+		var control_point_start_index : int = finger_bone["landmark_index_start"]
+		var control_point_end : Vector3 = hand_landmarks[control_point_end_index].global_transform.origin
+		var control_point_start : Vector3 = hand_landmarks[control_point_start_index].global_transform.origin
 		var skel_inverse = skel.transform.inverse()
-		var test_bone_vec_global = (skel_inverse * test_bone_pt_2 - skel_inverse * test_bone_pt_1).normalized()
+		var test_bone_vec_global = (skel_inverse * control_point_end - skel_inverse * control_point_start).normalized()
 
+		# Get the direction that the bone is facing in right now.
 		var current_finger_vec_global = \
 			(skel.get_bone_global_pose(skel.find_bone(finger_bone_reference_1)).origin -
 			skel.get_bone_global_pose(skel.find_bone(finger_bone_reference_2)).origin).normalized()
-		
+
+		# Figure out the relative rotation between that direction and the direction to the next
+		# control point.
 		var angle_between = acos(test_bone_vec_global.dot(current_finger_vec_global))
-		var rotation_axis_global = test_bone_vec_global.cross(current_finger_vec_global).normalized()
-		
+
+		# Set the global rotation axis just once.
+		# FIXME: Pre-calculate the rotation axis for this feature.
+		var rotation_axis_global : Vector3 = finger_rotation_main_axis
+		if is_first_bone or not lock_fingers_to_single_axis_of_rotation:
+			rotation_axis_global = test_bone_vec_global.cross(current_finger_vec_global).normalized()
+			finger_rotation_main_axis = rotation_axis_global
+
+		# Convert that to local space.
 		var rotation_axis_local = \
-			skel.get_bone_global_pose(skel.get_bone_parent(test_bone_index)).basis.inverse() * \
+			skel.get_bone_global_pose(skel.get_bone_parent(bone_to_modify_index)).basis.inverse() * \
 			rotation_axis_global
 
-		var global_rotation_from_rest = skel.get_bone_global_rest(test_bone_index).basis * rotation_axis_local
-		
+		# Another attempt fixing finger curling rotation stuff. Lock it to just the local Z axis.
+		# In a t-pose, with the palms facing down, this should have our fingers curling normally.
+		#
+		# Does not work well with thumbs.
+		if lock_fingers_to_z_axis and not is_first_bone and not finger_bone_to_modify_base.begins_with("Thumb"):
+			rotation_axis_local = Vector3(-1, 0, 0)
+
+		# Convert that to a rotation offset from the rest rotation.
+		var global_rotation_from_rest = skel.get_bone_global_rest(bone_to_modify_index).basis * rotation_axis_local
+
+		# Set the rotation.
 		var hand_index = 1
 		if which_hand == "left":
 			hand_index = 0
-
 		if hand_time_since_last_update[hand_index] > arm_reset_time:
-			#skel.set_bone_pose_rotation(test_bone_index,
-			#	skel.get_bone_pose(test_bone_index).basis.slerp(Basis(), arm_reset_speed))
-			skel.set_bone_pose_rotation(test_bone_index, Basis())
+			skel.set_bone_pose_rotation(bone_to_modify_index, Basis())
 		else:
-			rotate_bone_in_global_space(skel, test_bone_index, global_rotation_from_rest, -angle_between)
+			rotate_bone_in_global_space(skel, bone_to_modify_index, global_rotation_from_rest, -angle_between)
+
+		is_first_bone = false
 
 func check_configuration() -> PackedStringArray:
 	var errors : PackedStringArray = []
