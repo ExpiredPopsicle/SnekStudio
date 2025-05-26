@@ -222,29 +222,6 @@ func _ready():
 	get_settings_window().add_child(clear_calibration_button)
 	clear_calibration_button.pressed.connect(func() : blendshape_calibration = {})
 
-	# FIXME: REMOVE THIS. It's just to work around an annoyance while I stream
-	#   until the actual bug is fixed.
-	var reset_pose_button : Button = Button.new()
-	reset_pose_button.text = "Reset pose (FIXME!!!)"
-	get_settings_window().add_child(reset_pose_button)
-	reset_pose_button.pressed.connect(
-		func():
-			get_app().get_controller().reset_skeleton_to_rest_pose()
-			get_app().get_controller().reset_blend_shapes()
-			blend_shape_last_values = {}
-	)
-
-	var reset_pose_button2 : Button = Button.new()
-	reset_pose_button2.text = "Reset pose - Just hips (FIXME)"
-	get_settings_window().add_child(reset_pose_button2)
-	reset_pose_button2.pressed.connect(
-		func():
-			var skel : Skeleton3D = get_app().get_skeleton()
-			var hips_index : int = skel.find_bone("Hips")
-			if hips_index != -1:
-				skel.reset_bone_pose(hips_index)
-	)
-
 	_update_for_new_model_if_needed()
 
 func save_before(_settings_current: Dictionary):
