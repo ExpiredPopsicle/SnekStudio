@@ -1109,49 +1109,127 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 	# FIXME: I have no idea what these columns mean anymore.
 	var finger_bone_array_array = [
 		[
-			[ "IndexProximal",      5,  6, "IndexIntermediate", "IndexProximal" ],
-			[ "IndexIntermediate",  6,  7, "IndexDistal",       "IndexIntermediate" ],
-			[ "IndexDistal",        7,  8, "IndexDistal",       "IndexIntermediate" ]
+			{
+				"bone_name_current" : "IndexProximal",
+				"landmark_index_start" : 5,
+				"landmark_index_end"  : 6,
+				"bone_name_next" : "IndexIntermediate",
+				"bone_name_parent_of_next" : "IndexProximal"
+			},
+			{
+				"bone_name_current" : "IndexIntermediate",
+				"landmark_index_start" : 6,
+				"landmark_index_end"  : 7,
+				"bone_name_next" : "IndexDistal",
+				"bone_name_parent_of_next" : "IndexIntermediate"
+			},
+			{
+				"bone_name_current" : "IndexDistal",
+				"landmark_index_start" : 1,
+				"landmark_index_end"  : 2,
+				"bone_name_next" : "IndexDistal",
+				"bone_name_parent_of_next" : "IndexIntermediate"
+			}
 		],
 		[
-			[ "MiddleProximal",     9,  10, "MiddleIntermediate", "MiddleProximal" ],
-			[ "MiddleIntermediate", 10, 11, "MiddleDistal", "MiddleIntermediate" ],
-			[ "MiddleDistal",       11, 12, "MiddleDistal", "MiddleIntermediate" ]
+			{
+				"bone_name_current" : "MiddleProximal",
+				"landmark_index_start" : 9,
+				"landmark_index_end"  : 10,
+				"bone_name_next" : "MiddleIntermediate",
+				"bone_name_parent_of_next" : "MiddleProximal"
+			},
+			{
+				"bone_name_current" : "MiddleIntermediate",
+				"landmark_index_start" : 10,
+				"landmark_index_end"  : 11,
+				"bone_name_next" : "MiddleDistal",
+				"bone_name_parent_of_next" : "MiddleIntermediate"
+			},
+			{
+				"bone_name_current" : "MiddleDistal",
+				"landmark_index_start" : 11,
+				"landmark_index_end"  : 12,
+				"bone_name_next" : "MiddleDistal",
+				"bone_name_parent_of_next" : "MiddleIntermediate"
+			}
 		],
 		[
-			[ "RingProximal",       13, 14, "RingIntermediate", "RingProximal" ],
-			[ "RingIntermediate",   14, 15, "RingDistal", "RingIntermediate" ],
-			[ "RingDistal",         15, 16, "RingDistal", "RingIntermediate" ]
+			{
+				"bone_name_current" : "RingProximal",
+				"landmark_index_start" : 13,
+				"landmark_index_end"  : 14,
+				"bone_name_next" : "RingIntermediate",
+				"bone_name_parent_of_next" : "RingProximal"
+			},
+			{
+				"bone_name_current" : "RingIntermediate",
+				"landmark_index_start" : 14,
+				"landmark_index_end"  : 15,
+				"bone_name_next" : "RingDistal",
+				"bone_name_parent_of_next" : "RingIntermediate"
+			},
+			{
+				"bone_name_current" : "RingDistal",
+				"landmark_index_start" : 15,
+				"landmark_index_end"  : 16,
+				"bone_name_next" : "RingDistal",
+				"bone_name_parent_of_next" : "RingIntermediate"
+			}
 		],
 		[
-			[ "LittleProximal",     17, 18, "LittleIntermediate", "LittleProximal" ],
-			[ "LittleIntermediate", 18, 19, "LittleDistal", "LittleIntermediate" ],
-			[ "LittleDistal",       19, 20, "LittleDistal", "LittleIntermediate" ]
+			{
+				"bone_name_current" : "LittleProximal",
+				"landmark_index_start" : 17,
+				"landmark_index_end"  : 18,
+				"bone_name_next" : "LittleIntermediate",
+				"bone_name_parent_of_next" : "LittleProximal"
+			},
+			{
+				"bone_name_current" : "LittleIntermediate",
+				"landmark_index_start" : 18,
+				"landmark_index_end"  : 19,
+				"bone_name_next" : "LittleDistal",
+				"bone_name_parent_of_next" : "LittleIntermediate"
+			},
+			{
+				"bone_name_current" : "LittleDistal",
+				"landmark_index_start" : 19,
+				"landmark_index_end"  : 20,
+				"bone_name_next" : "LittleDistal",
+				"bone_name_parent_of_next" : "LittleIntermediate"
+			}
 		],
 		[
 			# FIXME: Metacarpal *origin* needs to change relative to hand as well.
-			[ "ThumbMetacarpal",    1,  2,  "ThumbProximal", "ThumbMetacarpal" ],
-			[ "ThumbProximal",      2,  3,  "ThumbDistal", "ThumbProximal" ],
-			[ "ThumbDistal",        3,  4,  "ThumbDistal", "ThumbProximal" ],
+			{
+				"bone_name_current" : "ThumbMetacarpal",
+				"landmark_index_start" : 1,
+				"landmark_index_end"  : 2,
+				"bone_name_next" : "ThumbProximal",
+				"bone_name_parent_of_next" : "ThumbMetacarpal"
+			},
+			{
+				"bone_name_current" : "ThumbProximal",
+				"landmark_index_start" : 2,
+				"landmark_index_end"  : 3,
+				"bone_name_next" : "ThumbDistal",
+				"bone_name_parent_of_next" : "ThumbProximal"
+			},
+			{
+				"bone_name_current" : "ThumbDistal",
+				"landmark_index_start" : 3,
+				"landmark_index_end"  : 4,
+				"bone_name_next" : "ThumbDistal",
+				"bone_name_parent_of_next" : "ThumbProximal"
+			},
 		]
 	]
 
+	if len(hand_landmarks) < 21:
+		return
+
 	for finger_bone_array in finger_bone_array_array:
-
-		for _temp_finger_bone_index : int in range(0, len(finger_bone_array)):
-			if finger_bone_array[_temp_finger_bone_index] is Array:
-				var a : Array = finger_bone_array[_temp_finger_bone_index]
-				finger_bone_array[_temp_finger_bone_index] = {
-					"bone_name_current" : a[0],
-					"landmark_index_start" : a[1],
-					"landmark_index_end" : a[2],
-					"bone_name_next" : a[3],
-					"bone_name_parent_of_next" : a[4]
-				}
-
-		if len(hand_landmarks) < 21:
-			return
-
 		update_finger_chain(finger_bone_array, hand, hand_landmarks, which_hand)
 
 func update_finger_chain(finger_bone_array : Array, hand, hand_landmarks, which_hand):
