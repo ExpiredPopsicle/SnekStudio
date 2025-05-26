@@ -22,7 +22,7 @@ func _process(delta: float) -> void:
 	if remove_other_shapes:
 		blend_shapes_to_convert.clear()
 
-	blend_shapes_to_convert.merge(output_shapes)
+	blend_shapes_to_convert.merge(output_shapes, true)
 
 # FIXME: We may need to make this aware of both VRM 0.0 and VRM 1.0, unless the
 #   VRM addon is doing conversion for us already.
