@@ -1102,8 +1102,8 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 			},
 			{
 				"bone_name_current" : "IndexDistal",
-				"landmark_index_start" : 1,
-				"landmark_index_end"  : 2,
+				"landmark_index_start" : 7,
+				"landmark_index_end"  : 8,
 				"bone_name_next" : "IndexDistal",
 				"bone_name_parent_of_next" : "IndexIntermediate"
 			}
