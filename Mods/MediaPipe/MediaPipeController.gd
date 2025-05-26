@@ -86,6 +86,7 @@ var last_packet_received = null
 var _current_error_to_show : String = ""
 
 var hack_reset_hips_every_frame : bool = true
+var hack_reset_shoulders_every_frame : bool = true
 
 # FIXME: Not yet working.
 var lock_fingers_to_single_axis_of_rotation : bool = false
@@ -192,6 +193,11 @@ func _ready():
 	add_tracked_setting(
 		"hack_reset_hips_every_frame",
 		"Hack: Reset hips every frame (prevent drift)", {},
+		"advanced")
+
+	add_tracked_setting(
+		"hack_reset_shoulders_every_frame",
+		"Hack: Reset shoulders every frame (prevent shoulder drift)", {},
 		"advanced")
 
 	# FIXME: Not yet working.
@@ -764,6 +770,13 @@ func _process(delta):
 
 	# FIXME: Remove this. OffKai hack.
 	if tracking_pause:
+
+		# We still need to write out blendshapes for this.
+		var blend_shapes_to_apply : Dictionary = get_global_mod_data("BlendShapes")
+		blend_shapes_to_apply.clear()
+		blend_shapes_to_apply.merge(blend_shape_last_values, true)
+
+		# Bail out early.
 		return
 
 	# Hack to fix hips drift.
@@ -771,6 +784,15 @@ func _process(delta):
 		var hips_index : int = skel.find_bone("Hips")
 		if hips_index != -1:
 			skel.reset_bone_pose(hips_index)
+
+	# Hack to fix shoulder drift.
+	if hack_reset_shoulders_every_frame:
+		var bone_index : int = skel.find_bone("LeftShoulder")
+		if bone_index != -1:
+			skel.reset_bone_pose(bone_index)
+		bone_index = skel.find_bone("RightShoulder")
+		if bone_index != -1:
+			skel.reset_bone_pose(bone_index)
 
 	# FIXME: Hack.
 	# This just moves the body based on the head position.
