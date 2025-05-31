@@ -76,18 +76,25 @@ func on_ui_change_item(action : int, item : Dictionary, old_item : Dictionary):
 			InputMap.erase_action(KEYBIND_PREFIX + item["action_name"])
 		else:
 			# Delete just our event.
-			var key_event = _create_key_event(item["key"])
+			var key_event = _create_key_event(item)
 			if key_event != null:
 				print_log("Deleting just our event for %s" % item["action_name"])
 				InputMap.action_erase_event(KEYBIND_PREFIX + item["action_name"], key_event)
 
 	save_settings()
 
-func _create_key_event(key : int) -> InputEventKey:
+func _create_key_event(item : Dictionary) -> InputEventKey:
+	var key : int = item["key"]
+	var alt_pressed : bool = item.get("modifier_alt", false)
+	var ctrl_pressed : bool = item.get("modifier_ctrl", false)
+	var meta_pressed : bool = item.get("difier_meta", false)
 	if key == -1:
 		return null
 	var new_key_event = InputEventKey.new()
 	new_key_event.physical_keycode = key
+	new_key_event.alt_pressed = alt_pressed
+	new_key_event.ctrl_pressed = ctrl_pressed
+	new_key_event.meta_pressed = meta_pressed
 	return new_key_event
 
 func _create_action(item : Dictionary) -> void:
@@ -98,7 +105,7 @@ func _create_action(item : Dictionary) -> void:
 		return
 
 	print_log("Creating new action and associated event %s" % action)
-	var key_event = _create_key_event(item["key"])
+	var key_event = _create_key_event(item)
 
 	if not InputMap.has_action(KEYBIND_PREFIX + action):
 		InputMap.add_action(KEYBIND_PREFIX + action)
@@ -121,11 +128,13 @@ func _update_action(new_item : Dictionary, old_item : Dictionary) -> void:
 		if old_action != "" and len(existing_events) < 1:
 			InputMap.erase_action(KEYBIND_PREFIX + old_action)
 		_create_action(new_item)
-	elif new_key != old_key:
+	elif new_key != old_key or new_item["modifier_alt"] != old_item["modifier_alt"] \
+		 or new_item["modifier_ctrl"] != old_item["modifier_ctrl"] \
+		 or new_item["modifier_meta"] != old_item["modifier_meta"]:
 		print_log("New item key is not the same as the old key.")
 		if old_key != -1:
 			print_log("Old item key is not unassigned. Removing the old item key event.")
-			var old_key_event = _create_key_event(old_key)
+			var old_key_event = _create_key_event(old_item)
 			if new_action == "":
 				# We need to cycle through all actions and events
 				# and find where the key is used and remove it.
@@ -142,23 +151,23 @@ func _update_action(new_item : Dictionary, old_item : Dictionary) -> void:
 		print_log("Adding event for the action name with the correct key.")
 
 		# We only want to create a new key event if it wasn't reset.
-		var new_key_event = _create_key_event(new_key)
+		var new_key_event = _create_key_event(new_item)
 		if new_key_event != null and new_action != "":
 			InputMap.action_add_event(KEYBIND_PREFIX + new_action, new_key_event)
 
 func _input(event : InputEvent) -> void:
 	for action in InputMap.get_actions():
-		if event.is_action_pressed(action):
+		if event.is_action_pressed(action, false, true):
 			send_global_mod_message("KeybindsActionPressed", 
 			{
 				"action": action.replace(KEYBIND_PREFIX, ""),
 				 "event": event
 			})
 
-	#if InputMap.has_action(KEYBIND_PREFIX + "ping") \
-		#and event.is_action_pressed(KEYBIND_PREFIX + "ping"):
-		#print_log("pong!")
-		#set_status("Pong!")
+	if InputMap.has_action(KEYBIND_PREFIX + "ping") \
+		and event.is_action_pressed(KEYBIND_PREFIX + "ping", false, true):
+		print_log("pong!")
+		set_status("Pong!")
 
 	#if event is InputEventKey:
 		#print_log("Key pressed")
@@ -197,11 +206,17 @@ func _create_initial_actions() -> void:
 	key_actions = [
 		{ 
 			"key": KEY_P,
-			"action_name": "ping"
+			"action_name": "ping",
+			"modifier_alt": false,
+			"modifier_ctrl": false,
+			"modifier_meta": false
 		},
 		{ 
 			"key": KEY_Y,
-			"action_name": "ping"
+			"action_name": "ping",
+			"modifier_alt": false,
+			"modifier_ctrl": true,
+			"modifier_meta": false
 		},
 	]
 
