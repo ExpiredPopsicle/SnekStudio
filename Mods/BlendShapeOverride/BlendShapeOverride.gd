@@ -22,3 +22,11 @@ func load_before(_settings_old : Dictionary, _settings_new : Dictionary):
 func _process(delta: float) -> void:
 	var blend_shape_dict : Dictionary = get_global_mod_data("BlendShapes")
 	blend_shape_dict[blendshape_name] = blendshape_value
+
+func check_configuration() -> PackedStringArray:
+	var errors : PackedStringArray = []
+
+	if check_mod_dependency("Mod_AnimationApplier", false):
+		errors.append("This mod needs to be ordered before the AnimationApplier mod.")
+
+	return errors
