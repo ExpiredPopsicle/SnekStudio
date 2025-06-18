@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="SnekStudio"
-config/version="0.1.3"
+config/version="0.1.4"
 run/main_scene="res://Core/Main.tscn"
 config/use_custom_user_dir=true
 config/features=PackedStringArray("4.4", "Forward Plus")
