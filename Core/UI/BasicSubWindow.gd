@@ -145,14 +145,14 @@ func _on_mouse_entered():
 func _on_mouse_exited():
 	is_mouse_in_window = false
 
-func _on_focus_entered():
-	get_parent().move_child(self, get_parent().get_child_count() - 1)
+func _on_gui_input(event):
+	if event is InputEventMouseButton and event.pressed:
+		set_window_in_front()
 
 func _on_window_title_panel_gui_input(event):
 	if event is InputEventMouseButton:
 		if event.pressed:
-			_on_focus_entered()
-			grab_focus()
+			set_window_in_front()
 		
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
@@ -213,8 +213,7 @@ func _on_window_border_gui_input(event):
 	if event is InputEventMouseButton:
 		
 		if event.pressed:
-			_on_focus_entered()
-			grab_focus()
+			set_window_in_front()
 
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
@@ -293,8 +292,10 @@ func close_window():
 func show_window():
 	visible = true
 	_on_resized()
-	grab_focus()
-	_on_focus_entered()
+
+	if not get_viewport().gui_focus_changed.is_connected(_on_gui_focus_changed):
+		get_viewport().gui_focus_changed.connect(_on_gui_focus_changed)
+	set_window_in_front()
 
 	# If popped out, show popup if not visible, or grab focus and bring window to front
 	if popped_out:
@@ -540,5 +541,34 @@ func _on_popout_button_pressed() -> void:
 	_save_current_window_state()
 	popout_state_changing(true)
 	_set_popped_out(true)
+
+#endregion
+
+# -----------------------------------------------------------------------------
+# Window focusing
+
+#region Window focusing
+
+func _on_gui_focus_changed(node):
+	if _get_window(node) == self:
+		set_window_in_front()
+
+## Returns whether this window is currently the front-most window.
+func is_window_in_front():
+	return get_index() == 0
+
+## Moves this window in front of all the other ones.
+## If another window's control currently has focus, the focus is cleared.
+func set_window_in_front():
+	get_parent().move_child(self, get_parent().get_child_count() - 1)
+	if _get_window(get_viewport().gui_get_focus_owner()) != self:
+		get_viewport().gui_release_focus()
+
+## Gets the window the specified control is part of, if any.
+static func _get_window(control):
+	while control:
+		if control is BasicSubWindow: return control
+		control = control.get_parent()
+	return null
 
 #endregion
