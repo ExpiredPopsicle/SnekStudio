@@ -70,7 +70,6 @@ var hand_count_change_time_threshold = 1.0
 var hand_rotation_smoothing : float = 2.0
 var hand_position_smoothing : float = 4.0
 var chest_yaw_scale : float = 0.25
-var lean_scale : float = 2.0
 var hip_adjustment_speed : float = 1.0
 
 
@@ -165,11 +164,6 @@ func _ready():
 	add_tracked_setting(
 		"chest_yaw_scale", "Chest Yaw Rotation Scale",
 		{ "min" : -2.0, "max" : 2.0 },
-		"advanced")
-
-	add_tracked_setting(
-		"lean_scale", "Lean Scale",
-		{ "min" : -4.0, "max" : 4.0 },
 		"advanced")
 
 	add_tracked_setting(
@@ -726,23 +720,6 @@ func rotate_bone_in_global_space(
 			bone_index,
 			bs_rotation)
 
-func handle_lean(skel : Skeleton3D, angle : float):
-
-	var current_bone : int = skel.find_bone("Head")
-	var hips_bone : int = skel.find_bone("Hips")
-	var bone_count : int = 0
-	
-	while current_bone != hips_bone and current_bone != -1:
-		bone_count += 1
-		current_bone = skel.get_bone_parent(current_bone)
-	
-	angle /= float(bone_count)
-	
-	current_bone = skel.find_bone("Head")
-	while current_bone != hips_bone and current_bone != -1:
-		rotate_bone_in_global_space(skel, current_bone, Vector3(0.0, 0.0, 1.0), angle, true)
-		current_bone = skel.get_bone_parent(current_bone)
-
 func _start_process():
 	tracker_python_process.start_process(false)
 	_send_settings_to_tracker()
@@ -1012,14 +989,83 @@ func _process(delta):
 
 
 
-	# Lean!
-	var lean_check_axis : Vector3 = (skel.transform * skel.get_bone_global_pose(skel.find_bone("Hips"))).basis * Vector3(1.0, 0.0, 0.0)
-	#print(lean_check_axis)
-	lean_check_axis = lean_check_axis.normalized()
-	#var head_offset : Vector3 = $Head.transform.origin - (skel.transform * skel.get_bone_global_pose(skel.find_bone("Head"))).origin
-	var head_offset : Vector3 = $Head.transform.origin - model_root.transform.origin
-	var lean_amount : float = sin(lean_check_axis.dot(head_offset))
-	handle_lean(skel, lean_amount * lean_scale)
+	## Lean!
+	#var lean_check_axis : Vector3 = (skel.transform * skel.get_bone_global_pose(skel.find_bone("Hips"))).basis * Vector3(1.0, 0.0, 0.0)
+	##print(lean_check_axis)
+	#lean_check_axis = lean_check_axis.normalized()
+	##var head_offset : Vector3 = $Head.transform.origin - (skel.transform * skel.get_bone_global_pose(skel.find_bone("Head"))).origin
+	#var head_offset : Vector3 = $Head.transform.origin - model_root.transform.origin
+	#var lean_amount : float = sin(lean_check_axis.dot(head_offset))
+	#handle_lean(skel, lean_amount * lean_scale)
+
+
+
+
+
+	# Send tracker data down the pipe.
+	var trackers : Dictionary = get_global_mod_data("trackers")
+	trackers["head"] = {
+		"transform" : $Head.global_transform,
+		"active" : true
+	}
+
+	trackers["hand_left"] = {
+		"transform" : $Hand_Left.global_transform,
+		"active" : true
+	}
+
+	trackers["hand_right"] = {
+		"transform" : $Hand_Right.global_transform,
+		"active" : true
+	}
+
+	# https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker
+	var mediapipe_hand_landmark_names : Array = [
+		"wrist",
+
+		"thumb_cmc", # carpometacarpal
+		"thumb_mcp", # metacarpal
+		"thumb_ip", # interphalangeal
+		"thumb_tip", # tip
+
+		"index_finger_mcp",
+		"index_finger_pip", # proximal something something
+		"index_finger_dip", # distal something something
+		"index_finger_tip",
+
+		"middle_finger_mcp",
+		"middle_finger_pip",
+		"middle_finger_dip",
+		"middle_finger_tip",
+
+		"ring_finger_mcp",
+		"ring_finger_pip",
+		"ring_finger_dip",
+		"ring_finger_tip",
+
+		"pinky_finger_mcp",
+		"pinky_finger_pip",
+		"pinky_finger_dip",
+		"pinky_finger_tip",
+	]
+
+	trackers["finger_positions"] = {}
+
+	for side : String in [ "left", "right" ]:
+
+		var tracker : Node3D;
+		if side == "left":
+			tracker = $Hand_Left
+		else:
+			tracker = $Hand_Right
+
+		for landmark_index : int in range(0, len(mediapipe_hand_landmark_names)):
+			if tracker.get_child_count() > landmark_index:
+				var finger_tracker : Node3D = tracker.get_child(landmark_index)
+				var landmark_name : String = side + "_" + mediapipe_hand_landmark_names[landmark_index]
+				trackers["finger_positions"][landmark_name] = finger_tracker.global_transform.origin
+
+
 
 
 func _reset_hand_landmarks():

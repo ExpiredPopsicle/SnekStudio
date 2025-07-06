@@ -51,6 +51,7 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_top = -24.0
+offset_right = 278.0
 grow_horizontal = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_aj8ap")
 

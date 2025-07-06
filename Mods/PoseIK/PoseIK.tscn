@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://b2n8nnpq1p4no"]
+
+[ext_resource type="Script" uid="uid://bhwmfiiu0cips" path="res://Mods/PoseIK/PoseIK.gd" id="1_nrhi5"]
+
+[node name="PoseIk" type="Node"]
+script = ExtResource("1_nrhi5")
+metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
