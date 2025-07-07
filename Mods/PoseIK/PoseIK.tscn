@@ -5,3 +5,9 @@
 [node name="PoseIk" type="Node"]
 script = ExtResource("1_nrhi5")
 metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
+
+[node name="Head" type="Node3D" parent="."]
+
+[node name="Hand_Right" type="Node3D" parent="."]
+
+[node name="Hand_Left" type="Node3D" parent="."]

@@ -887,105 +887,12 @@ func _process(delta):
 				$Head.global_transform.basis.get_rotation_quaternion().slerp(
 					rest_global.basis.get_rotation_quaternion(), blend_to_rest_speed * delta))
 
-		# ---------------------------------------------------------------------
-		# IK stuff starts here
 
-		# Arm IK.
-		
-		var x_pole_dist = 10.0
-		var z_pole_dist = 10.0
-		var y_pole_dist = 5.0
-
-		# FIXME: MIRRORING MESS
-		var tracker_to_use_right = tracker_right
-		var tracker_to_use_left = tracker_left
-		
-		# FIXME: Hack hack hack hack hack hack
-		for k in range(1, 3):
-
-			var tracker_to_use = tracker_to_use_left
-			var compensation_alpha_scale = 1.0
-			var pole_target_x = x_pole_dist
-			if k == 2: # FIXME: Hack.
-				tracker_to_use = tracker_to_use_right
-				compensation_alpha_scale *= -1.0
-				pole_target_x = -x_pole_dist
-		
-			var tracker_local_position = \
-				skel.get_global_transform().inverse() * tracker_to_use.get_global_transform()
-			var base_bone_position = skel.get_bone_global_pose(
-				skel.find_bone(_ikchains[k].base_bone)).origin
-			#print(tracker_local_position.origin.x - bone_position.x)
-			
-			# See if we can raise the shoulders for when arms go too far up.
-			if k == 1 or k == 2:
-				var chest_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
-
-				# FIXME: We really need to parameterize this all in a less
-				# silly way.
-				var rotation_scale = 1.0
-				var shoulder_bone = "LeftShoulder"
-				if tracker_to_use == tracker_right:
-					shoulder_bone = "RightShoulder"
-					rotation_scale = -rotation_scale
-				
-				var shoulder_bone_index = skel.find_bone(shoulder_bone)
-				var shoulder_pose = skel.get_bone_global_pose(shoulder_bone_index)
-				var chest_pose_inv = chest_pose.inverse()
-				var shoulder_y = (chest_pose_inv * shoulder_pose).origin.y
-				var tracker_local_chest = chest_pose_inv * tracker_local_position
-				if tracker_local_chest.origin.y > shoulder_y:
-					#print(tracker_local_chest.origin.y - shoulder_y)
-					skel.set_bone_pose_rotation(shoulder_bone_index, 
-						Quaternion(Vector3(0.0, 0.0, 1.0), (tracker_local_chest.origin.y - shoulder_y) * 2.0 * rotation_scale) *
-						skel.get_bone_rest(shoulder_bone_index).basis.get_rotation_quaternion())
-				
-			
-			
-			
-			var pole_target_y = -y_pole_dist
-			var pole_target_z = -z_pole_dist
-
-			# Rotate pole target upwards when the arm reaches across the
-			# chest.
-			if (tracker_local_position.origin.x - base_bone_position.x) * compensation_alpha_scale < 0:
-				var alpha = -(tracker_local_position.origin.x - base_bone_position.x) * 3.0 * compensation_alpha_scale
-				#print(alpha)
-				pole_target_y = lerp(-y_pole_dist, 0.0, alpha)
-				pole_target_z = lerp(-z_pole_dist, 0.0, alpha)
-			
-			# Move pole target backwards when the arm is lowered.
-			#
-			# FIXME: Hardcoded values.
-			var arm_below_factor = (tracker_local_position.origin.y - base_bone_position.y) + 0.25
-			arm_below_factor *= 1.0
-			if arm_below_factor < 0.0:
-				var alpha = arm_below_factor
-				# FIXME: Hardcoded values.
-				pole_target_z = lerp(pole_target_z, 100.0, alpha)
-				pole_target_x = lerp(pole_target_x, 100.0 * compensation_alpha_scale, alpha)
-
-			
-			_ikchains[k].pole_direction_target = Vector3(
-				pole_target_x, pole_target_y, pole_target_z)
-
-
-		# Do hand stuff.
-		if do_hands:
-	
-			var hands = [ \
-				[ "Left", hand_landmarks_left, tracker_left, Basis() ], # FIXME: Remove the last value.
-				[ "Right", hand_landmarks_right, tracker_right, Basis() ]]  # FIXME: Remove the last value.
-
-			for hand in hands:
-				update_hand(hand, parsed_data, skel)
-
-
-
-
-	# Solve all IK chains.
-	for chain in _ikchains:
-		chain.do_ik_chain()
+		var hands = [ \
+			[ "Left", hand_landmarks_left, $Hand_Left, Basis() ], # FIXME: Remove the last value.
+			[ "Right", hand_landmarks_right, $Hand_Right, Basis() ]]  # FIXME: Remove the last value.
+		for hand in hands:
+			update_hand(hand, parsed_data, skel)
 
 
 
@@ -1265,8 +1172,8 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 	if len(hand_landmarks) < 21:
 		return
 
-	for finger_bone_array in finger_bone_array_array:
-		update_finger_chain(finger_bone_array, hand, hand_landmarks, which_hand)
+	#for finger_bone_array in finger_bone_array_array:
+		#update_finger_chain(finger_bone_array, hand, hand_landmarks, which_hand)
 
 func update_finger_chain(finger_bone_array : Array, hand, hand_landmarks, which_hand):
 
