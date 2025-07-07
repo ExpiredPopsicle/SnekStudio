@@ -989,20 +989,11 @@ func _process(delta):
 
 
 
-	## Lean!
-	#var lean_check_axis : Vector3 = (skel.transform * skel.get_bone_global_pose(skel.find_bone("Hips"))).basis * Vector3(1.0, 0.0, 0.0)
-	##print(lean_check_axis)
-	#lean_check_axis = lean_check_axis.normalized()
-	##var head_offset : Vector3 = $Head.transform.origin - (skel.transform * skel.get_bone_global_pose(skel.find_bone("Head"))).origin
-	#var head_offset : Vector3 = $Head.transform.origin - model_root.transform.origin
-	#var lean_amount : float = sin(lean_check_axis.dot(head_offset))
-	#handle_lean(skel, lean_amount * lean_scale)
 
 
-
-
-
+	# ---------------------------------------------------------------------------------------------
 	# Send tracker data down the pipe.
+
 	var trackers : Dictionary = get_global_mod_data("trackers")
 	trackers["head"] = {
 		"transform" : $Head.global_transform,
