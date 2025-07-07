@@ -1,17 +1,23 @@
 extends Mod_Base
 
-var lean_scale : float = 1.0
-var chest_yaw_scale : float = 0.25
+var lean_scale : float = 4.0
+var chest_yaw_scale : float = 0.3
 # FIXME: Add settings for all of these.
 var do_hands : bool = true
 var lock_fingers_to_single_axis_of_rotation : bool = true
 var lock_fingers_to_z_axis : bool = true
 var debug_visible_hand_trackers : bool = false
+var hack_reset_hips_every_frame : bool = true
+var hack_reset_shoulders_every_frame : bool = true
+var hip_adjustment_speed : float = 1.0
+var head_vertical_offset : float = -0.2
+var hips_vertical_blend_speed : float = 6.0
 
 var _ikchains : Array = []
 
 var hand_landmarks_left : Array = []
 var hand_landmarks_right : Array = []
+
 
 func _ready() -> void:
 
@@ -24,7 +30,33 @@ func _ready() -> void:
 
 	add_tracked_setting(
 		"chest_yaw_scale", "Chest Yaw Rotation Scale",
-		{ "min" : -2.0, "max" : 2.0 },
+		{ "min" : -4.0, "max" : 4.0 },
+		"advanced")
+
+	add_tracked_setting(
+		"debug_visible_hand_trackers", "Debug: Visible hand trackers", {},
+		"advanced")
+
+	add_tracked_setting(
+		"hack_reset_hips_every_frame",
+		"Hack: Reset hips every frame (prevent drift)", {},
+		"advanced")
+
+	add_tracked_setting(
+		"hack_reset_shoulders_every_frame",
+		"Hack: Reset shoulders every frame (prevent shoulder drift)", {},
+		"advanced")
+
+	add_tracked_setting(
+		"head_vertical_offset", "Head vertical offset",
+		{ "min" : -1.0, "max" : 1.0 },
+		"advanced")
+	add_tracked_setting(
+		"hips_vertical_blend_speed", "Hips vertical blend speed",
+		{ "min" : 0.0, "max" : 20.0 },
+		"advanced")
+	add_tracked_setting(
+		"hip_adjustment_speed", "Hip Adjustment Speed", { "min" : 0.0, "max" : 10.0 },
 		"advanced")
 
 	_reinit()
@@ -32,7 +64,7 @@ func _ready() -> void:
 func _scene_init() -> void:
 	_reinit()
 
-func _load_after() -> void:
+func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	_reinit()
 
 func _update_local_trackers() -> void:
@@ -92,7 +124,7 @@ func _update_local_trackers() -> void:
 
 
 
-func _process(_delta : float) -> void:
+func _process(delta : float) -> void:
 
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
 	var skel : Skeleton3D = get_skeleton()
@@ -113,6 +145,42 @@ func _process(_delta : float) -> void:
 
 
 
+	# Hack to fix hips drift.
+	if hack_reset_hips_every_frame:
+		var hips_index : int = skel.find_bone("Hips")
+		if hips_index != -1:
+			skel.reset_bone_pose(hips_index)
+
+	# Hack to fix shoulder drift.
+	if hack_reset_shoulders_every_frame:
+		var bone_index : int = skel.find_bone("LeftShoulder")
+		if bone_index != -1:
+			skel.reset_bone_pose(bone_index)
+		bone_index = skel.find_bone("RightShoulder")
+		if bone_index != -1:
+			skel.reset_bone_pose(bone_index)
+
+	# FIXME: Hack.
+	# This just moves the body based on the head position.
+	var head_pos = $Head.transform.origin
+	var model_pos = model_root.transform.origin
+	
+	if true: # FIXME: ???????
+		model_root.transform.origin = model_pos.lerp(head_pos, delta * hip_adjustment_speed)
+		#model_root.transform.origin = head_pos
+		#model_root.transform.origin.y = model_y 
+		#model_root.transform.origin.y = lerp(model_pos.y, head_pos.y - 1.9, 0.01)
+		
+		# FIXME: Another hack!
+		var head_rest_transform = get_skeleton().get_bone_global_rest(
+			get_skeleton().find_bone("Head"))
+		#print(head_rest_transform.origin.y)
+		
+		# FIXME: Hard-coded fudge factor.
+		# FIXME: Why can't we just map this directly again? It looks like we're shrugging when the arms get set up wrong or something.
+		model_root.transform.origin.y = lerp(
+			model_pos.y, head_pos.y - head_rest_transform.origin.y + head_vertical_offset,
+			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
 
 
 
@@ -330,7 +398,7 @@ func _reset_hand_landmarks():
 
 		# Set them visible or not.
 		for finger_tracker : MeshInstance3D in tracker.get_children():
-			if true:
+			if debug_visible_hand_trackers:
 				if not finger_tracker.mesh:
 					finger_tracker.mesh = SphereMesh.new()
 					finger_tracker.mesh.radius = 0.004

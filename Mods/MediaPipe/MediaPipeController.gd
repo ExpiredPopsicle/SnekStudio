@@ -26,8 +26,6 @@ var _init_complete = false
 
 var frames_missing_before_spine_reset = 6.0
 var blend_to_rest_speed = 4.5
-var head_vertical_offset : float = -0.2
-var hips_vertical_blend_speed : float = 6.0
 
 # Settings stuff
 @export var mirror_mode : bool = true
@@ -65,8 +63,9 @@ var hand_count_change_time_threshold = 1.0
 
 var hand_rotation_smoothing : float = 2.0
 var hand_position_smoothing : float = 4.0
-var chest_yaw_scale : float = 0.25
-var hip_adjustment_speed : float = 1.0
+
+#var chest_yaw_scale : float = 0.25
+#var hip_adjustment_speed : float = 1.0
 
 
 var hand_position_scale : Vector3 = Vector3(7.0, 7.0, 3.5)
@@ -79,13 +78,9 @@ var last_packet_received = null
 
 # What we should show in the new error/warning reporting.
 var _current_error_to_show : String = ""
-
-var hack_reset_hips_every_frame : bool = true
-var hack_reset_shoulders_every_frame : bool = true
-
-# FIXME: Not yet working.
-var lock_fingers_to_single_axis_of_rotation : bool = false
-var lock_fingers_to_z_axis : bool = false
+#
+#var hack_reset_hips_every_frame : bool = true
+#var hack_reset_shoulders_every_frame : bool = true
 
 func _ready():
 
@@ -139,14 +134,6 @@ func _ready():
 		{ "min" : 0.0, "max" : 10.0, "step" : 0.1 },
 		"advanced")
 
-	add_tracked_setting(
-		"head_vertical_offset", "Head vertical offset",
-		{ "min" : -1.0, "max" : 1.0 },
-		"advanced")
-	add_tracked_setting(
-		"hips_vertical_blend_speed", "Hips vertical blend speed",
-		{ "min" : 0.0, "max" : 20.0 },
-		"advanced")
 
 	add_tracked_setting(
 		"hand_position_smoothing", "Hand Position Smoothing",
@@ -157,14 +144,7 @@ func _ready():
 		{ "min" : 1.0, "max" : 5.0 },
 		"advanced")
 
-	add_tracked_setting(
-		"chest_yaw_scale", "Chest Yaw Rotation Scale",
-		{ "min" : -2.0, "max" : 2.0 },
-		"advanced")
 
-	add_tracked_setting(
-		"hip_adjustment_speed", "Hip Adjustment Speed", { "min" : 0.0, "max" : 10.0 },
-		"advanced")
 
 	add_tracked_setting(
 		"hand_position_scale", "Hand Position Scale", {},
@@ -180,26 +160,15 @@ func _ready():
 		"debug_visible_hand_trackers", "Debug: Visible hand trackers", {},
 		"advanced")
 
-	add_tracked_setting(
-		"hack_reset_hips_every_frame",
-		"Hack: Reset hips every frame (prevent drift)", {},
-		"advanced")
-
-	add_tracked_setting(
-		"hack_reset_shoulders_every_frame",
-		"Hack: Reset shoulders every frame (prevent shoulder drift)", {},
-		"advanced")
-
-	# FIXME: Not yet working.
 	#add_tracked_setting(
-		#"lock_fingers_to_single_axis_of_rotation",
-		#"Lock finger joints to a single axis of rotation per-finger", {},
+		#"hack_reset_hips_every_frame",
+		#"Hack: Reset hips every frame (prevent drift)", {},
 		#"advanced")
-
-	add_tracked_setting(
-		"lock_fingers_to_z_axis",
-		"Lock fingers to the local Z axis of rotation only", {},
-		"advanced")
+#
+	#add_tracked_setting(
+		#"hack_reset_shoulders_every_frame",
+		#"Hack: Reset shoulders every frame (prevent shoulder drift)", {},
+		#"advanced")
 
 	hand_rest_trackers["Left"] = $LeftHandRestReference
 	hand_rest_trackers["Right"] = $RightHandRestReference
@@ -682,42 +651,6 @@ func _process(delta):
 		# Bail out early.
 		return
 
-	# Hack to fix hips drift.
-	if hack_reset_hips_every_frame:
-		var hips_index : int = skel.find_bone("Hips")
-		if hips_index != -1:
-			skel.reset_bone_pose(hips_index)
-
-	# Hack to fix shoulder drift.
-	if hack_reset_shoulders_every_frame:
-		var bone_index : int = skel.find_bone("LeftShoulder")
-		if bone_index != -1:
-			skel.reset_bone_pose(bone_index)
-		bone_index = skel.find_bone("RightShoulder")
-		if bone_index != -1:
-			skel.reset_bone_pose(bone_index)
-
-	# FIXME: Hack.
-	# This just moves the body based on the head position.
-	var head_pos = $Head.transform.origin
-	var model_pos = model_root.transform.origin
-	
-	if true:
-		model_root.transform.origin = model_pos.lerp(head_pos, delta * hip_adjustment_speed)
-		#model_root.transform.origin = head_pos
-		#model_root.transform.origin.y = model_y 
-		#model_root.transform.origin.y = lerp(model_pos.y, head_pos.y - 1.9, 0.01)
-		
-		# FIXME: Another hack!
-		var head_rest_transform = get_skeleton().get_bone_global_rest(
-			get_skeleton().find_bone("Head"))
-		#print(head_rest_transform.origin.y)
-		
-		# FIXME: Hard-coded fudge factor.
-		# FIXME: Why can't we just map this directly again? It looks like we're shrugging when the arms get set up wrong or something.
-		model_root.transform.origin.y = lerp(
-			model_pos.y, head_pos.y - head_rest_transform.origin.y + head_vertical_offset,
-			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
 
 	process_new_packets(delta)
 
