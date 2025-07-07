@@ -12,8 +12,9 @@ func _process(delta: float) -> void:
 	$Stick.transform.basis = \
 		Basis(Vector3(1.0, 0.0, 0.0), cos(time) * 0.25) * \
 		Basis(Vector3(0.0, 0.0, 1.0), sin(time * 0.3) * 0.5)
+	#%Hand_Right.transform.origin = Vector3(0.0, cos(time)* 0.2 + 0.2, 0.0)
 
-
-
-	tracker_dict["hand_left"]["transform"] = %Hand_Left.global_transform
-	tracker_dict["hand_right"]["transform"] = %Hand_Right.global_transform
+	if not tracker_dict["hand_left"]["active"]:
+		tracker_dict["hand_left"]["transform"] = %Hand_Left.global_transform
+	if not tracker_dict["hand_right"]["active"]:
+		tracker_dict["hand_right"]["transform"] = %Hand_Right.global_transform
