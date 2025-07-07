@@ -6,6 +6,7 @@ var chest_yaw_scale : float = 0.25
 var do_hands : bool = true
 var lock_fingers_to_single_axis_of_rotation : bool = true
 var lock_fingers_to_z_axis : bool = true
+var debug_visible_hand_trackers : bool = false
 
 var _ikchains : Array = []
 
@@ -85,7 +86,8 @@ func _update_local_trackers() -> void:
 				var finger_tracker : Node3D = tracker.get_child(landmark_index)
 				var landmark_name : String = side + "_" + mediapipe_hand_landmark_names[landmark_index]
 				#print(landmark_name, " = ", tracker_dict["finger_positions"][landmark_name])
-				finger_tracker.global_transform.origin = tracker_dict["finger_positions"][landmark_name]
+				if landmark_name in tracker_dict["finger_positions"]:
+					finger_tracker.global_transform.origin = tracker_dict["finger_positions"][landmark_name]
 
 
 
