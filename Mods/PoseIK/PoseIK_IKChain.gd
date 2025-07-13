@@ -1,5 +1,5 @@
 extends RefCounted
-class_name MediaPipeController_IKChain
+class_name PoseIK_IKChain
 
 # FIXME: We pass this around internally a bunch and don't need to.
 var skeleton : Skeleton3D = null

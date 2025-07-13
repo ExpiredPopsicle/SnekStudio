@@ -339,7 +339,7 @@ func _setup_ik_chains():
 
 	_ikchains = []
 
-	var chain_spine : MediaPipeController_IKChain = MediaPipeController_IKChain.new()
+	var chain_spine : PoseIK_IKChain = PoseIK_IKChain.new()
 	chain_spine.skeleton = get_skeleton()
 	chain_spine.base_bone = "Hips"
 	chain_spine.tip_bone = "Head"
@@ -374,7 +374,7 @@ func _setup_ik_chains():
 
 	for side in [ "Left", "Right" ]:
 
-		var chain_hand = MediaPipeController_IKChain.new()
+		var chain_hand = PoseIK_IKChain.new()
 		chain_hand.skeleton = get_skeleton()
 		chain_hand.base_bone = side + "UpperArm"
 		chain_hand.tip_bone = side + "Hand"
