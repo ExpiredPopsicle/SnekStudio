@@ -768,12 +768,12 @@ func _process(delta):
 
 	trackers["hand_left"] = {
 		"transform" : $Hand_Left.global_transform,
-		"active" : hand_time_since_last_update[0] < arm_reset_time
+		"active" : hand_time_since_last_update[0] <= arm_reset_time
 	}
 
 	trackers["hand_right"] = {
 		"transform" : $Hand_Right.global_transform,
-		"active" : hand_time_since_last_update[1] < arm_reset_time
+		"active" : hand_time_since_last_update[1] <= arm_reset_time
 	}
 
 	# https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker

@@ -18,6 +18,7 @@ var _ikchains : Array = []
 var hand_landmarks_left : Array = []
 var hand_landmarks_right : Array = []
 
+var _init_complete = false
 
 func _ready() -> void:
 
@@ -64,8 +65,18 @@ func _ready() -> void:
 func _scene_init() -> void:
 	_reinit()
 
+func _scene_shutdown() -> void:
+	_init_complete = false
+	_ikchains = []
+
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	_reinit()
+	_init_complete = true
+
+func load_before(_settings_old : Dictionary, _settings_new : Dictionary):
+	_init_complete = false
+	_ikchains = []
+
 
 func _update_local_trackers() -> void:
 
@@ -125,6 +136,9 @@ func _update_local_trackers() -> void:
 
 
 func _process(delta : float) -> void:
+
+	if not _init_complete:
+		return
 
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
 	var skel : Skeleton3D = get_skeleton()
@@ -316,6 +330,7 @@ func _process(delta : float) -> void:
 
 func _reinit() -> void:
 	_setup_ik_chains()
+	_init_complete = true
 
 
 func _setup_ik_chains():

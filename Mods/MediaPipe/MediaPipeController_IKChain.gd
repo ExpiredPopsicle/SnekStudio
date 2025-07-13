@@ -325,7 +325,10 @@ func rotate_bone_to_match_object(
 		new_head_transform.basis.get_rotation_quaternion())
 
 func do_ik_chain():
-	
+
+	if not is_instance_valid(skeleton):
+		return
+
 	var target_transform : Transform3D = \
 		tracker_object.global_transform
 	
