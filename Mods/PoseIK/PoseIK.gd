@@ -62,10 +62,10 @@ func _ready() -> void:
 
 	_reinit()
 
-func _scene_init() -> void:
+func scene_init() -> void:
 	_reinit()
 
-func _scene_shutdown() -> void:
+func scene_shutdown() -> void:
 	_init_complete = false
 	_ikchains = []
 
@@ -228,7 +228,7 @@ func _process(delta : float) -> void:
 			tracker_to_use = tracker_to_use_right
 			compensation_alpha_scale *= -1.0
 			pole_target_x = -x_pole_dist
-	
+
 		var tracker_local_position = \
 			skel.get_global_transform().inverse() * tracker_to_use.get_global_transform()
 		var base_bone_position = skel.get_bone_global_pose(
@@ -338,7 +338,7 @@ func _setup_ik_chains():
 	# ORDER MATTERS ON THE CHAIN ARRAY. SPINE BEFORE ARMS BEFORE FINGERS.
 
 	_ikchains = []
-	
+
 	var chain_spine : MediaPipeController_IKChain = MediaPipeController_IKChain.new()
 	chain_spine.skeleton = get_skeleton()
 	chain_spine.base_bone = "Hips"
