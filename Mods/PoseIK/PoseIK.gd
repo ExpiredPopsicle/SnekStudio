@@ -14,7 +14,11 @@ var head_vertical_offset : float = -0.2
 var hips_vertical_blend_speed : float = 6.0
 
 # FIXME: This should be a dictionary.
-var _ikchains : Array = []
+var _ikchains_dict : Dictionary = {
+	"arm_left" : null,
+	"arm_right" : null,
+	"spine" : null
+}
 
 var hand_landmarks_left : Array = []
 var hand_landmarks_right : Array = []
@@ -143,7 +147,9 @@ const finger_bone_array_array : Array[Array] = [
 ]
 
 
-
+func _clear_ik_chains() -> void:
+	for key in _ikchains_dict.keys():
+		_ikchains_dict[key] = null
 
 func _ready() -> void:
 
@@ -192,7 +198,7 @@ func scene_init() -> void:
 
 func scene_shutdown() -> void:
 	_init_complete = false
-	_ikchains = []
+	_clear_ik_chains()
 
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	_reinit()
@@ -200,7 +206,7 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 
 func load_before(_settings_old : Dictionary, _settings_new : Dictionary):
 	_init_complete = false
-	_ikchains = []
+	_clear_ik_chains()
 
 func _update_local_trackers() -> void:
 
@@ -315,13 +321,12 @@ func _process(delta : float) -> void:
 	var z_pole_dist = 10.0
 	var y_pole_dist = 5.0
 
-	# FIXME: Hack hack hack hack hack hack
-	for k in range(1, 3):
+	for chain_name in ["arm_left", "arm_right"]:
 
 		var tracker_to_use = $Hand_Left
 		var compensation_alpha_scale = 1.0
 		var pole_target_x = x_pole_dist
-		if k == 2: # FIXME: Hack.
+		if chain_name == "arm_right": # FIXME: Hack.
 			tracker_to_use = $Hand_Right
 			compensation_alpha_scale *= -1.0
 			pole_target_x = -x_pole_dist
@@ -329,11 +334,11 @@ func _process(delta : float) -> void:
 		var tracker_local_position = \
 			skel.get_global_transform().inverse() * tracker_to_use.get_global_transform()
 		var base_bone_position = skel.get_bone_global_pose(
-			skel.find_bone(_ikchains[k].base_bone)).origin
+			skel.find_bone(_ikchains_dict[chain_name].base_bone)).origin
 		#print(tracker_local_position.origin.x - bone_position.x)
 		
 		# See if we can raise the shoulders for when arms go too far up.
-		if k == 1 or k == 2:
+		if chain_name == "arm_left" or chain_name == "arm_right":
 			var chest_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
 
 			# FIXME: We really need to parameterize this all in a less
@@ -378,7 +383,7 @@ func _process(delta : float) -> void:
 			pole_target_x = lerp(pole_target_x, 100.0 * compensation_alpha_scale, alpha)
 
 		
-		_ikchains[k].pole_direction_target = Vector3(
+		_ikchains_dict[chain_name].pole_direction_target = Vector3(
 			pole_target_x, pole_target_y, pole_target_z)
 
 	# FIXME: Fix this comment.
@@ -388,8 +393,8 @@ func _process(delta : float) -> void:
 		update_hand(hand_landmarks_right, "Right")
 
 	# Solve all IK chains.
-	for chain in _ikchains:
-		chain.do_ik_chain()
+	for chain_name in ["spine", "arm_left", "arm_right"]:
+		_ikchains_dict[chain_name].do_ik_chain()
 
 	# ---------------------------------------------------------------------------------------------
 	# Handle Leaning
@@ -409,7 +414,7 @@ func _setup_ik_chains():
 
 	# ORDER MATTERS ON THE CHAIN ARRAY. SPINE BEFORE ARMS BEFORE FINGERS.
 
-	_ikchains = []
+	_clear_ik_chains()
 
 	var chain_spine : PoseIK_IKChain = PoseIK_IKChain.new()
 	chain_spine.skeleton = get_skeleton()
@@ -428,8 +433,7 @@ func _setup_ik_chains():
 	#chain_spine.do_point_tracker = false
 	#chain_spine.do_pole_targets = false
 
-	# FIXME: Add yaw scale as an option.
-	_ikchains.append(chain_spine)
+	_ikchains_dict["spine"] = chain_spine
 
 	var x_pole_dist = 10.0
 	var z_pole_dist = 10.0
@@ -458,13 +462,13 @@ func _setup_ik_chains():
 			chain_hand.pole_direction_target = Vector3(
 				x_pole_dist, -y_pole_dist, -z_pole_dist)
 			chain_hand.tracker_object = hand_tracker_left
+			_ikchains_dict["arm_left"] = chain_hand
 		else:
 			chain_hand.main_axis_of_rotation = arm_rotation_axis
 			chain_hand.pole_direction_target = Vector3(
 				-x_pole_dist, -y_pole_dist, -z_pole_dist)
 			chain_hand.tracker_object = hand_tracker_right
-			
-		_ikchains.append(chain_hand)
+			_ikchains_dict["arm_right"] = chain_hand
 
 func _reset_hand_landmarks():
 
