@@ -187,8 +187,25 @@ func _ready():
 	get_settings_window().add_child(clear_calibration_button)
 	clear_calibration_button.pressed.connect(func() : blendshape_calibration = {})
 
-	_update_for_new_model_if_needed()
+	_reinit()
+
+func _reinit():
+	_update_arm_rest_positions()
 	_reset_hand_landmarks()
+
+func check_configuration() -> PackedStringArray:
+	var errors : PackedStringArray = []
+
+	if video_device == ["None"] or len(video_device) == 0:
+		errors.append("No camera is currently selected.")
+
+	if len(_current_error_to_show):
+		errors.append(_current_error_to_show)
+
+	if not check_mod_dependency("Mod_AnimationApplier", true):
+		errors.append("No AnimationApplier detected, or detected before MediaPipeController. Blend shapes will not function as expected.")
+
+	return errors
 
 func save_before(_settings_current: Dictionary):
 	_settings_current["blendshape_calibration"] = blendshape_calibration
@@ -247,7 +264,7 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	if _settings_old["blendshape_calibration"] != _settings_new["blendshape_calibration"]:
 		blendshape_calibration = _settings_new["blendshape_calibration"]
 
-	_reset_hand_landmarks()
+	_reinit()
 
 func scene_init():
 
@@ -283,8 +300,7 @@ func scene_init():
 	$Head.global_transform = get_skeleton().get_bone_global_rest(
 		head_bone_index)
 
-	_update_arm_rest_positions()
-	_reset_hand_landmarks()
+	_reinit()
 
 	_init_complete = true
 
@@ -329,6 +345,7 @@ func _update_arm_rest_positions():
 
 			# Rotate the shoulder down so the arm is resting at a specific angle
 			# on the Z axis.
+			# on the Z axis.
 			var shoulder_index = skel.find_bone(side + "Shoulder")
 			var hand_index = skel.find_bone(side + "Hand")
 			var shoulder_origin : Vector3 = skel.get_bone_global_rest(shoulder_index).origin
@@ -338,9 +355,6 @@ func _update_arm_rest_positions():
 					rotation_axis, deg_to_rad(arm_rest_angle))
 			hand_rest_trackers[side].transform.origin = shoulder_origin + new_offset
 			hand_rest_trackers[side].transform.basis = rotation_basis
-
-func _update_for_new_model_if_needed():
-	_update_arm_rest_positions()
 
 func _calibrate_face():
 	var data = {}
@@ -822,8 +836,7 @@ func _process(delta):
 				var landmark_name : String = side + "_" + mediapipe_hand_landmark_names[landmark_index]
 				trackers["finger_positions"][landmark_name] = finger_tracker.global_transform.origin
 
-
-
+#region Hands
 
 func _reset_hand_landmarks():
 
@@ -1019,20 +1032,6 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 		]
 	]
 
-func check_configuration() -> PackedStringArray:
-	var errors : PackedStringArray = []
-
-	if video_device == ["None"] or len(video_device) == 0:
-		errors.append("No camera is currently selected.")
-
-	if len(_current_error_to_show):
-		errors.append(_current_error_to_show)
-
-	if not check_mod_dependency("Mod_AnimationApplier", true):
-		errors.append("No AnimationApplier detected, or detected before MediaPipeController. Blend shapes will not function as expected.")
-
-	return errors
-
 func _update_hand_tracker(
 	delta, hand_data, parsed_data, score_threshold, score_exponent,
 	model_origin_offset, hand_origin_multiplier, skel,
@@ -1190,3 +1189,5 @@ func _update_hand_tracker(
 		#tracker_ob.transform.basis = new_rotation
 		if tracker_ob.mesh:
 			tracker_ob.mesh.material.albedo_color.a = 0.25 + hand_score * 0.75
+
+#endregion

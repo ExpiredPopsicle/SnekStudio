@@ -13,12 +13,137 @@ var hip_adjustment_speed : float = 1.0
 var head_vertical_offset : float = -0.2
 var hips_vertical_blend_speed : float = 6.0
 
+# FIXME: This should be a dictionary.
 var _ikchains : Array = []
 
 var hand_landmarks_left : Array = []
 var hand_landmarks_right : Array = []
 
 var _init_complete = false
+
+# landmark_index_start/end corresponds to the index in the diagram here:
+#   https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker
+const finger_bone_array_array : Array[Array] = [
+	[
+		{
+			"bone_name_current" : "IndexProximal",
+			"landmark_index_start" : 5,
+			"landmark_index_end"  : 6,
+			"bone_name_next" : "IndexIntermediate",
+			"bone_name_parent_of_next" : "IndexProximal"
+		},
+		{
+			"bone_name_current" : "IndexIntermediate",
+			"landmark_index_start" : 6,
+			"landmark_index_end"  : 7,
+			"bone_name_next" : "IndexDistal",
+			"bone_name_parent_of_next" : "IndexIntermediate"
+		},
+		{
+			"bone_name_current" : "IndexDistal",
+			"landmark_index_start" : 7,
+			"landmark_index_end"  : 8,
+			"bone_name_next" : "IndexDistal",
+			"bone_name_parent_of_next" : "IndexIntermediate"
+		}
+	],
+	[
+		{
+			"bone_name_current" : "MiddleProximal",
+			"landmark_index_start" : 9,
+			"landmark_index_end"  : 10,
+			"bone_name_next" : "MiddleIntermediate",
+			"bone_name_parent_of_next" : "MiddleProximal"
+		},
+		{
+			"bone_name_current" : "MiddleIntermediate",
+			"landmark_index_start" : 10,
+			"landmark_index_end"  : 11,
+			"bone_name_next" : "MiddleDistal",
+			"bone_name_parent_of_next" : "MiddleIntermediate"
+		},
+		{
+			"bone_name_current" : "MiddleDistal",
+			"landmark_index_start" : 11,
+			"landmark_index_end"  : 12,
+			"bone_name_next" : "MiddleDistal",
+			"bone_name_parent_of_next" : "MiddleIntermediate"
+		}
+	],
+	[
+		{
+			"bone_name_current" : "RingProximal",
+			"landmark_index_start" : 13,
+			"landmark_index_end"  : 14,
+			"bone_name_next" : "RingIntermediate",
+			"bone_name_parent_of_next" : "RingProximal"
+		},
+		{
+			"bone_name_current" : "RingIntermediate",
+			"landmark_index_start" : 14,
+			"landmark_index_end"  : 15,
+			"bone_name_next" : "RingDistal",
+			"bone_name_parent_of_next" : "RingIntermediate"
+		},
+		{
+			"bone_name_current" : "RingDistal",
+			"landmark_index_start" : 15,
+			"landmark_index_end"  : 16,
+			"bone_name_next" : "RingDistal",
+			"bone_name_parent_of_next" : "RingIntermediate"
+		}
+	],
+	[
+		{
+			"bone_name_current" : "LittleProximal",
+			"landmark_index_start" : 17,
+			"landmark_index_end"  : 18,
+			"bone_name_next" : "LittleIntermediate",
+			"bone_name_parent_of_next" : "LittleProximal"
+		},
+		{
+			"bone_name_current" : "LittleIntermediate",
+			"landmark_index_start" : 18,
+			"landmark_index_end"  : 19,
+			"bone_name_next" : "LittleDistal",
+			"bone_name_parent_of_next" : "LittleIntermediate"
+		},
+		{
+			"bone_name_current" : "LittleDistal",
+			"landmark_index_start" : 19,
+			"landmark_index_end"  : 20,
+			"bone_name_next" : "LittleDistal",
+			"bone_name_parent_of_next" : "LittleIntermediate"
+		}
+	],
+	[
+		# FIXME: Metacarpal *origin* needs to change relative to hand as well.
+		{
+			"bone_name_current" : "ThumbMetacarpal",
+			"landmark_index_start" : 1,
+			"landmark_index_end"  : 2,
+			"bone_name_next" : "ThumbProximal",
+			"bone_name_parent_of_next" : "ThumbMetacarpal"
+		},
+		{
+			"bone_name_current" : "ThumbProximal",
+			"landmark_index_start" : 2,
+			"landmark_index_end"  : 3,
+			"bone_name_next" : "ThumbDistal",
+			"bone_name_parent_of_next" : "ThumbProximal"
+		},
+		{
+			"bone_name_current" : "ThumbDistal",
+			"landmark_index_start" : 3,
+			"landmark_index_end"  : 4,
+			"bone_name_next" : "ThumbDistal",
+			"bone_name_parent_of_next" : "ThumbProximal"
+		},
+	]
+]
+
+
+
 
 func _ready() -> void:
 
@@ -77,7 +202,6 @@ func load_before(_settings_old : Dictionary, _settings_new : Dictionary):
 	_init_complete = false
 	_ikchains = []
 
-
 func _update_local_trackers() -> void:
 
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
@@ -132,9 +256,6 @@ func _update_local_trackers() -> void:
 				if landmark_name in tracker_dict["finger_positions"]:
 					finger_tracker.global_transform.origin = tracker_dict["finger_positions"][landmark_name]
 
-
-
-
 func _process(delta : float) -> void:
 
 	if not _init_complete:
@@ -144,20 +265,10 @@ func _process(delta : float) -> void:
 	var skel : Skeleton3D = get_skeleton()
 	var model_root : Node3D = get_model()
 
-	#print(tracker_dict.keys())
-#
-	##print(tracker_dict["finger_positions"].keys())
-	#for k in tracker_dict["finger_positions"].keys():
-		#print(k, ": ", tracker_dict["finger_positions"][k])
-
 	# ---------------------------------------------------------------------------------------------
 	# Update this mod's tracker instances
 
 	_update_local_trackers()
-
-
-
-
 
 	# Hack to fix hips drift.
 	if hack_reset_hips_every_frame:
@@ -196,36 +307,22 @@ func _process(delta : float) -> void:
 			model_pos.y, head_pos.y - head_rest_transform.origin.y + head_vertical_offset,
 			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
 
-
-
-
-
-
-
-
-
-
 	# ---------------------------------------------------------------------
 	# IK stuff starts here
 
 	# Arm IK.
-	
 	var x_pole_dist = 10.0
 	var z_pole_dist = 10.0
 	var y_pole_dist = 5.0
 
-	# FIXME: MIRRORING MESS
-	var tracker_to_use_right : Node3D = $Hand_Right
-	var tracker_to_use_left : Node3D = $Hand_Left
-	
 	# FIXME: Hack hack hack hack hack hack
 	for k in range(1, 3):
 
-		var tracker_to_use = tracker_to_use_left
+		var tracker_to_use = $Hand_Left
 		var compensation_alpha_scale = 1.0
 		var pole_target_x = x_pole_dist
 		if k == 2: # FIXME: Hack.
-			tracker_to_use = tracker_to_use_right
+			tracker_to_use = $Hand_Right
 			compensation_alpha_scale *= -1.0
 			pole_target_x = -x_pole_dist
 
@@ -257,10 +354,7 @@ func _process(delta : float) -> void:
 				skel.set_bone_pose_rotation(shoulder_bone_index, 
 					Quaternion(Vector3(0.0, 0.0, 1.0), (tracker_local_chest.origin.y - shoulder_y) * 2.0 * rotation_scale) *
 					skel.get_bone_rest(shoulder_bone_index).basis.get_rotation_quaternion())
-			
-		
-		
-		
+
 		var pole_target_y = -y_pole_dist
 		var pole_target_z = -z_pole_dist
 
@@ -287,34 +381,15 @@ func _process(delta : float) -> void:
 		_ikchains[k].pole_direction_target = Vector3(
 			pole_target_x, pole_target_y, pole_target_z)
 
-
+	# FIXME: Fix this comment.
 	# Do hand stuff.
 	if do_hands:
-
-		# FIXME: This is gross.
-		var hands = [ \
-			[ "Left", hand_landmarks_left, $Hand_Left, Basis() ], # FIXME: Remove the last value.
-			[ "Right", hand_landmarks_right, $Hand_Right, Basis() ]]  # FIXME: Remove the last value.
-
-		for hand in hands:
-			update_hand(hand, skel)
-
-
-
+		update_hand(hand_landmarks_left, "Left")
+		update_hand(hand_landmarks_right, "Right")
 
 	# Solve all IK chains.
 	for chain in _ikchains:
 		chain.do_ik_chain()
-
-
-
-
-
-
-
-
-
-
 
 	# ---------------------------------------------------------------------------------------------
 	# Handle Leaning
@@ -325,13 +400,10 @@ func _process(delta : float) -> void:
 	var lean_amount : float = sin(lean_check_axis.dot(head_offset))
 	handle_lean(skel, lean_amount * lean_scale)
 
-
-
-
 func _reinit() -> void:
+	_reset_hand_landmarks()
 	_setup_ik_chains()
 	_init_complete = true
-
 
 func _setup_ik_chains():
 
@@ -367,10 +439,6 @@ func _setup_ik_chains():
 
 	var hand_tracker_left : Node3D = $Hand_Left
 	var hand_tracker_right : Node3D = $Hand_Right
-
-	# Make sure finger landmarks exist already.
-	_reset_hand_landmarks()
-
 
 	for side in [ "Left", "Right" ]:
 
@@ -464,198 +532,24 @@ func handle_lean(skel : Skeleton3D, angle : float):
 	while current_bone != hips_bone and current_bone != -1:
 		bone_count += 1
 		current_bone = skel.get_bone_parent(current_bone)
-	
+
 	angle /= float(bone_count)
-	
+
 	current_bone = skel.find_bone("Head")
 	while current_bone != hips_bone and current_bone != -1:
 		rotate_bone_in_global_space(skel, current_bone, Vector3(0.0, 0.0, 1.0), angle, true)
 		current_bone = skel.get_bone_parent(current_bone)
 
-
-
-
-func update_hand(hand, skel : Skeleton3D):
-	var mark_counter = 0
-
-	var which_hand = hand[0].to_lower()
-
-	var hand_landmark_rotation_to_use = hand[3]
-	var hand_landmarks = hand[1]
-
-	#for mark in parsed_data["hand_landmarks_" + which_hand]:
-		#
-		## FIXME: Remove this.
-		### Add any missing landmarks
-		##if len(hand_landmarks) < mark_counter + 1:
-			##var new_mesh_instance = MeshInstance3D.new()
-			##hand[2].add_child(new_mesh_instance)
-			##hand_landmarks.append(new_mesh_instance)
-		#
-		## Update debug visibility.
-		#for landmark in hand_landmarks:
-			#if landmark.mesh == null and debug_visible_hand_trackers:
-				#landmark.mesh = SphereMesh.new()
-				#landmark.mesh.radius = 0.004
-				#landmark.mesh.height = landmark.mesh.radius * 2.0
-				#landmark.material_override = preload(
-					#"MediaPipeTrackerMaterial.tres")
-			#elif landmark.mesh != null and (not debug_visible_hand_trackers):
-				#landmark.mesh = null
-		#
-		#var marker = hand_landmarks[mark_counter]
-		#
-		#var marker_old_worldspace = marker.global_transform.origin
-		#
-		#var marker_original_local = Vector3(mark[0], mark[1], mark[2]) # FIXME: Add a scaling value.
-#
-		## FIXME: WHY THE HECK DO WE HAVE TO DO DO THIS!?!?!?!?!?!?!?!?!?!?!?!?!!!??!?!?!?!?!?!
-		#if which_hand == "right":
-			#marker_original_local[0] *= -1
-			#marker_original_local[1] *= -1
-			#marker_original_local[2] *= -1
-	#
-		#var marker_new_local = hand_landmark_rotation_to_use * \
-			#marker_original_local
-		#var marker_new_worldspace = marker.get_parent().transform * marker_new_local
-		#
-##						marker.transform.origin = \
-##							hand_landmark_rotation_to_use * \
-##							(Vector3(mark[0], mark[1], mark[2]) * hand_landmark_position_multiplier)
-		#marker.global_transform.origin = lerp( \
-			#marker_old_worldspace, \
-			#marker_new_worldspace, \
-			#0.25) # FIXME: Hardcoded smoothing
-		#
-		#mark_counter += 1
-
-	# FIXME: I have no idea what these columns mean anymore.
-	var finger_bone_array_array = [
-		[
-			{
-				"bone_name_current" : "IndexProximal",
-				"landmark_index_start" : 5,
-				"landmark_index_end"  : 6,
-				"bone_name_next" : "IndexIntermediate",
-				"bone_name_parent_of_next" : "IndexProximal"
-			},
-			{
-				"bone_name_current" : "IndexIntermediate",
-				"landmark_index_start" : 6,
-				"landmark_index_end"  : 7,
-				"bone_name_next" : "IndexDistal",
-				"bone_name_parent_of_next" : "IndexIntermediate"
-			},
-			{
-				"bone_name_current" : "IndexDistal",
-				"landmark_index_start" : 7,
-				"landmark_index_end"  : 8,
-				"bone_name_next" : "IndexDistal",
-				"bone_name_parent_of_next" : "IndexIntermediate"
-			}
-		],
-		[
-			{
-				"bone_name_current" : "MiddleProximal",
-				"landmark_index_start" : 9,
-				"landmark_index_end"  : 10,
-				"bone_name_next" : "MiddleIntermediate",
-				"bone_name_parent_of_next" : "MiddleProximal"
-			},
-			{
-				"bone_name_current" : "MiddleIntermediate",
-				"landmark_index_start" : 10,
-				"landmark_index_end"  : 11,
-				"bone_name_next" : "MiddleDistal",
-				"bone_name_parent_of_next" : "MiddleIntermediate"
-			},
-			{
-				"bone_name_current" : "MiddleDistal",
-				"landmark_index_start" : 11,
-				"landmark_index_end"  : 12,
-				"bone_name_next" : "MiddleDistal",
-				"bone_name_parent_of_next" : "MiddleIntermediate"
-			}
-		],
-		[
-			{
-				"bone_name_current" : "RingProximal",
-				"landmark_index_start" : 13,
-				"landmark_index_end"  : 14,
-				"bone_name_next" : "RingIntermediate",
-				"bone_name_parent_of_next" : "RingProximal"
-			},
-			{
-				"bone_name_current" : "RingIntermediate",
-				"landmark_index_start" : 14,
-				"landmark_index_end"  : 15,
-				"bone_name_next" : "RingDistal",
-				"bone_name_parent_of_next" : "RingIntermediate"
-			},
-			{
-				"bone_name_current" : "RingDistal",
-				"landmark_index_start" : 15,
-				"landmark_index_end"  : 16,
-				"bone_name_next" : "RingDistal",
-				"bone_name_parent_of_next" : "RingIntermediate"
-			}
-		],
-		[
-			{
-				"bone_name_current" : "LittleProximal",
-				"landmark_index_start" : 17,
-				"landmark_index_end"  : 18,
-				"bone_name_next" : "LittleIntermediate",
-				"bone_name_parent_of_next" : "LittleProximal"
-			},
-			{
-				"bone_name_current" : "LittleIntermediate",
-				"landmark_index_start" : 18,
-				"landmark_index_end"  : 19,
-				"bone_name_next" : "LittleDistal",
-				"bone_name_parent_of_next" : "LittleIntermediate"
-			},
-			{
-				"bone_name_current" : "LittleDistal",
-				"landmark_index_start" : 19,
-				"landmark_index_end"  : 20,
-				"bone_name_next" : "LittleDistal",
-				"bone_name_parent_of_next" : "LittleIntermediate"
-			}
-		],
-		[
-			# FIXME: Metacarpal *origin* needs to change relative to hand as well.
-			{
-				"bone_name_current" : "ThumbMetacarpal",
-				"landmark_index_start" : 1,
-				"landmark_index_end"  : 2,
-				"bone_name_next" : "ThumbProximal",
-				"bone_name_parent_of_next" : "ThumbMetacarpal"
-			},
-			{
-				"bone_name_current" : "ThumbProximal",
-				"landmark_index_start" : 2,
-				"landmark_index_end"  : 3,
-				"bone_name_next" : "ThumbDistal",
-				"bone_name_parent_of_next" : "ThumbProximal"
-			},
-			{
-				"bone_name_current" : "ThumbDistal",
-				"landmark_index_start" : 3,
-				"landmark_index_end"  : 4,
-				"bone_name_next" : "ThumbDistal",
-				"bone_name_parent_of_next" : "ThumbProximal"
-			},
-		]
-	]
+func update_hand(hand_landmarks : Array, which_hand : String):
 
 	if len(hand_landmarks) < 21:
 		return
 
 	for finger_bone_array in finger_bone_array_array:
-		update_finger_chain(finger_bone_array, hand, hand_landmarks, which_hand)
+		_update_finger_chain(finger_bone_array, hand_landmarks, which_hand)
 
-func update_finger_chain(finger_bone_array : Array, hand, hand_landmarks, which_hand):
+## Update a single chain of finger bones based on hand tracking landmarks.
+func _update_finger_chain(finger_bone_array : Array, hand_landmarks : Array, which_hand : String) -> void:
 
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
 
@@ -665,7 +559,7 @@ func update_finger_chain(finger_bone_array : Array, hand, hand_landmarks, which_
 
 	for finger_bone in finger_bone_array:
 
-		var hand_name : String = hand[0]
+		var hand_name : String = which_hand
 		var finger_bone_to_modify_base : String = finger_bone["bone_name_current"]
 		var finger_bone_to_modify : String = hand_name + finger_bone_to_modify_base
 
@@ -736,12 +630,7 @@ func update_finger_chain(finger_bone_array : Array, hand, hand_landmarks, which_
 		# Convert that to a rotation offset from the rest rotation.
 		var global_rotation_from_rest = skel.get_bone_global_rest(bone_to_modify_index).basis * rotation_axis_local
 
-		# Set the rotation.
-		var hand_index = 1
-		if which_hand == "left":
-			hand_index = 0
-
-		if not tracker_dict["hand_" + which_hand]["active"]:
+		if not tracker_dict["hand_" + which_hand.to_lower()]["active"]:
 			skel.set_bone_pose_rotation(bone_to_modify_index, Basis())
 		else:
 			rotate_bone_in_global_space(skel, bone_to_modify_index, global_rotation_from_rest, -angle_between)

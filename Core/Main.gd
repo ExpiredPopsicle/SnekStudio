@@ -601,7 +601,12 @@ func load_settings(path : String = ""):
 				"name": "AnimationApplier",
 				"scene_path": "res://Mods/AnimationApplier/AnimationApplier.tscn",
 				"settings": { }
-			}
+			},
+			{
+				"name": "PoseIk",
+				"scene_path": "res://Mods/PoseIK/PoseIK.tscn",
+				"settings": { }
+			},
 		]}
 
 	if file:
