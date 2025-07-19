@@ -391,8 +391,8 @@ func _setup_ik_chains():
 	
 	var chain_spine : MediaPipeController_IKChain = MediaPipeController_IKChain.new()
 	chain_spine.skeleton = get_skeleton()
-	chain_spine.base_bone = "Hips"
-	chain_spine.tip_bone = "Head"
+	chain_spine.base_bone_index = get_skeleton().find_bone("Hips")
+	chain_spine.tip_bone_index = get_skeleton().find_bone("Head")
 	chain_spine.rotation_low = 0.0 * PI
 	chain_spine.rotation_high = 2.0 * PI
 	chain_spine.do_yaw = true
@@ -427,8 +427,8 @@ func _setup_ik_chains():
 
 		var chain_hand = MediaPipeController_IKChain.new()
 		chain_hand.skeleton = get_skeleton()
-		chain_hand.base_bone = side + "UpperArm"
-		chain_hand.tip_bone = side + "Hand"
+		chain_hand.base_bone_index = get_skeleton().find_bone(side + "UpperArm")
+		chain_hand.tip_bone_index = get_skeleton().find_bone(side + "Hand")
 		#chain_hand.tip_bone = side + "IndexProximal"
 		chain_hand.rotation_low = 0.05 * PI
 		chain_hand.rotation_high = 2.0 * 0.99 * PI
@@ -937,7 +937,7 @@ func _process(delta):
 			var tracker_local_position = \
 				skel.get_global_transform().inverse() * tracker_to_use.get_global_transform()
 			var base_bone_position = skel.get_bone_global_pose(
-				skel.find_bone(_ikchains[k].base_bone)).origin
+				_ikchains[k].base_bone_index).origin
 			#print(tracker_local_position.origin.x - bone_position.x)
 			
 			# See if we can raise the shoulders for when arms go too far up.

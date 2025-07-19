@@ -3,8 +3,8 @@ class_name MediaPipeController_IKChain
 
 # FIXME: We pass this around internally a bunch and don't need to.
 var skeleton : Skeleton3D = null
-var base_bone : String
-var tip_bone : String
+var base_bone_index : int
+var tip_bone_index : int
 
 var tracker_object : Node = null
 
@@ -332,8 +332,6 @@ func do_ik_chain():
 	if _calculated_distance_to_angle_mappings == null:	
 		evaluate_bone_chain_limit()
 	
-	var base_bone_index = skeleton.find_bone(base_bone)
-	var tip_bone_index = skeleton.find_bone(tip_bone)
 	var current_bone_index = tip_bone_index
 
 	# Reset all rotations.
@@ -490,9 +488,6 @@ func attempt_spine_rotation(
 		
 func evaluate_bone_chain_limit():
 	
-	var base_bone_index = skeleton.find_bone(base_bone)
-	var tip_bone_index = skeleton.find_bone(tip_bone)
-	
 	var n = rotation_low
 	
 	var found_max_extension_angle = 0.0
@@ -562,11 +557,6 @@ func evaluate_bone_chain_limit():
 func reset_bone_chain(
 	skel : Skeleton3D,
 	base_bone_index, tip_bone_index):
-
-	if base_bone_index is String:
-		base_bone_index = skel.find_bone(base_bone_index)
-	if tip_bone_index is String:
-		tip_bone_index = skel.find_bone(tip_bone_index)
 
 	var current_bone_index = tip_bone_index
 	while current_bone_index != -1:
