@@ -3,6 +3,8 @@ class_name ModelController
 
 var _last_loaded_vrm = ""
 
+var _bone_name_to_idx_map = {}
+
 func _set_lod_bias_recursively(node):
 	if node is MeshInstance3D:
 		node.lod_bias = 128
@@ -41,6 +43,24 @@ func load_vrm(path) -> Node3D:
 		8 | #EditorSceneFormatImporter.IMPORT_GENERATE_TANGENT_ARRAYS |
 		2) #EditorSceneFormatImporter.IMPORT_ANIMATION) #16 #EditorSceneFormatImporter.IMPORT_USE_NAMED_SKIN_BINDS)
 
+	# The json of GLTF's VRM extension contains a VRM-bone <-> bone-index mapping
+	var bone_name_to_idx_map: Dictionary = {}
+	var vrm_dict: Dictionary = state.json.extensions.get("VRM", {})
+	if not vrm_dict.is_empty():
+		# VRM 0.0
+		var human_bones = vrm_dict.humanoid.humanBones
+		for bone_data in human_bones:
+			var bone = bone_data["bone"]
+			var idx = bone_data["node"]
+			bone_name_to_idx_map[bone] = idx
+	else:
+		# VRM 1.0
+		vrm_dict = state.json.extensions.get("VRMC_vrm")
+		var human_bones = vrm_dict.humanoid.humanBones
+		for bone in human_bones:
+			var idx = human_bones[bone]["node"]
+			bone_name_to_idx_map[bone] = idx
+
 	var generated_scene = null
 	if err == OK:
 		
@@ -58,6 +78,7 @@ func load_vrm(path) -> Node3D:
 		generated_scene = gltf.generate_scene(state)
 		generated_scene.name = "Model"
 		add_child(generated_scene)
+		_bone_name_to_idx_map = bone_name_to_idx_map
 
 	# Cleanup.
 	GLTFDocument.unregister_gltf_document_extension(vrm_extension)
