@@ -390,10 +390,14 @@ func get_model() -> Node3D:
 	var controller = get_app().get_node("ModelController")
 	return controller.get_node_or_null("Model")
 
-func get_bone_transform(bone_name) -> Transform3D:
+func get_bone_idx_from_name(bone_name: String) -> int:
+	var controller = get_app().get_node("ModelController")
+	return controller.find_mapped_bone_index(bone_name)
+
+func get_bone_transform(bone_name: String) -> Transform3D:
 	var skeleton = get_skeleton()
 	if skeleton:
-		var bone_index = skeleton.find_bone(bone_name)
+		var bone_index = get_bone_idx_from_name(bone_name)
 		if bone_index != -1:
 			return skeleton.get_bone_global_pose(bone_index)
 	return Transform3D()

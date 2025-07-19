@@ -121,35 +121,7 @@ func get_skeleton() -> Skeleton3D:
 # Find a bone index based on the VRM bone name. This can be different from the
 # bone name on the model itself. These names match the Unity humanoid.
 func find_mapped_bone_index(bone_name : String):
-	var bone_mapping = $Model.vrm_meta.humanoid_bone_mapping
-
-	# Forcefully convert the bone name into the form of one uppercase letter
-	# then all lowercase. eg foo -> Foo, FOO -> Foo, etc. This seems to be
-	# the convention of the VRM importer or just the exporter I'm using.
-	#var fixed_bone_name = bone_name[0].to_lower() + bone_name.substr(1)
-	var fixed_bone_name = bone_name
-
-	var skeleton : Skeleton3D = get_skeleton()
-	
-	var bone_index = bone_mapping.profile.find_bone(fixed_bone_name)
-	if bone_index != -1:
-		
-		var mapped_bone_name = bone_mapping.get_skeleton_bone_name(fixed_bone_name)
-		if mapped_bone_name != "":
-			#var mapped_bone_name = bone_mapping[fixed_bone_name]
-		
-			var bone_index2 = skeleton.find_bone(mapped_bone_name)
-			#print("  MAPPED BONE: ", mapped_bone_name, " ", bone_index2)
-			if bone_index2 != -1:
-				return bone_index2
-
-	# Couldn't find the mapped bone name. Attempt to find the bone directly on
-	# the model.
-	var bone_index3 = skeleton.find_bone(fixed_bone_name)
-	if bone_index3 != -1:
-		return bone_index3
-
-	return -1
+	return _bone_name_to_idx_map.get(bone_name, -1)
 
 ## Get a bone's "global" (local to the skeleton objectm not the scene) pose.
 func get_bone_transform(bone_name : String):
