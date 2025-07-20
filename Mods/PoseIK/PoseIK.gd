@@ -1,4 +1,5 @@
 extends Mod_Base
+class_name Mod_PoseIK
 
 var lean_scale : float = 4.0
 var chest_yaw_scale : float = 0.3
@@ -640,3 +641,9 @@ func _update_finger_chain(finger_bone_array : Array, hand_landmarks : Array, whi
 			rotate_bone_in_global_space(skel, bone_to_modify_index, global_rotation_from_rest, -angle_between)
 
 		is_first_bone = false
+
+func check_configuration() -> PackedStringArray:
+	var errors : PackedStringArray = []
+	if not check_mod_dependency("Mod_MediaPipeController", false):
+		errors.append("No MediaPipeController detected before PoseIK. There is nothing to feed tracker data into the PoseIK system.")
+	return errors

@@ -205,6 +205,9 @@ func check_configuration() -> PackedStringArray:
 	if not check_mod_dependency("Mod_AnimationApplier", true):
 		errors.append("No AnimationApplier detected, or detected before MediaPipeController. Blend shapes will not function as expected.")
 
+	if not check_mod_dependency("Mod_PoseIK", true):
+		errors.append("No PoseIK module detected after MediaPipeController. This is required to pose the model based on the MediaPipeController tracker data.")
+
 	return errors
 
 func save_before(_settings_current: Dictionary):
