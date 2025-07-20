@@ -438,25 +438,6 @@ func do_ik_chain():
 	if do_bone_roll:
 		chain_distribute_bone_roll(base_bone_index, tip_bone_index)
 
-
-# This function will rotate a bone in the global (skeleton object) coordiate
-# space, as though it were in its rest position. So hardcoded Y axis can be
-# used for elbow, hardcoded X axis can be used for spine, etc.
-func rotate_bone_in_global_space(
-	skel : Skeleton3D,
-	bone_index : int,
-	axis : Vector3,
-	angle : float):
-
-	var parent_bone_index = skel.get_bone_parent(bone_index)	
-	var gs_rotation = Basis(axis.normalized(),  angle).get_rotation_quaternion()
-	var gs_rotation_parent = skel.get_bone_global_rest(parent_bone_index).basis.get_rotation_quaternion()
-	var gs_rotation_rest = skel.get_bone_global_rest(bone_index).basis.get_rotation_quaternion()
-	var bs_rotation = gs_rotation_parent.inverse() * gs_rotation * gs_rotation_rest
-	skel.set_bone_pose_rotation(
-		bone_index,
-		bs_rotation)
-
 func attempt_spine_rotation(
 	skel : Skeleton3D,
 	rotation_amount, base_bone_index,
@@ -478,7 +459,7 @@ func attempt_spine_rotation(
 	rotation_amount /= bone_count
 	
 	while current_bone_index != -1 and current_bone_index != base_bone_index:
-		rotate_bone_in_global_space(skel, current_bone_index, main_axis_of_rotation, rotation_amount)
+		Mod_PoseIK.	rotate_bone_in_global_space(skel, current_bone_index, main_axis_of_rotation, rotation_amount)
 		current_bone_index = skel.get_bone_parent(current_bone_index)
 		last_bone = current_bone_index
 	

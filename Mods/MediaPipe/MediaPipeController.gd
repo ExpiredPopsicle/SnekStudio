@@ -606,32 +606,6 @@ func process_new_packets(delta):
 # -----------------------------------------------------------------------------
 # Actual update code.
 
-
-func rotate_bone_in_global_space(
-	skel : Skeleton3D,
-	bone_index : int,
-	axis : Vector3,
-	angle : float,
-	relative : bool = false):
-
-	if axis.length() <= 0.0001:
-		return
-
-	var parent_bone_index = skel.get_bone_parent(bone_index)	
-	var gs_rotation = Basis(axis.normalized(),  angle).get_rotation_quaternion()
-	var gs_rotation_parent = skel.get_bone_global_rest(parent_bone_index).basis.get_rotation_quaternion()
-	var gs_rotation_rest = skel.get_bone_global_rest(bone_index).basis.get_rotation_quaternion()
-	var bs_rotation = gs_rotation_parent.inverse() * gs_rotation * gs_rotation_rest
-	
-	if relative:
-		skel.set_bone_pose_rotation(
-			bone_index,
-			skel.get_bone_pose_rotation(bone_index) * bs_rotation)
-	else:
-		skel.set_bone_pose_rotation(
-			bone_index,
-			bs_rotation)
-
 func _start_process():
 	tracker_python_process.start_process(false)
 	_send_settings_to_tracker()
@@ -667,7 +641,6 @@ func _process(delta):
 
 		# Bail out early.
 		return
-
 
 	process_new_packets(delta)
 
@@ -769,10 +742,6 @@ func _process(delta):
 			[ "Right", hand_landmarks_right, $Hand_Right, Basis() ]]  # FIXME: Remove the last value.
 		for hand in hands:
 			update_hand(hand, parsed_data, skel)
-
-
-
-
 
 	# ---------------------------------------------------------------------------------------------
 	# Send tracker data down the pipe.

@@ -499,10 +499,10 @@ func _reset_hand_landmarks():
 	assert(len(hand_landmarks_left) == 21)
 	assert(len(hand_landmarks_right) == 21)
 
-
-
-
-func rotate_bone_in_global_space(
+# This function will rotate a bone in the global (skeleton object) coordiate
+# space, as though it were in its rest position. So hardcoded Y axis can be
+# used for elbow, hardcoded X axis can be used for spine, etc.
+static func rotate_bone_in_global_space(
 	skel : Skeleton3D,
 	bone_index : int,
 	axis : Vector3,
@@ -517,7 +517,7 @@ func rotate_bone_in_global_space(
 	var gs_rotation_parent = skel.get_bone_global_rest(parent_bone_index).basis.get_rotation_quaternion()
 	var gs_rotation_rest = skel.get_bone_global_rest(bone_index).basis.get_rotation_quaternion()
 	var bs_rotation = gs_rotation_parent.inverse() * gs_rotation * gs_rotation_rest
-	
+
 	if relative:
 		skel.set_bone_pose_rotation(
 			bone_index,
