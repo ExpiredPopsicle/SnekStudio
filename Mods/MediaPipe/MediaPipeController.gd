@@ -27,6 +27,8 @@ var _init_complete = false
 var frames_missing_before_spine_reset = 6.0
 var blend_to_rest_speed = 4.5
 
+# FIXME: Prune unused settings.
+
 # Settings stuff
 @export var mirror_mode : bool = true
 @export var arm_rest_angle : float = 60
@@ -39,8 +41,6 @@ var video_device = Array() # It's an array that we only ever put one thing in.
 var blendshape_calibration = {}
 
 var debug_visible_hand_trackers = false
-
-# TODO: Add settings for these
 
 var do_ik_curve = true
 var do_yaw_global = true
@@ -64,10 +64,6 @@ var hand_count_change_time_threshold = 1.0
 var hand_rotation_smoothing : float = 2.0
 var hand_position_smoothing : float = 4.0
 
-#var chest_yaw_scale : float = 0.25
-#var hip_adjustment_speed : float = 1.0
-
-
 var hand_position_scale : Vector3 = Vector3(7.0, 7.0, 3.5)
 var hand_position_offset : Vector3 = Vector3(0.0, -0.14, 0.0)
 var hand_to_head_scale : float = 2.0
@@ -78,9 +74,8 @@ var last_packet_received = null
 
 # What we should show in the new error/warning reporting.
 var _current_error_to_show : String = ""
-#
-#var hack_reset_hips_every_frame : bool = true
-#var hack_reset_shoulders_every_frame : bool = true
+
+#region Standard Interface Implementation
 
 func _ready():
 
@@ -217,43 +212,6 @@ func save_before(_settings_current: Dictionary):
 static func _vec3_to_array(vec : Vector3):
 	return [vec[0], vec[1], vec[2]]
 
-func _send_settings_to_tracker():
-
-	# Don't send these if the tracker process isn't running. We'll send them
-	# after it starts, instead (called in _start_process).
-	if tracker_python_process.get_status() != KiriPythonWrapperInstance.KiriPythonWrapperStatus.STATUS_RUNNING:
-		return
-
-	# Clear out video device setting if it doesn't exist in the list of video
-	# devices.
-	if len(video_device):
-		if not video_device[0] in _devices_by_list_entry.keys():
-			video_device.clear()
-
-	# Set the video device.
-	if len(video_device):
-		var actual_device_data = _devices_by_list_entry[video_device[0]]
-		tracker_python_process.call_rpc_async(
-			"set_video_device_number", [actual_device_data["index"]])
-	else:
-		# If no camera selected, then select device -1.
-		tracker_python_process.call_rpc_async(
-			"set_video_device_number", [-1])
-
-	tracker_python_process.call_rpc_async(
-		"set_hand_confidence_time_threshold", [hand_confidence_time_threshold])
-		
-	tracker_python_process.call_rpc_async(
-		"set_hand_count_change_time_threshold", [hand_count_change_time_threshold])
-
-	# FIXME: Replace all of the above with this one call.
-	tracker_python_process.call_rpc_async(
-		"update_settings", [{
-			"hand_position_scale"  : _vec3_to_array(hand_position_scale),
-			"hand_position_offset" : _vec3_to_array(hand_position_offset),
-			"hand_to_head_scale"   : hand_to_head_scale
-		}])
-
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	super.load_after(_settings_old, _settings_new)
 	_update_arm_rest_positions()
@@ -284,7 +242,7 @@ func scene_init():
 		if udp_error != OK:
 			_udp_port += 1
 
-	start_tracker()
+	_start_tracker()
 
 	blend_shape_last_values = {}
 	last_parsed_data = {}
@@ -309,7 +267,7 @@ func scene_init():
 
 func scene_shutdown():
 
-	stop_tracker()
+	_stop_tracker()
 
 	_stop_process()
 
@@ -332,8 +290,9 @@ func scene_shutdown():
 
 	_init_complete = false
 
-# -----------------------------------------------------------------------------
-# Post-load model setup.
+#endregion
+
+#region Post-Load Model Setup
 
 func _update_arm_rest_positions():
 	var skel : Skeleton3D = get_skeleton()
@@ -378,8 +337,9 @@ func _calibrate_face():
 	for blendshape in data.keys():
 		blendshape_calibration[blendshape] = (data[blendshape].reduce(func(accum, number): return accum + number, 0)) / 2.0
 
-# -----------------------------------------------------------------------------
-# Tracker process interop.
+#endregion
+
+#region Tracker Process Interop
 
 func _scan_video_devices():
 
@@ -398,7 +358,7 @@ func _scan_video_devices():
 	_devices_list.insert(0, "None")
 	_devices_by_list_entry["None"] = { "index" : -1 }
 
-func start_tracker():
+func _start_tracker():
 	
 	tracker_python_process.call_rpc_async(
 		"set_udp_port_number", [_udp_port])
@@ -424,17 +384,55 @@ func start_tracker():
 	tracker_python_process.call_rpc_async(
 		"start_tracker", [])
 
-func stop_tracker():
+func _stop_tracker():
 
 	tracker_python_process.call_rpc_sync(
 		"stop_tracker", [])
 
 	set_status("Stopped")
 
+func _send_settings_to_tracker():
 
+	# Don't send these if the tracker process isn't running. We'll send them
+	# after it starts, instead (called in _start_process).
+	if tracker_python_process.get_status() != KiriPythonWrapperInstance.KiriPythonWrapperStatus.STATUS_RUNNING:
+		return
 
+	# Clear out video device setting if it doesn't exist in the list of video
+	# devices.
+	if len(video_device):
+		if not video_device[0] in _devices_by_list_entry.keys():
+			video_device.clear()
 
-func mirror_parsed_data(parsed_data : Dictionary) -> Dictionary:
+	# Set the video device.
+	if len(video_device):
+		var actual_device_data = _devices_by_list_entry[video_device[0]]
+		tracker_python_process.call_rpc_async(
+			"set_video_device_number", [actual_device_data["index"]])
+	else:
+		# If no camera selected, then select device -1.
+		tracker_python_process.call_rpc_async(
+			"set_video_device_number", [-1])
+
+	tracker_python_process.call_rpc_async(
+		"set_hand_confidence_time_threshold", [hand_confidence_time_threshold])
+		
+	tracker_python_process.call_rpc_async(
+		"set_hand_count_change_time_threshold", [hand_count_change_time_threshold])
+
+	# FIXME: Replace all of the above with this one call.
+	tracker_python_process.call_rpc_async(
+		"update_settings", [{
+			"hand_position_scale"  : _vec3_to_array(hand_position_scale),
+			"hand_position_offset" : _vec3_to_array(hand_position_offset),
+			"hand_to_head_scale"   : hand_to_head_scale
+		}])
+
+#endregion
+
+#region Update Code
+
+static func _mirror_parsed_data(parsed_data : Dictionary) -> Dictionary:
 
 	var new_parsed_data : Dictionary = parsed_data.duplicate(true)
 
@@ -518,7 +516,7 @@ func _process_single_packet(delta : float, parsed_data : Dictionary):
 
 	# -----------------
 	if mirror_mode:
-		parsed_data = mirror_parsed_data(parsed_data)
+		parsed_data = _mirror_parsed_data(parsed_data)
 
 	last_parsed_data["head_quat"] = parsed_data["head_quat"]
 	last_parsed_data["head_origin"] = parsed_data["head_origin"]
@@ -566,7 +564,7 @@ func _process_single_packet(delta : float, parsed_data : Dictionary):
 
 	_current_error_to_show = ""
 
-func process_new_packets(delta):
+func _process_new_packets(delta):
 	var most_recent_packet = null
 	var dropped_packets = 0
 
@@ -602,9 +600,6 @@ func process_new_packets(delta):
 	var blend_shapes_to_apply : Dictionary = get_global_mod_data("BlendShapes")
 	blend_shapes_to_apply.clear()
 	blend_shapes_to_apply.merge(blend_shape_last_values, true)
-
-# -----------------------------------------------------------------------------
-# Actual update code.
 
 func _start_process():
 	tracker_python_process.start_process(false)
@@ -642,7 +637,7 @@ func _process(delta):
 		# Bail out early.
 		return
 
-	process_new_packets(delta)
+	_process_new_packets(delta)
 
 	var delta_scale = delta * 60.0
 	if delta_scale > 1.0:
@@ -741,7 +736,7 @@ func _process(delta):
 			[ "Left", hand_landmarks_left, $Hand_Left, Basis() ], # FIXME: Remove the last value.
 			[ "Right", hand_landmarks_right, $Hand_Right, Basis() ]]  # FIXME: Remove the last value.
 		for hand in hands:
-			update_hand(hand, parsed_data, skel)
+			_update_hand(hand, parsed_data, skel)
 
 	# ---------------------------------------------------------------------------------------------
 	# Send tracker data down the pipe.
@@ -808,6 +803,8 @@ func _process(delta):
 				var landmark_name : String = side + "_" + mediapipe_hand_landmark_names[landmark_index]
 				trackers["finger_positions"][landmark_name] = finger_tracker.global_transform.origin
 
+#endregion
+
 #region Hands
 
 func _reset_hand_landmarks():
@@ -838,8 +835,7 @@ func _reset_hand_landmarks():
 	assert(len(hand_landmarks_left) == 21)
 	assert(len(hand_landmarks_right) == 21)
 
-
-func update_hand(hand, parsed_data, skel : Skeleton3D):
+func _update_hand(hand, parsed_data, skel : Skeleton3D):
 	var mark_counter = 0
 
 	var which_hand = hand[0].to_lower()
