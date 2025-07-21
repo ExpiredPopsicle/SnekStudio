@@ -92,6 +92,7 @@ focus_mode = 0
 theme_override_font_sizes/font_size = 10
 text = "x"
 
+[connection signal="gui_input" from="." to="." method="_on_gui_input"]
 [connection signal="resized" from="." to="." method="_on_resized"]
 [connection signal="gui_input" from="WindowBorder" to="." method="_on_window_border_gui_input"]
 [connection signal="mouse_entered" from="WindowBorder" to="." method="_on_window_border_mouse_entered"]

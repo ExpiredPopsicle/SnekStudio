@@ -975,7 +975,7 @@ func _import_post(gstate: GLTFState, node: Node) -> Error:
 	root_node.set("vrm_meta", vrm_meta)
 
 	if vrm_extension.has("secondaryAnimation") and (vrm_extension["secondaryAnimation"].get("colliderGroups", []).size() > 0 or vrm_extension["secondaryAnimation"].get("boneGroups", []).size() > 0):
-		var secondary_node: Node = root_node.get_node("secondary")
+		var secondary_node: Node = root_node.get_node_or_null("secondary")
 		if secondary_node == null:
 			secondary_node = Node3D.new()
 			root_node.add_child(secondary_node, true)

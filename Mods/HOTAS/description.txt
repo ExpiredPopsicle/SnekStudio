@@ -1,0 +1,3 @@
+Work-in-progress support for adding animations of your model controlling HOTAS-style controllers.
+
+DO NOT USE YET. WORK IN PROGRESS.

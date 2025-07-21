@@ -38,54 +38,17 @@ func _ready():
 	
 	# Search those directories for any throwable objects, and load them.
 	for path_to_list in folders_with_throwables:
-		print(path_to_list)
-		#var dir = DirAccess.open(path_to_list)
-		#if dir:
-			#dir.list_dir_begin()
-			#var file_name = dir.get_next()
-			#while file_name != "":
-				#if not dir.current_is_dir():
-		var diraccess = DirAccessWithMods.new()
-		var filelist = diraccess.get_file_list(path_to_list)
+
+		var filelist = DirAccessWithMods.get_file_list(path_to_list)
 		for file_name in filelist:
-			var full_path = path_to_list.path_join(file_name)
-			print("Checking ", full_path)
-			
+
 			# Load scene files directly.
 			if file_name.get_extension() == "tscn":
-				#var local_path = ProjectSettings.localize_path(full_path)
-				
-				#var local_path = full_path.substr(
-				#	0, len(OS.get_executable_path().get_base_dir()))
 				var local_path = path_to_list.path_join(file_name)
 				throwable_list.append(local_path)
-				print("local path: ", local_path)
-			
-			# TODO: Load JSON files... differently.
-			
-#					# TODO: Load loose GLTFs, OBJs, and PNGs.
-#					if file_name.get_extension() == "obj":
-#						print("Got an OBJ?")
-#						var loaded_obj = load(full_path)
-#						print(loaded_obj)
-#
-#					if file_name.get_extension() == "gltf":
-#						print("Got a GLTF?")
-#						var loaded_obj = load(full_path)
-#						print(loaded_obj)
-#
-#					if file_name.get_extension() == "glb":
-#						print("Got a GLB?")
-#						var loaded_obj = load(full_path)
-#						print(loaded_obj)
-#
-#					if file_name.get_extension() == "vrm":
-#						print("Got a VRM?")
-#						var loaded_obj = load(full_path)
-#						print(loaded_obj)
-			
-				#file_name = dir.get_next()
-	
+
+			# TODO: Add GLTF, OBJ, PNG, and VRM support.
+
 func handle_channel_point_redeem(_redeemer_username, _redeemer_display_name, redeem_title, _user_input):
 	
 	if not bit_redeem:
