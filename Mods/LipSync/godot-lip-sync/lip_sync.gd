@@ -492,7 +492,7 @@ func _process(_delta: float) -> void:
 		visemes[i] = lerp(old_weight, new_weight, slew_scale)
 		if BASIC_VRM_MAPPING[i] == "":
 			continue
-		current_basic_vrm_values[BASIC_VRM_MAPPING[i]] = visemes[i]
+		current_basic_vrm_values[BASIC_VRM_MAPPING[i]] = visemes[i] * viseme_weight_multiplier
 		
 	_convert_visemes_to_mediapipe_shapes()
 
