@@ -32,9 +32,20 @@ var engine_viseme_weight_multiplier : float = 4.0:
 	get:
 		return engine_viseme_weight_multiplier
 
+var input_device : Array = Array()
+
 var viseme_progressbars : Dictionary = {}
 var has_mediapipe_controller : bool = false
+
 func _ready():
+	var input_devices : Array = AudioServer.get_input_device_list()
+	
+	add_tracked_setting("input_device", "Input device", 
+		{ 
+			"allow_multiple": false, 
+			"combobox": true, 
+			"values": input_devices 
+		})
 	add_tracked_setting("is_basic_vrm_shapes", "Use basic VRM shapes")
 	add_tracked_setting("prefer_mediapipe_tracker", "Prefer MediaPipe data (must be enabled) over lipsync")
 	add_tracked_setting("prefer_mediapipe_greater_than_value_perc", 
@@ -81,6 +92,9 @@ func _ready():
 	update_settings_ui()
 
 func _process(_delta : float):
+	if len(input_device) > 0 and AudioServer.input_device != input_device[0]:
+		AudioServer.set_input_device(input_device[0])
+
 	for vis in range(Visemes.VISEME.COUNT):
 		var viseme_value = clampf(engine.visemes[vis] * 
 								engine_viseme_weight_multiplier, -1.0, 1.0)
@@ -106,6 +120,9 @@ func _process(_delta : float):
 
 func check_configuration() -> PackedStringArray:
 	var errors : PackedStringArray = []
+
+	if not ProjectSettings.get_setting("audio/driver/enable_input"):
+		errors.append("Audio input not enabled in project, verify project settings -> Advanced Settings -> Audio -> Driver -> \"Enable Input\" is enabled.")
 
 	if not check_mod_dependency("Mod_AnimationApplier", true):
 		errors.append("No AnimationApplier detected, or detected before LipSync. Blend shapes will not function as expected.")
