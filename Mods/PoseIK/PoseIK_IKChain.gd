@@ -181,11 +181,23 @@ func chain_distribute_bone_roll(
 	base_bone_index : int,
 	tip_bone_index : int):
 
+	# Keep track of the bones that are in the actual bone chain we're
+	# transforming, because we ONLY want to modify these bones. Restoring
+	# non-chain child bones to their original orientation is NOT what we want.
+	# We want those bones to maintain their rotation because their parent is
+	# rotating!
+	#
+	# Anyway this is the fix for the weird spinning forearms. Thanks,
+	# Virtually_Char, for letting me test with your model! <3
+	var bones_in_the_actual_chain : Dictionary[int, bool] = {}
+	bones_in_the_actual_chain[tip_bone_index] = true
+
 	# Count up bones.
 	var bone_count = 1
 	var current_bone = skeleton.get_bone_parent(tip_bone_index)
 	while current_bone != -1 and current_bone != base_bone_index:
 		bone_count += 1
+		bones_in_the_actual_chain[current_bone] = true
 		current_bone = skeleton.get_bone_parent(current_bone)
 
 	# Determine the bone roll axis for tip bone by averaging out all the child
@@ -222,12 +234,14 @@ func chain_distribute_bone_roll(
 		var this_parent_index = skeleton.get_bone_parent(current_bone)
 		var child_indices = skeleton.get_bone_children(current_bone)
 		var this_bone_starting_rotation = skeleton.get_bone_pose_rotation(current_bone)
-		var preserved_rotations_in_parent_space = []
+		var preserved_rotations_in_parent_space : Array = []
 		for child in child_indices:
+
 			var child_bone_rotation = skeleton.get_bone_pose_rotation(child)
+
 			preserved_rotations_in_parent_space.append(
 				this_bone_starting_rotation * child_bone_rotation)
-				
+
 			avg_child_direction += skeleton.get_bone_rest(child).origin
 		
 		avg_child_direction = avg_child_direction.normalized()
@@ -243,10 +257,13 @@ func chain_distribute_bone_roll(
 		var child_index = 0
 		var new_bone_rotation = skeleton.get_bone_pose_rotation(current_bone)
 		for child in child_indices:
+
 			var new_child_bone_rotation = \
 				new_bone_rotation.inverse() * \
 				preserved_rotations_in_parent_space[child_index]
-			skeleton.set_bone_pose_rotation(child, new_child_bone_rotation)
+
+			if bones_in_the_actual_chain.has(child):
+				skeleton.set_bone_pose_rotation(child, new_child_bone_rotation)
 			
 			child_index += 1
 		
