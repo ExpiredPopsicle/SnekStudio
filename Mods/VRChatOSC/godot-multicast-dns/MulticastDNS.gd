@@ -50,3 +50,9 @@ func _process(delta : float) -> void:
 		var dns_packet : DNSPacket = DNSPacket.from_packet(packet)
 
 		on_receive.emit(dns_packet, packet)
+
+func send_query(packet : DNSPacket):
+	var raw_packet : StreamPeerBuffer = packet.to_packet()
+	var byte_array : PackedByteArray = raw_packet.data_array
+	for client : PacketPeerUDP in clients:
+		client.put_packet(byte_array)

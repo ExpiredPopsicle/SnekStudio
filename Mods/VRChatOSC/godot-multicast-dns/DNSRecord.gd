@@ -40,6 +40,60 @@ static func from_packet(packet : StreamPeerBuffer, cache: Dictionary) -> DNSReco
 
 	return dns_record
 
+func to_packet(packet: StreamPeerBuffer, cache: Dictionary) -> void:
+	super.to_packet(packet, cache)
+	packet.put_u32(ttl_seconds)
+	var rdlength_offset = packet.get_position()
+	packet.put_u16(0)
+	var rdata_start = packet.get_position()
+	match dns_type:
+		RECORD_TYPE.A:
+			# IPv4: 4 octets
+			# data["address"] is a string "x.x.x.x"
+			var parts = data["address"].split(".")
+			for p in parts:
+				packet.put_u8(int(p))
+
+		RECORD_TYPE.PTR:
+			super._write_labels(packet, data["domain_labels"], cache)
+
+		RECORD_TYPE.NS:
+			super._write_labels(packet, data["authority"], cache)
+
+		RECORD_TYPE.SRV:
+			# priority, weight, port, target
+			packet.put_u16(data["priority"])
+			packet.put_u16(data["weight"])
+			packet.put_u16(data["port"])
+			# target is a domain name (labels array)
+			var srv_q = DNSQuestion.new()
+			srv_q.labels = data["target"]
+			srv_q.dns_type = 0
+			srv_q.dns_class = 0
+			srv_q.to_packet(packet, cache)
+
+		RECORD_TYPE.TXT:
+			var txt = data["text"]
+			var pos = 0
+			while pos < txt.length():
+				var chunk_size = min(255, txt.length() - pos)
+				var chunk = txt.substr(pos, chunk_size)
+				var raw = chunk.to_utf8_buffer()
+				packet.put_u8(raw.size())
+				packet.put_data(raw)
+				pos += chunk_size
+		_:
+			push_error("Unsupported RDATA serialization for type %d" % dns_type)
+
+	var rdata_end = packet.get_position()
+	var rdlength = rdata_end - rdata_start
+
+	# go back and patch
+	var cur = packet.get_position()
+	packet.seek(rdlength_offset)
+	packet.put_u16(rdlength)
+	packet.seek(cur)
+
 func _a_record(packet : StreamPeerBuffer) -> void:
 	data["address"] = _get_ipv4_address(packet)
 

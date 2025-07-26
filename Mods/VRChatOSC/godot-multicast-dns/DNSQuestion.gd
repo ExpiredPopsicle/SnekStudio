@@ -31,6 +31,12 @@ static func from_packet_for_record(packet : StreamPeerBuffer, cache: Dictionary,
 	record.dns_type = packet.get_u16()
 	record.dns_class = packet.get_u16()
 
+## Writes the current DNS Question to the packet.
+func to_packet(packet: StreamPeerBuffer, cache: Dictionary):
+	_write_labels(packet, labels, cache)
+	packet.put_u16(dns_type)
+	packet.put_u16(dns_class)
+	
 ## Recursively read all labels
 func _read_labels(packet : StreamPeerBuffer) -> Array[String]:
 	var pos = packet.get_position()
@@ -54,3 +60,21 @@ func _read_labels(packet : StreamPeerBuffer) -> Array[String]:
 	_cache[pos] = inner_labels
 
 	return inner_labels
+	
+func _write_labels(packet: StreamPeerBuffer, cur_labels: Array[String], cache: Dictionary) -> void:
+	var i = 0
+	while i < cur_labels.size():
+		var suffix = ".".join(cur_labels.slice(i))
+		if cache.has(suffix):
+			var ptr = cache[suffix]
+			packet.put_u8(0xC0 | (ptr >> 8))
+			packet.put_u8(ptr & 0xFF)
+			return
+		else:
+			cache[suffix] = packet.get_position()
+			var label = cur_labels[i]
+			var raw = label.to_utf8_buffer()
+			packet.put_u8(raw.size())
+			packet.put_data(raw)
+			i += 1
+	packet.put_u8(0)

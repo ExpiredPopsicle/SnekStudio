@@ -55,5 +55,44 @@ static func from_packet(packet : StreamPeerBuffer) -> DNSPacket:
 
 	return dns_packet
 
-# TODO: Add send support.
-# static func to_packet() ....
+## To raw byte packet for sending.
+func to_packet() -> StreamPeerBuffer:
+	var packet := StreamPeerBuffer.new()
+	packet.big_endian = true
+	packet.put_u16(id)
+
+	var flags := 0
+	flags |= (response_code & 0xF)
+	if tentative:   flags |= 0x0100
+	if truncation:  flags |= 0x0200
+	if conflict:    flags |= 0x0400
+	flags |= ((opcode & 0xF) << 11)
+	if query_response:
+		flags |= 0x8000
+	packet.put_u16(flags)
+
+	# qdcount, ancount, nscount, arcount
+	packet.put_u16(dns_questions.size())
+	packet.put_u16(dns_answers.size())
+	packet.put_u16(dns_authoritories.size())
+	packet.put_u16(dns_additional.size())
+
+	# Prepare a cache for name compression: domain_name -> packet offset
+	var cache: Dictionary = {}
+
+	# Serialize questions
+	for question : DNSQuestion in dns_questions:
+		question.to_packet(packet, cache)
+
+	# Serialize answers
+	for answer : DNSRecord in dns_answers:
+		answer.to_packet(packet, cache)
+
+	for auth : DNSRecord in dns_authoritories:
+		auth.to_packet(packet, cache)
+
+	for add : DNSRecord in dns_additional:
+		add.to_packet(packet, cache)
+
+	packet.seek(0)
+	return packet
