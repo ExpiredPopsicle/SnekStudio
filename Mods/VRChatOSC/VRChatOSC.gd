@@ -76,7 +76,8 @@ var arkit_to_unified_mapping : Dictionary = {}
 enum COMBINATION_TYPE {
 	RANGE = 1,
 	COPY = 2,
-	AVERAGE = 3
+	AVERAGE = 3,
+	WEIGHTED = 4
 }
 enum SHAPE_KEY_TYPE {
 	MEDIAPIPE = 1,
@@ -87,6 +88,111 @@ enum DIRECTION {
 	NEGATIVE = 2
 }
 var simplified_parameter_mapping : Dictionary = {
+	"BrowUpRight": {
+		"combination_type": COMBINATION_TYPE.WEIGHTED,
+		"combination_shapes": [
+			{
+				"shape": "BrowOuterUpRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.6
+			},
+			{
+				"shape": "BrowInnerUpRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.4
+			},
+		]
+	},
+	"BrowUpLeft": {
+		"combination_type": COMBINATION_TYPE.WEIGHTED,
+		"combination_shapes": [
+			{
+				"shape": "BrowOuterUpLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.6
+			},
+			{
+				"shape": "BrowInnerUpLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.4
+			},
+		]
+	},
+	"BrowDownRight": {
+		"combination_type": COMBINATION_TYPE.WEIGHTED,
+		"combination_shapes": [
+			{
+				"shape": "BrowLowererRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.75
+			},
+			{
+				"shape": "BrowPinchRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.25
+			},
+		]
+	},
+	"BrowDownLeft": {
+		"combination_type": COMBINATION_TYPE.WEIGHTED,
+		"combination_shapes": [
+			{
+				"shape": "BrowLowererLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.75
+			},
+			{
+				"shape": "BrowPinchLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.25
+			},
+		]
+	},
+	"MouthSmileRight": {
+		"combination_type": COMBINATION_TYPE.WEIGHTED,
+		"combination_shapes": [
+			{
+				"shape": "MouthCornerPullRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.8
+			},
+			{
+				"shape": "MouthCornerSlantRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.2
+			},
+		]
+	},
+	"MouthSmileLeft": {
+		"combination_type": COMBINATION_TYPE.WEIGHTED,
+		"combination_shapes": [
+			{
+				"shape": "MouthCornerPullLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.8
+			},
+			{
+				"shape": "MouthCornerSlantLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.2
+			},
+		]
+	},
+	"MouthX": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "MouthRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "MouthLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			},
+		]
+	},
 	"JawX": {
 		"combination_type": COMBINATION_TYPE.RANGE,
 		"combination_shapes": [
@@ -305,7 +411,7 @@ func _apply_transform_rules(unified_blendshapes : Dictionary) -> void:
 						src_value = abs(src_value)
 					else:
 						src_value *= -1
-						
+
 				for i in range(1, shapes.size()):
 					var dst_shape_info : Dictionary = shapes[i]
 					var dst_shape : String = dst_shape_info["shape"]
@@ -336,6 +442,21 @@ func _apply_transform_rules(unified_blendshapes : Dictionary) -> void:
 					else:
 						total -= value
 				unified_blendshapes[param_name] = total
+
+			COMBINATION_TYPE.WEIGHTED:
+				var src_shape_info : Dictionary = shapes[0]
+				var src_shape : String = src_shape_info["shape"]
+				var src_type : SHAPE_KEY_TYPE = src_shape_info.get("shape_type", SHAPE_KEY_TYPE.UNIFIED)
+				var src_value : float = _get_unified_value(src_shape, src_type, unified_blendshapes)
+				var src_weight : float = src_shape_info["weight"]
+
+				var dst_shape_info : Dictionary = shapes[1]
+				var dst_shape : String = dst_shape_info["shape"]
+				var dst_type : SHAPE_KEY_TYPE = dst_shape_info.get("shape_type", SHAPE_KEY_TYPE.UNIFIED)
+				var dst_value : float = _get_unified_value(dst_shape, dst_type, unified_blendshapes)
+				var dst_weight : float = dst_shape_info["weight"]
+
+				unified_blendshapes[param_name] = src_value * src_weight + dst_value * dst_weight
 
 func _ready() -> void:
 	avatar_req = HTTPRequest.new()

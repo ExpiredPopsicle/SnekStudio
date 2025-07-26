@@ -26,7 +26,10 @@ func _init(param_path : String, pkey : String, ptype : String, pavatar_id : Stri
 			# Negative exponent is "0".
 			binary_exponent = 0
 		else:
-			if key.ends_with("16") or key.ends_with("32") or key.ends_with("64"):
+			if key.ends_with("128") or key.ends_with("256") or key.ends_with("512"):
+				binary_exponent = int(key.substr(len(key) - 3))
+				binary_key = key.substr(0, len(key) - 3)
+			elif key.ends_with("16") or key.ends_with("32") or key.ends_with("64"):
 				binary_exponent = int(key.substr(len(key) - 2))
 				binary_key = key.substr(0, len(key) - 2)
 			else:
@@ -44,7 +47,10 @@ func is_binary() -> bool:
 					or key.ends_with("8") \
 					or key.ends_with("16") \
 					or key.ends_with("32") \
-					or key.ends_with("64") 
+					or key.ends_with("64") \
+					or key.ends_with("128") \
+					or key.ends_with("256") \
+					or key.ends_with("512")
 	var val_type = type == "T"
 	return key_name and val_type
 
