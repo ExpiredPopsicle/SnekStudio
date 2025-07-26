@@ -1,7 +1,7 @@
 extends Mod_Base
 class_name Mod_AnimationApplier
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	var blend_shapes_to_apply : Dictionary = get_global_mod_data("BlendShapes")
 
 	var model : Node3D = get_model()
@@ -12,15 +12,6 @@ static func apply_animations(model, shape_dict):
 
 	# Merge blend shapes with overridden stuff.
 	var combined_blend_shape_last_values = shape_dict.duplicate()
-
-	# FIXME: Should we restore this, or just rely on other mods down the stack?
-#	for k in overridden_blend_shape_values.keys():
-#		if k in combined_blend_shape_last_values:
-#			combined_blend_shape_last_values[k] = max(
-#				overridden_blend_shape_values[k],
-#				combined_blend_shape_last_values[k])
-#		else:
-#			combined_blend_shape_last_values[k] =  overridden_blend_shape_values[k]
 
 	# Blend shapes are treated as the maximum value of any animations that
 	# reference them.
@@ -50,14 +41,6 @@ static func apply_animations(model, shape_dict):
 	var anim_root = anim_player.get_node(anim_player.root_node)
 
 	if anim_player:
-		#print("list...")
-		#print(anim_player.get_animation_list())
-
-		# Figure out the maximum blend shape values for each animation.
-		#if "lookLeft" in combined_blend_shape_last_values:
-			#combined_blend_shape_last_values = {
-				#"lookLeft" : combined_blend_shape_last_values["lookLeft"]
-			#}
 
 		# Find all the "rest" values to blend with.
 		var rest_anim : Animation = anim_player.get_animation("RESET")

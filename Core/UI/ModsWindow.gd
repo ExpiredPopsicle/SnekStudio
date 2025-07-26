@@ -12,7 +12,7 @@ func show_window():
 	super.show_window()
 	_update_log_text()
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	_update_error_list()
 
 func _update_error_list():

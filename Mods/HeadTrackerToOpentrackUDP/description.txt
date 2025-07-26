@@ -1,0 +1,3 @@
+Work-in-progress support for FreeTrackNoIR protocol output for using the head tracking results of the MediaPipeController to control compatible games.
+
+DO NOT USE YET.

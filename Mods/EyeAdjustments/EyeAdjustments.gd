@@ -32,23 +32,14 @@ func _ready() -> void:
 	
 	update_settings_ui()
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 
 	var blend_shapes_to_adjust : Dictionary = get_global_mod_data("BlendShapes")
-	var new_shapes : Dictionary = fixup_eyes(
-		blend_shapes_to_adjust,
-		eyes_prevent_opposite_directions,
-		eyes_link_vertical, eyes_link_horizontal,
-		eyes_link_blink)
+	var new_shapes : Dictionary = fixup_eyes(blend_shapes_to_adjust)
 
 	blend_shapes_to_adjust.merge(new_shapes, true)
 
-static func fixup_eyes(
-	shape_dict_new : Dictionary,
-	eyes_prevent_opposite_directions : bool,
-	eyes_link_vertical : bool,
-	eyes_link_horizontal : bool,
-	eyes_link_blink : bool) -> Dictionary:
+func fixup_eyes(shape_dict_new : Dictionary) -> Dictionary:
 
 	shape_dict_new = shape_dict_new.duplicate()
 
