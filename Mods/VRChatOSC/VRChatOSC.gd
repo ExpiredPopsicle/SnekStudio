@@ -352,32 +352,6 @@ var simplified_parameter_mapping : Dictionary = {
 	},
 }
 
-func _apply_transform_rules_a(unified_blendshapes : Dictionary):
-	# Take in the simplified_parameter_mapping dictionary,
-	# For each rule in this, identify the rule type then apply the action of the combination type
-	# Store the resulting value or changes in the unified blendshapes parameter
-
-	# For example:
-	# EyeLidLeft is a copy of EyeClosedLeft, so it processes the combination type of copy
-	# Once identified as copy operation, it takes the first combination_shapes item and copies it to last shape
-	# This copy operation MUST take into consideration what the shape type is.
-	#   You can use the arkit_to_unified_mapping dictionary to map arkit (mediapipe) to unified.
-	#     This dictionary has the key as arkit (mediapipe) and the value as the associated unified shape key.
-	#   You can use the unified_to_arkit_mapping dictionary to map a unified to arkit.
-	#   Current values are always stored in the passed in parameter (unified format)
-	
-	# Another example:
-	# JawX is defined as a value (float) that uses JawRight and JawLeft to form the value
-	#   <0.0 -> 1.0> Jaw Right
-	#   <0.0 -> -1.0> Jaw Left
-	# Notice the value shifts in direction from positive to negative 1.
-	# This direction is defined in the particular combination shape, as "direction".
-	# The final JawX value will reflect the current values of JawRight/JawLeft
-	# These values must be resolved in the parameter provided to this func.
-	# All inputs are stored as unified, but shape keys might need to be converted from MediaPipe to Unified.
-	# See previous example for how to do this.
-	return {}
-
 func _get_unified_value(shape : String, shape_type : SHAPE_KEY_TYPE, unified_blendshapes : Dictionary) -> float:
 	if shape_type == SHAPE_KEY_TYPE.UNIFIED:
 		return unified_blendshapes.get(shape, 0.0)
@@ -463,12 +437,11 @@ func _ready() -> void:
 	add_child(avatar_req)
 	avatar_req.request_completed.connect(_avatar_params_request_complete)
 	dns_service.on_receive.connect(_dns_packet)
+	
 	for key in unified_to_arkit_mapping:
 		var new_key = unified_to_arkit_mapping[key]
 		var new_value = key
 		arkit_to_unified_mapping[new_key] = new_value
-
-var get_a = true
 
 func _process(delta : float) -> void:
 	
