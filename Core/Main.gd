@@ -754,7 +754,7 @@ static func get_sample_location() -> String:
 	var env_path : String = OS.get_environment("SNEKSTUDIO_SAMPLE_PATH")
 	if env_path != "":
 		return ProjectSettings.localize_path(env_path)
-	return "res://SampleModels/VRM/"
+	return "res://SampleModels"
 
 ## Get the cache location. Mainly this is where Python gets unpacked to.
 ## Defaults to saved user data directory unless overridden.
