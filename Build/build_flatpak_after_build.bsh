@@ -1,0 +1,18 @@
+#!/bin/bash
+
+cd Build/Builds
+
+# set up flatpak files
+cp ../../flatpak/* .
+sed -i "s|AMD64_ARCHIVE|Dist/SnekStudio_Linux-x86_64_${VERSION}.tar.gz|g" com.snekstudio.Snekstudio.yaml
+sed -i "s|ARM64_ARCHIVE|Dist/SnekStudio_Linux-arm64_${VERSION}.tar.gz|g" com.snekstudio.Snekstudio.yaml
+
+flatpak-builder build-dir --force-clean com.snekstudio.Snekstudio.yaml --repo=snudio_repo
+
+# this is mega slow to build, we need to have icons pre made of various sizes
+# to stop building imagemagick to resize the icons
+flatpak-builder --arch=aarch64 build-dir --force-clean com.snekstudio.Snekstudio.yaml --repo=snudio_repo
+
+# bundle everything into single files that can be installed
+
+flatpak build-bundle snudio_repo Dist/com.snekstudio.Snekstudio.flatpak com.snekstudio.Snekstudio
