@@ -5,7 +5,7 @@ var lean_scale : float = 4.0
 var chest_yaw_scale : float = 0.3
 # FIXME: Add settings for all of these.
 var do_hands : bool = true
-var lock_fingers_to_single_axis_of_rotation : bool = true
+var lock_fingers_to_single_axis_of_rotation : bool = false # FIXME: only false for thumb
 var lock_fingers_to_z_axis : bool = true
 var debug_visible_hand_trackers : bool = false
 var hack_reset_hips_every_frame : bool = true
