@@ -49,8 +49,12 @@ modules:
       - install -Dm644 512x512.png  /app/share/icons/hicolor/512x512/apps/$FLATPAK_ID.png
     sources:
       - type: archive
+        only-arches:
+          - x86_64
         path: AMD64_ARCHIVE
       - type: archive
+        only-arches:
+          - aarch64
         path: ARM64_ARCHIVE
       - type: file
         path: com.snekstudio.Snekstudio.desktop
