@@ -121,3 +121,13 @@ func _process(delta: float) -> void:
 				var tracker_node : Node3D = controller_node.find_child(tracker_name)
 				if tracker_node:
 					tracker_dict["finger_positions"][side + "_" + tracker_name] = tracker_node.global_transform.origin
+
+	#for k in range(0, JoyButton.JOY_BUTTON_SDL_MAX):
+		#if Input.is_joy_button_pressed(0, k):
+			#print("pressed: ", k)
+	
+	# FIXME: Hardcoded values.
+	if Input.is_joy_button_pressed(0, 4):
+		$Throttle2/ButtonAnimationPlayer.play("Button5")
+	else:
+		$Throttle2/ButtonAnimationPlayer.play("RESET")
