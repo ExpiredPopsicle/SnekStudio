@@ -23,7 +23,7 @@ jobs:
     - name: Git
       run: |
         apt-get update
-        apt-get install -y git
+        apt-get install -y git nodejs
 
       # check out git repository.
     - name: Checkout repository
@@ -38,6 +38,7 @@ jobs:
     # set the version for flatpak
     - name: Version Export
       id: ver_exp
+      shell: bash
       run: |
         source Build/build_vars.sh
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
