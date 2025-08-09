@@ -40,6 +40,7 @@ jobs:
       # set the version for flatpak
     - name: Version Export
       id: ver_exp
+      shell: bash
       run: |
           source Build/build_vars.sh
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
