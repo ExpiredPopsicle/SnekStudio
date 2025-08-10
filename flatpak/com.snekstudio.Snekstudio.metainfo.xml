@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+    <id>com.snekstudio.Snekstudio</id>
+
+    <name>Snek Studio</name>
+    <summary>Open-source VTuber software using Godot Engine!</summary>
+    <url type="homepage">https://snekstudio.com</url>
+    <metadata_license>CC0-1.0</metadata_license>
+    <project_license>GPL-3.0-or-later</project_license>
+    <content_rating type="oars-1.1" />
+    <developer id="com.expiredpopsicle">
+        <name>ExpiredPopsicle</name>
+    </developer>
+    <description>
+        <p>
+            SnekStudio is a free, open-source VTuber application written using the Godot engine!
+        </p>
+        <p>
+            Features include:
+        </p>
+        <p>
+            VRM Support Use a standard model format shared across many tools and applications
+            already. A MediaPipe-based Tracking System Capable of 50 different face blendshapes and
+            hand tracking. VMC Receiver Support For those who would like to import real-time
+            tracking data from other software. Modular Architecture Designed to be easily extended
+            through self-contained modules written in GDScript, or just simple Godot scenes. Twitch
+            Integration Let your viewers throw stuff at your face for channel points! Twitch redeem
+            functionality can be extended in GDScript for other actions. Fully Open-Source It&apos;s
+            free! And you can modify it! Linux Desktop Support Built to fill a gap in the VTubing
+            space, which previously excluded most Linux desktop users.
+        </p>
+    </description>
+
+    <launchable type="desktop-id">com.snekstudio.Snekstudio.desktop</launchable>
+    <screenshots>
+        <screenshot type="default">
+            <image>https://snekstudio.com/img/thumbsup_small.jpg</image>
+            <caption>sammy the default model holding a thumbs up</caption>
+        </screenshot>
+    </screenshots>
+    <releases>
+        <release version="v0.1.4" date="2025-06-17">
+            <description>
+                <p>Doing a release right before Offkai!</p>
+                <p>(Also because a bunch of stuff has been fixed since the last release.)</p>
+            </description>
+        </release>
+    </releases>
+</component>

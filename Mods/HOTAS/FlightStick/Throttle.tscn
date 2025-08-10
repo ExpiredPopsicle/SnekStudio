@@ -1,0 +1,274 @@
+[gd_scene load_steps=12 format=3 uid="uid://darjcuhcbhrds"]
+
+[ext_resource type="PackedScene" uid="uid://c8id7cer3p6tx" path="res://Mods/HOTAS/FlightStick/Model/throttle.glb" id="1_1sn4h"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_1sn4h"]
+radius = 0.01
+height = 0.02
+
+[sub_resource type="SphereMesh" id="SphereMesh_xfp84"]
+radius = 0.01
+height = 0.02
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_xfp84"]
+animation = &"Idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_ms0hg"]
+animation = &"Forward"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_1sn4h"]
+animation = &"Backward-Stick_Armature_001"
+
+[sub_resource type="AnimationNodeBlendSpace1D" id="AnimationNodeBlendSpace1D_xq7bs"]
+blend_point_0/node = SubResource("AnimationNodeAnimation_xfp84")
+blend_point_0/pos = 0.0
+blend_point_1/node = SubResource("AnimationNodeAnimation_ms0hg")
+blend_point_1/pos = 1.0
+blend_point_2/node = SubResource("AnimationNodeAnimation_1sn4h")
+blend_point_2/pos = -1.0
+
+[sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_c0k56"]
+graph_offset = Vector2(-239.162, 60.8356)
+nodes/output/position = Vector2(440, 140)
+nodes/throttle_amount/node = SubResource("AnimationNodeBlendSpace1D_xq7bs")
+nodes/throttle_amount/position = Vector2(60, 140)
+node_connections = [&"output", 0, &"throttle_amount"]
+
+[sub_resource type="Animation" id="Animation_1sn4h"]
+resource_name = "Button5"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.118788, 0.206694, -0.0328102)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("../thumb_mcp:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.13541, 0.251935, -0.0114268)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("../thumb_ip:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.162092, 0.251927, 0.030776)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("../thumb_tip:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(-0.164417, 0.254165, 0.0751593)]
+}
+
+[sub_resource type="Animation" id="Animation_xfp84"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.001),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(-0.0273994, 0.22201, -0.0561513), Vector3(-0.0864088, 0.22201, -0.0561513)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("../thumb_mcp:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.001),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(-0.0561266, 0.214462, -0.0550222), Vector3(-0.115136, 0.214462, -0.0550222)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("../thumb_ip:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.001),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(-0.0565342, 0.199585, -0.028793), Vector3(-0.115544, 0.199585, -0.028793)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("../thumb_tip:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.001),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(-0.0795929, 0.203637, 0.0206692), Vector3(-0.138602, 0.203637, 0.0206692)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ms0hg"]
+_data = {
+&"Button5": SubResource("Animation_1sn4h"),
+&"RESET": SubResource("Animation_xfp84")
+}
+
+[node name="Throttle" type="Node3D"]
+
+[node name="throttle2" parent="." instance=ExtResource("1_1sn4h")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.361529, 0.533179, 0.786211)
+
+[node name="BoneAttachment3D" type="BoneAttachment3D" parent="throttle2/Throttle_Armature/Skeleton3D" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+visible = false
+bone_name = "throttle"
+bone_idx = 1
+
+[node name="wrist" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 8.66751e-11, 0.909787, -0.415074, 3.9544e-11, 0.415074, 0.909787, -0.0618274, 0.253477, -0.0690774)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="hand_left" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.0207899, 0.0335487, -0.99922, 0.672343, 0.739222, 0.0388081, 0.739947, -0.672626, -0.0071879, -0.053796, 0.209312, -0.0810587)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="index_finger_mcp" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.928892, -0.249479, 0.273715, 0.184733, 0.952679, 0.241406, -0.320989, -0.173676, 0.931022, -0.0885372, 0.318725, 0.13306)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="index_finger_pip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.928892, -0.249479, 0.273715, 0.184733, 0.952679, 0.241406, -0.320989, -0.173676, 0.931022, -0.0922636, 0.324161, 0.168237)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="index_finger_dip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.928892, -0.249479, 0.273715, 0.184733, 0.952679, 0.241406, -0.320989, -0.173676, 0.931022, -0.0659302, 0.320388, 0.223256)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="index_finger_tip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.928892, -0.249479, 0.273715, 0.184733, 0.952679, 0.241406, -0.320989, -0.173676, 0.931022, -0.0148112, 0.294461, 0.259084)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="middle_finger_mcp" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.889882, 0.283074, -0.357741, 0.00650631, 0.776237, 0.630407, 0.456144, -0.563316, 0.688918, -0.0656278, 0.283146, 0.14929)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="middle_finger_pip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.889882, 0.283074, -0.357741, 0.00650631, 0.776237, 0.630407, 0.456144, -0.563316, 0.688918, -0.0666674, 0.291307, 0.183917)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="middle_finger_dip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.889882, 0.283074, -0.357741, 0.00650631, 0.776237, 0.630407, 0.456144, -0.563316, 0.688918, -0.0361101, 0.292342, 0.225842)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="middle_finger_tip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.889882, 0.283074, -0.357741, 0.00650631, 0.776237, 0.630407, 0.456144, -0.563316, 0.688918, -0.0195189, 0.275499, 0.277839)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="ring_finger_mcp" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.74065, 0.656667, -0.142218, -0.219247, 0.43629, 0.872686, 0.635112, -0.615175, 0.467111, -0.0591899, 0.25461, 0.159673)
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="ring_finger_pip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.74065, 0.656667, -0.142218, -0.219247, 0.43629, 0.872686, 0.635112, -0.615175, 0.467111, -0.0611568, 0.271096, 0.191155)
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="ring_finger_dip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.74065, 0.656667, -0.142218, -0.219247, 0.43629, 0.872686, 0.635112, -0.615175, 0.467111, -0.0369842, 0.263441, 0.214528)
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="ring_finger_tip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.74065, 0.656667, -0.142218, -0.219247, 0.43629, 0.872686, 0.635112, -0.615175, 0.467111, -0.0377584, 0.253493, 0.23798)
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="pinky_finger_mcp" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.937417, -0.244909, 0.247526, 0.0122235, 0.73356, 0.679514, -0.347994, -0.633963, 0.690645, -0.0999662, 0.229111, 0.186368)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="pinky_finger_pip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.937417, -0.244909, 0.247526, 0.0122235, 0.73356, 0.679514, -0.347994, -0.633963, 0.690645, -0.10322, 0.2451, 0.210733)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="pinky_finger_dip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.936891, -0.24444, 0.249967, 0.0100854, 0.733566, 0.679543, -0.349474, -0.634139, 0.689737, -0.0966067, 0.25456, 0.225965)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="pinky_finger_tip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.937417, -0.244909, 0.247526, 0.0122235, 0.73356, 0.679514, -0.347994, -0.633963, 0.690645, -0.00580466, 0.280887, 0.35804)
+visible = false
+mesh = SubResource("SphereMesh_1sn4h")
+
+[node name="thumb_cmc" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.00810659, -0.0317853, -0.999461, 0.565523, 0.824449, -0.0216324, 0.824693, -0.565043, 0.0246584, -0.0273994, 0.22201, -0.0561513)
+visible = false
+mesh = SubResource("SphereMesh_xfp84")
+
+[node name="thumb_mcp" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(-0.495652, -0.0317847, -0.867939, 0.477918, 0.824449, -0.303116, 0.725206, -0.565044, -0.393449, -0.0561266, 0.214462, -0.0550222)
+visible = false
+mesh = SubResource("SphereMesh_xfp84")
+
+[node name="thumb_ip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.00810659, -0.0317853, -0.999461, 0.565523, 0.824449, -0.0216324, 0.824693, -0.565043, 0.0246584, -0.0565342, 0.199585, -0.028793)
+visible = false
+mesh = SubResource("SphereMesh_xfp84")
+
+[node name="thumb_tip" type="MeshInstance3D" parent="throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.00810659, -0.0317853, -0.999461, 0.565523, 0.824449, -0.0216324, 0.824693, -0.565043, 0.0246584, -0.0795929, 0.203637, 0.0206692)
+visible = false
+mesh = SubResource("SphereMesh_xfp84")
+
+[node name="AnimationTree" type="AnimationTree" parent="."]
+root_node = NodePath("../throttle2")
+tree_root = SubResource("AnimationNodeBlendTree_c0k56")
+anim_player = NodePath("../throttle2/AnimationPlayer")
+parameters/throttle_amount/blend_position = 0.0
+
+[node name="ButtonAnimationPlayer" type="AnimationPlayer" parent="."]
+root_node = NodePath("../throttle2/Throttle_Armature/Skeleton3D/BoneAttachment3D/thumb_cmc")
+libraries = {
+&"": SubResource("AnimationLibrary_ms0hg")
+}
+
+[editable path="throttle2"]

@@ -5,7 +5,7 @@ var lean_scale : float = 4.0
 var chest_yaw_scale : float = 0.3
 # FIXME: Add settings for all of these.
 var do_hands : bool = true
-var lock_fingers_to_single_axis_of_rotation : bool = true
+var lock_fingers_to_single_axis_of_rotation : bool = false # FIXME: only false for thumb
 var lock_fingers_to_z_axis : bool = true
 var debug_visible_hand_trackers : bool = false
 var hack_reset_hips_every_frame : bool = true
@@ -340,26 +340,29 @@ func _process(delta : float) -> void:
 		
 		# See if we can raise the shoulders for when arms go too far up.
 		if chain_name == "arm_left" or chain_name == "arm_right":
-			var chest_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
+			var chest_bone_index : int = skel.find_bone("Chest")
+			if chest_bone_index != -1:
+				var chest_pose = skel.get_bone_global_pose(chest_bone_index)
 
-			# FIXME: We really need to parameterize this all in a less
-			# silly way.
-			var rotation_scale = 1.0
-			var shoulder_bone = "LeftShoulder"
-			if tracker_to_use == $Hand_Right:
-				shoulder_bone = "RightShoulder"
-				rotation_scale = -rotation_scale
-			
-			var shoulder_bone_index = skel.find_bone(shoulder_bone)
-			var shoulder_pose = skel.get_bone_global_pose(shoulder_bone_index)
-			var chest_pose_inv = chest_pose.inverse()
-			var shoulder_y = (chest_pose_inv * shoulder_pose).origin.y
-			var tracker_local_chest = chest_pose_inv * tracker_local_position
-			if tracker_local_chest.origin.y > shoulder_y:
-				#print(tracker_local_chest.origin.y - shoulder_y)
-				skel.set_bone_pose_rotation(shoulder_bone_index, 
-					Quaternion(Vector3(0.0, 0.0, 1.0), (tracker_local_chest.origin.y - shoulder_y) * 2.0 * rotation_scale) *
-					skel.get_bone_rest(shoulder_bone_index).basis.get_rotation_quaternion())
+				# FIXME: We really need to parameterize this all in a less
+				# silly way.
+				var rotation_scale = 1.0
+				var shoulder_bone = "LeftShoulder"
+				if tracker_to_use == $Hand_Right:
+					shoulder_bone = "RightShoulder"
+					rotation_scale = -rotation_scale
+
+				var shoulder_bone_index = skel.find_bone(shoulder_bone)
+				if shoulder_bone_index != -1:
+					var shoulder_pose = skel.get_bone_global_pose(shoulder_bone_index)
+					var chest_pose_inv = chest_pose.inverse()
+					var shoulder_y = (chest_pose_inv * shoulder_pose).origin.y
+					var tracker_local_chest = chest_pose_inv * tracker_local_position
+					if tracker_local_chest.origin.y > shoulder_y:
+						#print(tracker_local_chest.origin.y - shoulder_y)
+						skel.set_bone_pose_rotation(shoulder_bone_index,
+							Quaternion(Vector3(0.0, 0.0, 1.0), (tracker_local_chest.origin.y - shoulder_y) * 2.0 * rotation_scale) *
+							skel.get_bone_rest(shoulder_bone_index).basis.get_rotation_quaternion())
 
 		var pole_target_y = -y_pole_dist
 		var pole_target_z = -z_pole_dist

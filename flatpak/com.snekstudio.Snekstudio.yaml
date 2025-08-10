@@ -1,0 +1,54 @@
+app-id: com.snekstudio.Snekstudio
+runtime: org.freedesktop.Platform
+runtime-version: "24.08"
+sdk: org.freedesktop.Sdk
+command: snekstudio-runner
+finish-args:
+  - --share=ipc
+  - --socket=x11
+  - --socket=pulseaudio
+  - --device=all
+  - --share=network
+modules:
+  - name: snekstudio
+    buildsystem: "simple"
+    build-options:
+      append-path: /app/bin
+    build-commands:
+      - install -Dm644 snekstudio.pck -t ${FLATPAK_DEST}/bin/
+      - install -Dm755 snekstudio -t ${FLATPAK_DEST}/bin/
+      - install -Dm755 snekstudio-runner.sh ${FLATPAK_DEST}/bin/snekstudio-runner
+      - mkdir -p ${FLATPAK_DEST}/share/SnekStudio
+      - cp -r Mods ${FLATPAK_DEST}/share/SnekStudio
+      - cp -r SampleModels ${FLATPAK_DEST}/share/SnekStudio
+    post-install:
+      - install -D com.snekstudio.Snekstudio.desktop -t  /app/share/applications/
+      - install -D com.snekstudio.Snekstudio.metainfo.xml -t /app/share/metainfo/
+      - install -Dm644 32x32.png  /app/share/icons/hicolor/32x32/apps/$FLATPAK_ID.png
+      - install -Dm644 64x64.png  /app/share/icons/hicolor/64x64/apps/$FLATPAK_ID.png
+      - install -Dm644 128x128.png  /app/share/icons/hicolor/128x128/apps/$FLATPAK_ID.png
+      - install -Dm644 256x256.png  /app/share/icons/hicolor/256x256/apps/$FLATPAK_ID.png
+      - install -Dm644 512x512.png  /app/share/icons/hicolor/512x512/apps/$FLATPAK_ID.png
+    sources:
+      - type: archive
+        only-arches:
+          - x86_64
+        path: AMD64_ARCHIVE
+      - type: archive
+        only-arches:
+          - aarch64
+        path: ARM64_ARCHIVE
+      - type: file
+        path: com.snekstudio.Snekstudio.desktop
+      - type: file
+        path: com.snekstudio.Snekstudio.metainfo.xml
+      - type: dir
+        path: ./icons
+      - type: script
+        dest-filename: snekstudio-runner.sh
+        commands:
+          - export SNEKSTUDIO_CONFIG_PATH=${XDG_CONFIG_HOME}/SnekStudio
+          - export SNEKSTUDIO_CACHE_PATH=${XDG_CACHE_HOME}/SnekStudio
+          - export SNEKSTUDIO_MODS_PATHS="/app/share/SnekStudio/Mods:${XDG_CONFIG_HOME}/SnekStudio/Mods"
+          - export SNEKSTUDIO_SAMPLE_PATH="/app/share/SnekStudio/SampleModels"
+          - mkdir -p ${XDG_CONFIG_HOME}/SnekStudio/Mods && /app/bin/snekstudio

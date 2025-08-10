@@ -90,11 +90,28 @@ static func generate_mesh_index_to_meshinstance_mapping(gstate : GLTFState) -> D
 	for i in range(nodes.size()):
 		var gltfnode: GLTFNode = nodes[i]
 		var mesh_idx: int = gltfnode.mesh
-		#print("node idx " + str(i) + " node name " + gltfnode.resource_name + " mesh idx " + str(mesh_idx))
+
 		if mesh_idx != -1:
-			var scenenode: ImporterMeshInstance3D = gstate.get_scene_node(i)
-			mesh_idx_to_meshinstance[mesh_idx] = scenenode
-			#print("insert " + str(mesh_idx) + " node name " + scenenode.name)
+
+			# Build a list of every node to search through.
+			# FIXME: Limit it to just root nodes!
+			var nodes_to_search : Array = []
+			for k in range(nodes.size()):
+				var node: Node = gstate.get_scene_node(k)
+				nodes_to_search.append(node)
+
+			var gltfmesh: GLTFMesh = gstate.get_meshes()[mesh_idx]
+
+			# FIXME: Will do redundant searches.
+			while nodes_to_search.size():
+				var node: Node = nodes_to_search.pop_back()
+				if node is ImporterMeshInstance3D:
+					if node.mesh == gltfmesh.mesh:
+						mesh_idx_to_meshinstance[mesh_idx] = node
+						break
+				for child in node.get_children():
+					nodes_to_search.append(child)
+
 	return mesh_idx_to_meshinstance
 
 static func rotate_scene_180(p_scene: Node3D, blend_shape_names: Dictionary, gstate : GLTFState):

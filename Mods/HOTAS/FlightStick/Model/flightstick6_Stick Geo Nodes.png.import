@@ -1,0 +1,39 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://c7gtirbj0hh86"
+path.s3tc="res://.godot/imported/flightstick6_Stick Geo Nodes.png-6412bc982b87d1f88da63dfb09248665.s3tc.ctex"
+path.etc2="res://.godot/imported/flightstick6_Stick Geo Nodes.png-6412bc982b87d1f88da63dfb09248665.etc2.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "09e4fc4733cb8dcf5df084d82c2595fe"
+}
+
+[deps]
+
+source_file="res://Mods/HOTAS/FlightStick/Model/flightstick6_Stick Geo Nodes.png"
+dest_files=["res://.godot/imported/flightstick6_Stick Geo Nodes.png-6412bc982b87d1f88da63dfb09248665.s3tc.ctex", "res://.godot/imported/flightstick6_Stick Geo Nodes.png-6412bc982b87d1f88da63dfb09248665.etc2.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=1
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=1
+roughness/src_normal="res://Mods/HOTAS/flightstick6_Stick Geo Nodes.png"
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0

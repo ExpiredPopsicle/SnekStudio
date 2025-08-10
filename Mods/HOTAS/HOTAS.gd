@@ -52,17 +52,82 @@ func _process(delta: float) -> void:
 
 	last_input_stick = current_input_stick
 
-
 	$Stick.transform.basis = Basis.from_euler(
 		Vector3(current_input_stick.x, current_input_stick.z, current_input_stick.y),
 		EULER_ORDER_XZY)
+
+
+	$FlightStick/AnimationTree.set("parameters/blend_position", Vector2(
+		current_input_stick.y, current_input_stick.x))
+
+	$Throttle2/AnimationTree.set("parameters/throttle_amount/blend_position", last_input_throttle);
 
 	#$Stick.transform.basis = \
 		#Basis(Vector3(1.0, 0.0, 0.0), cos(time) * 0.25) * \
 		#Basis(Vector3(0.0, 0.0, 1.0), sin(time * 0.3) * 0.5)
 	#%Hand_Right.transform.origin = Vector3(0.0, cos(time)* 0.2 + 0.2, 0.0)
 
-	if not tracker_dict["hand_left"]["active"]:
-		tracker_dict["hand_left"]["transform"] = %Hand_Left.global_transform
-	if not tracker_dict["hand_right"]["active"]:
-		tracker_dict["hand_right"]["transform"] = %Hand_Right.global_transform
+	var hand_right : Node3D = $FlightStick.find_child("hand_right")
+	var hand_left : Node3D = $Throttle2.find_child("hand_left")
+
+
+	var mediapipe_hand_landmark_names : Array = [
+		"wrist",
+
+		"thumb_cmc", # carpometacarpal
+		"thumb_mcp", # metacarpal
+		"thumb_ip", # interphalangeal
+		"thumb_tip", # tip
+
+		"index_finger_mcp",
+		"index_finger_pip", # proximal something something
+		"index_finger_dip", # distal something something
+		"index_finger_tip",
+
+		"middle_finger_mcp",
+		"middle_finger_pip",
+		"middle_finger_dip",
+		"middle_finger_tip",
+
+		"ring_finger_mcp",
+		"ring_finger_pip",
+		"ring_finger_dip",
+		"ring_finger_tip",
+
+		"pinky_finger_mcp",
+		"pinky_finger_pip",
+		"pinky_finger_dip",
+		"pinky_finger_tip",
+	]
+
+
+
+	#if not tracker_dict["hand_left"]["active"]:
+	#	tracker_dict["hand_left"]["transform"] = hand_right.global_transform
+	for side in ["left", "right"]:
+		if not tracker_dict["hand_" + side]["active"]:
+			
+			var hand_tracker : Node3D = hand_right
+			if side == "left":
+				hand_tracker = hand_left
+			
+			tracker_dict["hand_" + side]["active"] = true
+			tracker_dict["hand_" + side]["transform"] = hand_tracker.global_transform
+
+			for tracker_name in mediapipe_hand_landmark_names:
+				var controller_node : Node3D = $FlightStick
+				if side == "left":
+					controller_node = $Throttle2
+				var tracker_node : Node3D = controller_node.find_child(tracker_name)
+				if tracker_node:
+					tracker_dict["finger_positions"][side + "_" + tracker_name] = tracker_node.global_transform.origin
+
+	#for k in range(0, JoyButton.JOY_BUTTON_SDL_MAX):
+		#if Input.is_joy_button_pressed(0, k):
+			#print("pressed: ", k)
+	
+	# FIXME: Hardcoded values.
+	if Input.is_joy_button_pressed(0, 4):
+		$Throttle2/ButtonAnimationPlayer.play("Button5")
+	else:
+		$Throttle2/ButtonAnimationPlayer.play("RESET")
