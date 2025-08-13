@@ -50,38 +50,68 @@ jobs:
         path: Build/Builds/Dist/
     
   flatpak:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-        # Create the release, I guess?
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+     runs-on: ubuntu-latest
+     container:  
+        image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-24.08
+        options: --privileged
+     steps:
+      # i wish we didn't have to do this but flathub infra containers don't have package managers
+      # also since it doesn't have a pm you've got to use a container to hackily setup binfmt
+      - name: Install deps
+        run: |
+            # Use the static binaries because it's unable to use a package manager 
+            curl https://download.docker.com/linux/static/stable/x86_64/docker-28.3.3.tgz --output ./docker.tgz
+            tar xzvf docker.tgz
+            mv docker/* /usr/bin
+
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v3
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: Auto generated release
-          draft: true
-          prerelease: false
-      
-      # check out git repository.
+          platforms: arm64
+
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+            submodules: true
+            fetch-depth: "0"
+            fetch-tags: true
 
-       # download build artifacts from build
       - name: Download build output
         uses: actions/download-artifact@v4
         with:
-          name: build-output
-          path: Build/Builds/Dist/
+            name: build-output
+            path: Build/Builds/Dist/
       - name: set VERSION
-        run: echo "VERSION=${{ needs.build.outputs.version}}" >> $GITHUB_ENV
-      - name: Build
+        run: echo "VERSION=${{ needs.build.outputs.VERSION }}" >> $GITHUB_ENV
+      - name: setup flatpak files
         run: |
-            Build/run_this_inside_ubuntu_after_build.bsh
-          
+          cp ./flatpak/* .
+          cp -r ./Core/UI/Images/icons .
+          sed -i "s|AMD64_ARCHIVE|Build/Builds/Dist/SnekStudio_Linux-x86_64_${VERSION}.tar.gz|g" com.snekstudio.Snekstudio.yaml
+          sed -i "s|ARM64_ARCHIVE|Build/Builds/Dist/SnekStudio_Linux-arm64_${VERSION}.tar.gz|g" com.snekstudio.Snekstudio.yaml
+      
+      - name: Build x64
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: SnekStudio_x86_64.flatpak
+          manifest-path: com.snekstudio.Snekstudio.yaml
+          cache: false # caching would mean we have to make Version more verbose
+          upload-artifact: false # we're going to push them to a release why add em as artifacts 
+          arch: x86_64
+    
+      - name: Build arm64
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: SnekStudio_aarch64.flatpak
+          manifest-path: com.snekstudio.Snekstudio.yaml
+          cache: false
+          upload-artifact: false
+          arch: aarch64
+
+      - name: copy to dist
+        run: |
+            cp SnekStudio_*.flatpak Build/Builds/Dist/
     
       - name: Upload Assets to Release with a wildcard
         uses: shogo82148/actions-upload-release-asset@v1
