@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     container: debian:bookworm
 
+    outputs:
+      version: ${{ steps.ver_exp.outputs.version }}
+
     steps:
       # Install git.
     - name: Git
@@ -75,7 +78,7 @@ jobs:
           name: build-output
           path: Build/Builds/Dist/
     - name: set VERSION
-      run: echo "VERSION=${{ needs.build.outputs.version}}" >> $GITHUB_ENV
+      run: echo "VERSION=${{ needs.build.outputs.VERSION }}" >> $GITHUB_ENV
     - name: Build
       run: |
           Build/run_this_inside_ubuntu_after_build.bsh
