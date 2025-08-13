@@ -127,7 +127,7 @@ func _process(delta: float) -> void:
 			#print("pressed: ", k)
 	
 	# FIXME: Hardcoded values.
-	if Input.is_joy_button_pressed(0, 4):
+	if Input.is_joy_button_pressed(device_index, 4):
 		$Throttle2/ButtonAnimationPlayer.play("Button5")
 	else:
 		$Throttle2/ButtonAnimationPlayer.play("RESET")

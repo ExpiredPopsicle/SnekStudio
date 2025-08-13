@@ -40,7 +40,7 @@ visible = false
 mesh = SubResource("CylinderMesh_spc0m")
 
 [node name="FlightStick" parent="." instance=ExtResource("2_6uohj")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16254, 1.2719, -0.207547)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.220856, 1.2719, -0.348834)
 
 [node name="Throttle2" parent="." instance=ExtResource("3_q1wvq")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.089, 0.737428, -0.994)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0354987, 0.737428, -1.13529)
