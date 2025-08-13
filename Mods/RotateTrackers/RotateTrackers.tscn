@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3 uid="uid://7atpg523k7ad"]
+
+[ext_resource type="Script" uid="uid://bjx6fhaajbusu" path="res://Mods/RotateTrackers/RotateTrackers.gd" id="1_r4gtc"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_r4gtc"]
+size = Vector3(0.1, 0.1, 0.1)
+
+[node name="RotateTrackers" type="Node"]
+script = ExtResource("1_r4gtc")
+metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
+
+[node name="Head" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+visible = false
+mesh = SubResource("BoxMesh_r4gtc")
+
+[node name="Hand_Left" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+visible = false
+mesh = SubResource("BoxMesh_r4gtc")
+
+[node name="Hand_Right" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+visible = false
+mesh = SubResource("BoxMesh_r4gtc")

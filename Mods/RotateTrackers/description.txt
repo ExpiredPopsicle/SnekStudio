@@ -1,0 +1,3 @@
+This lets you rotate the trackers to compensate for slight camera angles.
+
+Put it in between the MediaPipeController (or other tracking system) and the PoseIK (or other posing system).
