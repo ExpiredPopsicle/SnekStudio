@@ -60,7 +60,7 @@ jobs:
     - name: Git
       run: |
         apt-get update
-        apt-get install -y git nodejs
+        apt-get install -y git nodejs flatpak flatpak-builder binfmt-support qemu-user-static
 
     - name: Checkout repository
       uses: actions/checkout@v4

@@ -2,9 +2,6 @@
 
 set -e
 
-apt update
-apt install -y flatpak flatpak-builder binfmt-support qemu-user-static
-
 flatpak remote-add --user -v --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 # install platform and sdk for both aarch64 and x86_64 so we can build both flatpaks
