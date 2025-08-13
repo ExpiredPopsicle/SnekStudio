@@ -55,6 +55,13 @@ jobs:
     runs-on: ubuntu-latest
     container: debian:bookworm
     steps:
+
+    # Install git.
+    - name: Git
+      run: |
+        apt-get update
+        apt-get install -y git nodejs
+
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
