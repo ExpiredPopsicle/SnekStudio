@@ -101,7 +101,7 @@ jobs:
      - name: Build x64
        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
        with:
-         bundle: SnekStudio_x86_64.flatpak
+         bundle: SnekStudio_${{ needs.build.outputs.version }}_x86_64.flatpak
          manifest-path: com.snekstudio.Snekstudio.yaml
          cache: false # caching would mean we have to make Version more verbose
          upload-artifact: false # we're going to push them to a release why add em as artifacts 
@@ -110,7 +110,7 @@ jobs:
      - name: Build arm64
        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
        with:
-         bundle: SnekStudio_aarch64.flatpak
+         bundle: SnekStudio_${{ needs.build.outputs.version }}_aarch64.flatpak
          manifest-path: com.snekstudio.Snekstudio.yaml
          cache: false
          upload-artifact: false
