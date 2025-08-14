@@ -41,7 +41,7 @@ jobs:
       shell: bash
       run: |
         source Build/build_vars.sh
-        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "VERSION=$(git describe --tags --exclude nightly | cut -c2-)" >> $GITHUB_OUTPUT
 
     - name: Upload built files as artifact
       uses: actions/upload-artifact@v4

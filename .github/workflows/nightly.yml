@@ -12,7 +12,7 @@ jobs:
     container: debian:bookworm
 
     outputs:
-      version: ${{ steps.ver_exp.outputs.version }}
+      version: ${{ steps.ver_exp.outputs.VERSION }}
 
     steps:
       # Install git.
@@ -45,8 +45,7 @@ jobs:
       id: ver_exp
       shell: bash
       run: |
-          source Build/build_vars.sh
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "VERSION=$(git describe --tags --exclude nightly | cut -c2-)" >> $GITHUB_OUTPUT
 
     - name: Upload built files as artifact
       uses: actions/upload-artifact@v4
@@ -88,8 +87,10 @@ jobs:
        with:
            name: build-output
            path: Build/Builds/Dist/
+
      - name: set VERSION
-       run: echo "VERSION=${{ needs.build.outputs.VERSION }}" >> $GITHUB_ENV
+       run: echo "VERSION=${{ needs.build.outputs.version }}" >> $GITHUB_ENV
+
      - name: setup flatpak files
        run: |
         cp ./flatpak/* .
