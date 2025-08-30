@@ -51,4 +51,4 @@ modules:
           - export SNEKSTUDIO_CACHE_PATH=${XDG_CACHE_HOME}/SnekStudio
           - export SNEKSTUDIO_MODS_PATHS="/app/share/SnekStudio/Mods:${XDG_CONFIG_HOME}/SnekStudio/Mods"
           - export SNEKSTUDIO_SAMPLE_PATH="/app/share/SnekStudio/SampleModels"
-          - mkdir -p ${XDG_CONFIG_HOME}/SnekStudio/Mods && /app/bin/snekstudio
+          - mkdir -p ${XDG_CONFIG_HOME}/SnekStudio/Mods && /app/bin/snekstudio "$@"
