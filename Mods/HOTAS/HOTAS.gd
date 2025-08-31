@@ -1,7 +1,6 @@
 extends Mod_Base
 
 var last_input_stick : Vector3 = Vector3(0.0, 0.0, 0.0)
-
 var last_input_throttle : float = 0.0
 
 ## Distance between the two models.
@@ -25,16 +24,26 @@ var stick_y_axis : int = JoyAxis.JOY_AXIS_LEFT_Y
 var throttle_axis : int = JoyAxis.JOY_AXIS_RIGHT_Y
 
 func _ready() -> void:
-	add_tracked_setting("model_distance", "Distance between throttle and stick", { "min" : 0.0, "max" : 5.0, "step" : 0.01 })
-	add_tracked_setting("model_height", "Height of the throttle and stick", { "min" : 0.0, "max" : 10.0, "step" : 0.01 })
 
-	add_tracked_setting("model_xoffset", "Model X offset (left/right)", { "min" : -10.0, "max" : 10.0, "step" : 0.01 })
-	add_tracked_setting("model_zoffset", "Model Z offset (forward/backward)", { "min" : -10.0, "max" : 10.0, "step" : 0.01 })
+	add_tracked_setting(
+		"model_distance", "Distance between throttle and stick",
+		{ "min" : 0.0, "max" : 5.0, "step" : 0.01 })
+	add_tracked_setting(
+		"model_height", "Height of the throttle and stick",
+		{ "min" : 0.0, "max" : 10.0, "step" : 0.01 })
+	add_tracked_setting(
+		"model_xoffset", "Model X offset (left/right)",
+		{ "min" : -10.0, "max" : 10.0, "step" : 0.01 })
+	add_tracked_setting(
+		"model_zoffset", "Model Z offset (forward/backward)",
+		{ "min" : -10.0, "max" : 10.0, "step" : 0.01 })
 
+	# Enumerate attached joystick devices.
 	var connected_device_indices : Array = Input.get_connected_joypads()
 	for device_index : int in connected_device_indices:
 		_device_list.push_back(Input.get_joy_name(device_index))
 
+	# Set devices as default if any are found.
 	if len(_device_list):
 		joystick_device = [_device_list[0]]
 		throttle_device = [_device_list[0]]
@@ -79,11 +88,8 @@ func _process(delta: float) -> void:
 
 		last_input_throttle = current_input_throttle
 
-		#$Throttle.transform.basis = Basis(Vector3(1.0, 0.0, 0.0), -0.5 +  cos(time) * 0.5)
 		$Throttle.transform.basis = Basis.from_euler(Vector3(current_input_throttle, 0.0, 0.0))
 
-
-		#last_input_stick
 		var new_input_stick : Vector3 = Vector3(\
 			-Input.get_joy_axis(device_index, stick_y_axis),\
 			Input.get_joy_axis(device_index, stick_x_axis), 0.0)
@@ -92,11 +98,6 @@ func _process(delta: float) -> void:
 		var current_input_stick : Vector3 = lerp(last_input_stick, new_input_stick, 0.5)
 
 		last_input_stick = current_input_stick
-#
-		#$Stick.transform.basis = Basis.from_euler(
-			#Vector3(current_input_stick.x, current_input_stick.z, current_input_stick.y),
-			#EULER_ORDER_XZY)
-
 
 		$FlightStick/AnimationTree.set(
 			"parameters/blend_position",
