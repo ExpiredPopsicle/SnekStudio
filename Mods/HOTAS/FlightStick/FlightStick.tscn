@@ -35,10 +35,10 @@ script = ExtResource("1_a63km")
 [node name="flightstick6" parent="." instance=ExtResource("2_byey2")]
 
 [node name="Skeleton3D" parent="flightstick6/Stick_Armature" index="0"]
-bones/1/rotation = Quaternion(-0.21644, -8.47264e-25, 4.80592e-17, 0.976296)
+bones/1/rotation = Quaternion(0, -2.63167e-18, 2.40296e-17, 1)
 
 [node name="BoneAttachment3D" type="BoneAttachment3D" parent="flightstick6/Stick_Armature/Skeleton3D" index="1"]
-transform = Transform3D(1, -9.38401e-17, -2.08039e-17, 9.38401e-17, 0.906308, 0.422618, -2.08039e-17, -0.422618, 0.906308, 0, -0.1, 0)
+transform = Transform3D(1, -4.80592e-17, -5.26335e-18, 4.80592e-17, 1, -1.26476e-34, 5.26335e-18, -1.26476e-34, 1, 0, -0.1, 0)
 visible = false
 bone_name = "stick"
 bone_idx = 1

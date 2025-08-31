@@ -19,7 +19,7 @@ metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
 
 [node name="Tablet" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707106, 0, -0.707107, 0.707106, -0.029323, 1.2756, -0.387511)
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707106, 0, -0.707107, 0.707106, -0.0673815, 1.28383, -0.510176)
 
 [node name="tablet" parent="Tablet" instance=ExtResource("2_2rf4b")]
 transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74227e-08, 0, -1, 0, 0, 0)
@@ -28,18 +28,18 @@ transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74227e-08, 0, -1, 0, 0, 
 unique_name_in_owner = true
 
 [node name="pen" parent="Tablet/Pen_Transform" instance=ExtResource("3_dexwa")]
-transform = Transform3D(-1.54, 1.00474e-07, 2.09706e-07, 0, 1.38882, -0.665412, -2.32533e-07, -0.665412, -1.38882, 0.0140497, 0.00687373, 0.0288948)
+transform = Transform3D(-1.33784, -0.719442, -0.253355, -0.539345, 1.25399, -0.712894, 0.539346, -0.530579, -1.34134, 0.0198989, 0.00914109, -0.000160575)
 
 [node name="Pen" type="MeshInstance3D" parent="Tablet/Pen_Transform"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 0.901802, 0.432149, 0, -0.432149, 0.901803, 0, 0.0976307, -0.0113033)
+transform = Transform3D(0.868727, -0.467182, 0.164485, 0.350224, 0.814246, 0.462976, -0.350225, -0.344593, 0.870977, -0.0381701, 0.0863823, -0.0268427)
 visible = false
 mesh = SubResource("CylinderMesh_2rf4b")
 skeleton = NodePath("../..")
 
 [node name="Hand" type="Node3D" parent="Tablet/Pen_Transform"]
 unique_name_in_owner = true
-transform = Transform3D(-0.125481, -0.713835, 0.688981, 0.221133, 0.656874, 0.720844, -0.967139, 0.242808, 0.0754271, -0.0523542, 0.0871247, -0.106915)
+transform = Transform3D(-0.52517, -0.765143, 0.372496, 0.0991924, 0.379694, 0.919779, -0.845198, 0.519988, -0.123508, -0.113458, 0.0519544, -0.0985326)
 
 [node name="wrist" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
 transform = Transform3D(-0.125481, -0.372928, -0.919336, -0.713835, 0.677476, -0.177386, 0.68898, 0.633996, -0.351219, 0.0699557, 0.202337, 0.19702)
