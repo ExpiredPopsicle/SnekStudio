@@ -1,4 +1,4 @@
-extends Node3D
+extends Node2D
 
 var _mods_running = false
 var colliders_by_model_name = {}
