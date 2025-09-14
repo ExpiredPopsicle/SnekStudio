@@ -12,7 +12,7 @@ jobs:
     container: debian:trixie
 
     outputs:
-      version: ${{ steps.ver_exp.outputs.VERSION }}
+      version: ${{ steps.ver_exp.outputs.version }}
 
     steps:
       # Install git.
@@ -45,45 +45,45 @@ jobs:
       id: ver_exp
       shell: bash
       run: |
-          echo "VERSION=$(git describe --tags --exclude nightly | cut -c2-)" >> $GITHUB_OUTPUT
+        echo "VERSION=$(git describe --tags --exclude nightly | cut -c2-)" >> $GITHUB_OUTPUT
 
     - name: Upload built files as artifact
       uses: actions/upload-artifact@v4
       with:
-          name: build-output
-          path: Build/Builds/Dist/
+        name: build-output
+        path: Build/Builds/Dist/
 
   flatpak:
     needs: build
     runs-on: ubuntu-latest
     container:  
-       image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-24.08
-       options: --privileged
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-24.08
+      options: --privileged
     steps:
 
 
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-          submodules: true
-          fetch-depth: "0"
-          fetch-tags: true
+        submodules: true
+        fetch-depth: "0"
+        fetch-tags: true
 
     - name: Download build output
       uses: actions/download-artifact@v4
       with:
-          name: build-output
-          path: Build/Builds/Dist/
+        name: build-output
+        path: Build/Builds/Dist/
 
 
     # i wish we didn't have to do this but flathub infra containers don't have package managers
     # also since it doesn't have a pm you've got to use a container to hackily setup binfmt
     - name: Install deps
       run: |
-         # Use the static binaries because it's unable to use a package manager 
-         curl https://download.docker.com/linux/static/stable/x86_64/docker-28.3.3.tgz --output ./docker.tgz
-         tar xzvf docker.tgz
-         mv docker/* /usr/bin
+        # Use the static binaries because it's unable to use a package manager
+        curl https://download.docker.com/linux/static/stable/x86_64/docker-28.3.3.tgz --output ./docker.tgz
+        tar xzvf docker.tgz
+        mv docker/* /usr/bin
     
     - name: Set up QEMU
       id: qemu
@@ -145,21 +145,21 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-          submodules: true
-          fetch-depth: "0"
-          fetch-tags: true
+        submodules: true
+        fetch-depth: "0"
+        fetch-tags: true
           
     - name: Download build output - binaries
       uses: actions/download-artifact@v4
       with:
-          name: build-output
-          path: Build/Builds/Dist/
+        name: build-output
+        path: Build/Builds/Dist/
 
     - name: Download build output - flatpak
       uses: actions/download-artifact@v4
       with:
-          name: build-output-flatpak
-          path: Build/Builds/Dist/
+        name: build-output-flatpak
+        path: Build/Builds/Dist/
 
     - name: 🏷️ Create/update nightly tag
       uses: actions/github-script@v7
