@@ -25,7 +25,7 @@ reflected_light_source = 1
 
 [sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_djr57"]
 
-[node name="SnekStudio_Main" type="Node3D"]
+[node name="SnekStudio_Main" type="Node2D"]
 script = ExtResource("1_88riu")
 
 [node name="CanvasLayer2" type="CanvasLayer" parent="."]
