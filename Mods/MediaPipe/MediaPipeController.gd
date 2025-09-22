@@ -248,13 +248,13 @@ func scene_init():
 	last_parsed_data = {}
 
 	# Move hand "rest" trackers into the scene.
-	var root = get_skeleton().get_parent()
-	var left_rest = $LeftHandRestReference
-	var right_rest = $RightHandRestReference
-	remove_child(left_rest)
-	remove_child(right_rest)
-	root.add_child(left_rest)
-	root.add_child(right_rest)
+	#var root = get_skeleton().get_parent()
+	#var left_rest = $LeftHandRestReference
+	#var right_rest = $RightHandRestReference
+	#remove_child(left_rest)
+	#remove_child(right_rest)
+	#root.add_child(left_rest)
+	#root.add_child(right_rest)
 
 	# Set the head tracker to match the model's head position.
 	var head_bone_index = get_skeleton().find_bone("Head")
