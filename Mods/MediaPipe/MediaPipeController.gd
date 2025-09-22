@@ -274,14 +274,14 @@ func scene_shutdown():
 	udp_server.close()
 	udp_server = null
 
-	var root = get_skeleton().get_parent()
-	var left_rest = root.get_node("LeftHandRestReference")
-	var right_rest = root.get_node("RightHandRestReference")
-
-	root.remove_child(left_rest)
-	root.remove_child(right_rest)
-	add_child(left_rest)
-	add_child(right_rest)
+	#var root = get_skeleton().get_parent()
+	#var left_rest = root.get_node("LeftHandRestReference")
+	#var right_rest = root.get_node("RightHandRestReference")
+#
+	#root.remove_child(left_rest)
+	#root.remove_child(right_rest)
+	#add_child(left_rest)
+	#add_child(right_rest)
 
 	# Reset pose and blendshapes.
 	get_app().get_controller().reset_skeleton_to_rest_pose()
@@ -1068,7 +1068,7 @@ func _update_hand_tracker(
 		# FIXME: Hardcoded values all over this part.
 		#
 		var chest_transform_global_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
-		var min_z = (skel.global_transform * chest_transform_global_pose).origin
+		var min_z = (skel.transform * chest_transform_global_pose).origin
 		if target_origin.z < min_z.z + 0.2:
 			target_origin.z = min_z.z + 0.2
 

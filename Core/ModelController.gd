@@ -3,6 +3,25 @@ class_name ModelController
 
 var _last_loaded_vrm = ""
 
+# This is the position the model node is set to each frame.
+var model_position := Vector3.ZERO
+
+# This is a hacky way for PoseIK to move the model based on
+# the head position.
+var model_head_effect := Vector3.ZERO
+
+var temp_t: float = 0.0
+
+func _process(delta: float) -> void:
+	get_model().global_position = model_position + model_head_effect
+	
+	#test_model_movement(delta)
+
+## Use this to test 3 axes of model movement.
+func test_model_movement(delta: float) -> void:
+	temp_t += delta
+	model_position = Vector3(sin(temp_t), cos(temp_t), sin(temp_t))
+
 func _set_lod_bias_recursively(node):
 	if node is MeshInstance3D:
 		node.lod_bias = 128

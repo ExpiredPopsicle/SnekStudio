@@ -238,11 +238,11 @@ func _update_local_trackers() -> void:
 														+ model.global_position
 
 	$Head.global_transform = Transform3D(new_head_basis,
-										new_head_pos)
+											new_head_pos)
 	$Hand_Left.global_transform = Transform3D(new_hand_l_basis,
-										new_hand_l_pos)
+												new_hand_l_pos)
 	$Hand_Right.global_transform = Transform3D(new_hand_r_basis,
-										new_hand_r_pos)
+												new_hand_r_pos)
 
 	# https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker
 	var mediapipe_hand_landmark_names : Array = [
@@ -298,6 +298,7 @@ func _process(delta : float) -> void:
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
 	var skel : Skeleton3D = get_skeleton()
 	var model_root : Node3D = get_model()
+	var model_controller : ModelController = get_model_controller()
 
 	# ---------------------------------------------------------------------------------------------
 	# Update this mod's tracker instances
@@ -321,14 +322,14 @@ func _process(delta : float) -> void:
 
 	# FIXME: Hack.
 	# This just moves the body based on the head position.
-	var head_pos = $Head.transform.origin
-	var model_pos = model_root.transform.origin
+	var model_head_effect = model_controller.model_head_effect
+	var head_pos = $Head.transform.origin - model_head_effect
 	
 	if true: # FIXME: ???????
-		model_root.transform.origin = model_pos.lerp(head_pos, delta * hip_adjustment_speed)
-		#model_root.transform.origin = head_pos
-		#model_root.transform.origin.y = model_y 
-		#model_root.transform.origin.y = lerp(model_pos.y, head_pos.y - 1.9, 0.01)
+		model_controller.model_head_effect = model_head_effect.lerp(head_pos, delta * hip_adjustment_speed)
+		#model_controller.model_head_effect = head_pos
+		#model_controller.model_head_effect.y = model_y 
+		#model_controller.model_head_effect.y = lerp(model_head_effect.y, head_pos.y - 1.9, 0.01)
 		
 		# FIXME: Another hack!
 		var head_rest_transform = get_skeleton().get_bone_global_rest(
@@ -337,8 +338,8 @@ func _process(delta : float) -> void:
 		
 		# FIXME: Hard-coded fudge factor.
 		# FIXME: Why can't we just map this directly again? It looks like we're shrugging when the arms get set up wrong or something.
-		model_root.transform.origin.y = lerp(
-			model_pos.y, head_pos.y - head_rest_transform.origin.y + head_vertical_offset,
+		model_controller.model_head_effect.y = lerp(
+			model_head_effect.y, head_pos.y - head_rest_transform.origin.y + head_vertical_offset,
 			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
 
 	# ---------------------------------------------------------------------
