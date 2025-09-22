@@ -246,7 +246,7 @@ func scene_init():
 
 	blend_shape_last_values = {}
 	last_parsed_data = {}
-
+	
 	# Move hand "rest" trackers into the scene.
 	#var root = get_skeleton().get_parent()
 	#var left_rest = $LeftHandRestReference
@@ -255,6 +255,9 @@ func scene_init():
 	#remove_child(right_rest)
 	#root.add_child(left_rest)
 	#root.add_child(right_rest)
+	
+	# ^ Commented this stuff out to make it possible to
+	# move the model node around in global space
 
 	# Set the head tracker to match the model's head position.
 	var head_bone_index = get_skeleton().find_bone("Head")
@@ -282,6 +285,9 @@ func scene_shutdown():
 	#root.remove_child(right_rest)
 	#add_child(left_rest)
 	#add_child(right_rest)
+	
+	# ^ Commented this out because I commented out the code that
+	# makes this a requirement.
 
 	# Reset pose and blendshapes.
 	get_app().get_controller().reset_skeleton_to_rest_pose()

@@ -212,9 +212,11 @@ func load_before(_settings_old : Dictionary, _settings_new : Dictionary):
 func _update_local_trackers() -> void:
 
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
-
+	
 	var model = get_model()
 	
+	# This takes the tracker_dict data and transforms the ik targets
+	# to be relative to the model node's global position.
 	var new_head_basis: Basis = tracker_dict["head"].transform.basis.rotated(
 														Vector3.UP,
 														model.global_rotation.y)
