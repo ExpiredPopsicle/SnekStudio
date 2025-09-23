@@ -3,7 +3,7 @@ class_name Mod_ModelMovementTester
 
 var test_movement := false
 
-var t: float = 0.0
+var t := 0.0
 
 func _ready() -> void:
 	add_tracked_setting(
