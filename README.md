@@ -20,7 +20,7 @@ Binary releases are available [on GitHub](https://github.com/ExpiredPopsicle/Sne
 
 ## Run from source
 
-If you're on an platform for which there is no release yet (MacOS), want to tinker with SnekStudio, or write your own modules, heres how to go about that:
+If you're on a platform for which there is no release yet (MacOS), want to tinker with SnekStudio, or write your own modules, here's how to go about that:
 
 1. Clone the repository **recursively**.
     ```
