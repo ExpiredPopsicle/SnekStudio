@@ -10,19 +10,9 @@ var model_transform := Transform3D.IDENTITY
 # the head position.
 var model_head_effect := Vector3.ZERO
 
-var temp_t: float = 0.0
-
 func _process(delta: float) -> void:
 	get_model().global_transform = model_transform
 	get_model().global_position += get_model().global_basis * model_head_effect
-	
-	#test_model_movement(delta)
-
-## Use this to test 6 axes of model movement.
-func test_model_movement(delta: float) -> void:
-	temp_t += delta
-	model_transform.origin = Vector3(sin(temp_t), cos(temp_t), sin(temp_t))
-	model_transform.basis = Basis.IDENTITY.rotated(Vector3(sin(temp_t), cos(temp_t), sin(temp_t)).normalized(), PI/4.0)
 
 func _set_lod_bias_recursively(node):
 	if node is MeshInstance3D:

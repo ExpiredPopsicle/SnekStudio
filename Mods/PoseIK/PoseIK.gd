@@ -225,12 +225,9 @@ func _update_local_trackers() -> void:
 	var new_hand_r_basis: Basis = tracker_dict["hand_right"].transform.basis * model.global_basis
 	var new_hand_r_pos: Vector3 = (model.global_basis * tracker_dict["hand_right"].transform.origin) + model.global_position
 
-	$Head.global_transform = Transform3D(new_head_basis,
-											new_head_pos)
-	$Hand_Left.global_transform = Transform3D(new_hand_l_basis,
-												new_hand_l_pos)
-	$Hand_Right.global_transform = Transform3D(new_hand_r_basis,
-												new_hand_r_pos)
+	$Head.global_transform = Transform3D(new_head_basis, new_head_pos)
+	$Hand_Left.global_transform = Transform3D(new_hand_l_basis, new_hand_l_pos)
+	$Hand_Right.global_transform = Transform3D(new_hand_r_basis, new_hand_r_pos)
 
 	# https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker
 	var mediapipe_hand_landmark_names : Array = [
