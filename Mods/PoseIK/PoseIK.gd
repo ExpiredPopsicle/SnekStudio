@@ -307,7 +307,10 @@ func _process(delta : float) -> void:
 
 	# FIXME: Hack.
 	# This just moves the body based on the head position.
-	var head_pos = $Head.transform.origin - model_root.position
+	var head_pos = $Head.transform.origin - model_root.position + (model_root.global_basis * Vector3(
+																						0.0,
+																						head_vertical_offset,
+																						0.0))
 	
 	if true: # FIXME: ???????
 		model_root.position = model_root.position.lerp(head_pos, delta * hip_adjustment_speed)
