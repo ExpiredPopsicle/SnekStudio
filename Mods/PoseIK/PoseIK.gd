@@ -314,9 +314,9 @@ func _process(delta : float) -> void:
 	
 	if true: # FIXME: ???????
 		model_root.position = model_root.position.lerp(head_pos, delta * hip_adjustment_speed)
-		#model_controller.model_head_effect = head_pos
-		#model_controller.model_head_effect.y = model_y 
-		#model_controller.model_head_effect.y = lerp(model_head_effect.y, head_pos.y - 1.9, 0.01)
+		#model_root.position = head_pos
+		#model_root.position.y = model_y 
+		#model_root.position.y = lerp(model_head_effect.y, head_pos.y - 1.9, 0.01)
 		
 		# FIXME: Another hack!
 		var head_rest_transform = get_skeleton().get_bone_global_rest(
