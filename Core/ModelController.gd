@@ -3,17 +3,6 @@ class_name ModelController
 
 var _last_loaded_vrm = ""
 
-# This is the transform the model node is set to each frame.
-var model_transform := Transform3D.IDENTITY
-
-# This is a hacky way for PoseIK to move the model based on
-# the head position.
-var model_head_effect := Vector3.ZERO
-
-func _process(delta: float) -> void:
-	get_model().global_transform = model_transform
-	get_model().global_position += get_model().global_basis * model_head_effect
-
 func _set_lod_bias_recursively(node):
 	if node is MeshInstance3D:
 		node.lod_bias = 128

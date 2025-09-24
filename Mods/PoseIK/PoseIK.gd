@@ -307,11 +307,10 @@ func _process(delta : float) -> void:
 
 	# FIXME: Hack.
 	# This just moves the body based on the head position.
-	var model_head_effect = model_controller.model_head_effect
-	var head_pos = $Head.transform.origin - model_head_effect
+	var head_pos = $Head.transform.origin - model_root.position
 	
 	if true: # FIXME: ???????
-		model_controller.model_head_effect = model_head_effect.lerp(head_pos, delta * hip_adjustment_speed)
+		model_root.position = model_root.position.lerp(head_pos, delta * hip_adjustment_speed)
 		#model_controller.model_head_effect = head_pos
 		#model_controller.model_head_effect.y = model_y 
 		#model_controller.model_head_effect.y = lerp(model_head_effect.y, head_pos.y - 1.9, 0.01)
@@ -323,8 +322,8 @@ func _process(delta : float) -> void:
 		
 		# FIXME: Hard-coded fudge factor.
 		# FIXME: Why can't we just map this directly again? It looks like we're shrugging when the arms get set up wrong or something.
-		model_controller.model_head_effect.y = lerp(
-			model_head_effect.y, head_pos.y - head_rest_transform.origin.y + head_vertical_offset,
+		model_root.position.y = lerp(
+			model_root.position.y, head_pos.y - head_rest_transform.origin.y + head_vertical_offset,
 			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
 
 	# ---------------------------------------------------------------------

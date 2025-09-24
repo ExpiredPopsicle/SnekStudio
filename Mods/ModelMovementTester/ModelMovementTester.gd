@@ -13,8 +13,8 @@ func _ready() -> void:
 func scene_shutdown() -> void:
 	var controller := get_model_controller()
 
-	controller.model_transform.origin = Vector3.ZERO
-	controller.model_transform.basis = Basis.IDENTITY
+	controller.global_transform.origin = Vector3.ZERO
+	controller.global_transform.basis = Basis.IDENTITY
 
 func _process(delta: float) -> void:
 	if test_movement:
@@ -25,10 +25,10 @@ func test_model_movement(delta: float) -> void:
 	var controller := get_model_controller()
 
 	t += delta
-	controller.model_transform.origin = Vector3(sin(t),
+	controller.global_transform.origin = Vector3(sin(t),
 												cos(t),
 												sin(t))
-	controller.model_transform.basis = Basis.IDENTITY.rotated(
+	controller.global_transform.basis = Basis.IDENTITY.rotated(
 											Vector3(sin(t),
 													cos(t),
 													sin(t)).normalized(),
