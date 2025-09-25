@@ -18,6 +18,10 @@ you look too closely into my code crimes.
 
 Binary releases are available [on GitHub](https://github.com/ExpiredPopsicle/SnekStudio/releases) for Linux and Windows.
 
+## Community
+
+SnekStudio is still in early development, so is lacking in documentation and might be not be as straight-forward to use as it could be. If you need help or want to help out, join the [community](https://snekstudio.com/#community) through Discord or Matrix.
+
 ## Run from source
 
 If you're on a platform for which there is no release yet (MacOS), want to tinker with SnekStudio, or write your own modules, here's how to go about that:
@@ -38,8 +42,6 @@ If you're on a platform for which there is no release yet (MacOS), want to tinke
 5. (optionally) Load up your own model. Note that **only VRM 0.x models are currently supported**. VRM 1.x will have serious issues.
 
 6. Configure "MediaPipeController" (`Esc` -> "Modules" -> "Mod list...") and select your video device. If there's similar entries, be sure to check the others if the first doesn't work.
-
-SnekStudio is still in early development, so is lacking in documentation and might be not be as straight-forward to use as it could be. If you need help or want to help out, join the [community](https://snekstudio.com/#community).
 
 ## Project Goals
 
