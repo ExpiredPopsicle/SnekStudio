@@ -1,4 +1,4 @@
-extends Node
+extends Node3D
 class_name Mod_Base
 
 var _settings_window : Control = null

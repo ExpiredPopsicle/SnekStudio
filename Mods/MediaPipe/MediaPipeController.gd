@@ -58,6 +58,9 @@ var functions_blendshapes = preload("MediaPipeController_BlendShapes.gd")
 # FIXME: Make key for this configurable.
 var tracking_pause = false
 
+var head_rotation_smoothing : float = 2.0
+var head_position_smoothing : float = 2.0
+
 var hand_confidence_time_threshold = 1.0
 var hand_count_change_time_threshold = 1.0
 
@@ -127,6 +130,16 @@ func _ready():
 	add_tracked_setting(
 		"blend_to_rest_speed", "Blend back to rest pose speed",
 		{ "min" : 0.0, "max" : 10.0, "step" : 0.1 },
+		"advanced")
+
+
+	add_tracked_setting(
+		"head_position_smoothing", "Head Position Smoothing",
+		{ "min" : 1.0, "max" : 10.0 },
+		"advanced")
+	add_tracked_setting(
+		"head_rotation_smoothing", "Head Rotation Smoothing",
+		{ "min" : 1.0, "max" : 10.0 },
 		"advanced")
 
 
@@ -717,7 +730,7 @@ func _process(delta):
 					head_origin_array[0],
 					head_origin_array[1],
 					head_origin_array[2]) * head_origin_multiplier),
-					delta_scale * 0.5) # FIXME: Hardcoded smoothing.
+					delta_scale * (1.0 / head_position_smoothing))
 			var head_quat_array = parsed_data["head_quat"]
 			var head_euler = Basis(Quaternion(
 				head_quat_array[0] * head_quat_multiplier[0],
@@ -726,7 +739,7 @@ func _process(delta):
 				head_quat_array[3] * head_quat_multiplier[3])).get_euler()
 			$Head.transform.basis = $Head.transform.basis.slerp(
 				Basis.from_euler(head_euler * head_rotation_scale),
-				delta_scale * 0.5) # FIXME: Hardcoded smoothing.
+				delta_scale * (1.0 / head_rotation_smoothing))
 		else:
 
 			# Haven't had face tracker data in a while? Just blend us back to a

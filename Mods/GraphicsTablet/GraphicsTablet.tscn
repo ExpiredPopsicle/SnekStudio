@@ -13,9 +13,8 @@ height = 0.15
 radius = 0.01
 height = 0.02
 
-[node name="GraphicsTablet" type="Node"]
+[node name="GraphicsTablet" type="Node3D"]
 script = ExtResource("1_tq632")
-metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
 
 [node name="Tablet" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true

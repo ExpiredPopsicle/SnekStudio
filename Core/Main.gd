@@ -268,7 +268,7 @@ func reset_settings_to_default() -> void:
 	$CameraBoom.reset_to_default()
 
 	# Reset transparency.	
-	set_background_transparency(false)
+	set_background_transparency(true)
 
 	# Reset background color.
 	set_background_color(Color(1.0, 0.0, 1.0, 1.0))
