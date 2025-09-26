@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" uid="uid://chv81bhj12v5n" path="res://Mods/ModelMovementTester/ModelMovementTester.gd" id="1_yike5"]
 
-[node name="ModelMovementTester" type="Node"]
+[node name="ModelMovementTester" type="Node3D"]
 script = ExtResource("1_yike5")
