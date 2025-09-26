@@ -648,7 +648,7 @@ func load_vrm(path) -> bool:
 	var model = $ModelController.get_node_or_null("Model")
 	if model:
 		var secondary_path = NodePath("secondary") #model.vrm_secondary
-		var secondary = model.get_node(secondary_path)
+		var secondary = model.get_node_or_null(secondary_path)
 
 		#if collider_data == null:
 		#	collider_data = []
