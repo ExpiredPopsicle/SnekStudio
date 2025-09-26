@@ -2,6 +2,5 @@
 
 [ext_resource type="Script" uid="uid://pxrgrd5jawpp" path="res://Mods/MediaPipeToVRMBlendShapes/MediaPipeToVRMBlendShapes.gd" id="1_1l88q"]
 
-[node name="MediaPipeToVrmBlendShapes" type="Node"]
+[node name="MediaPipeToVrmBlendShapes" type="Node3D"]
 script = ExtResource("1_1l88q")
-metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
