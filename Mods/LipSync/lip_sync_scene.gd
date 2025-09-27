@@ -130,3 +130,6 @@ func check_configuration() -> PackedStringArray:
 	has_mediapipe_controller = check_mod_dependency("Mod_MediaPipeController", false)
 
 	return errors
+
+func needs_3D_transform() -> bool:
+	return false

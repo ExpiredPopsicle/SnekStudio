@@ -115,3 +115,6 @@ static func convert_mediapipe_shapes_to_vrm_standard(shape_dict):
 			shape_dict["eyeLookInRight"], 0.5)
 
 	return basic_shapes
+
+func needs_3D_transform() -> bool:
+	return false

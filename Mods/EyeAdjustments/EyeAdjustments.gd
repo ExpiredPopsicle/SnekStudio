@@ -139,3 +139,6 @@ func fixup_eyes(shape_dict_new : Dictionary) -> Dictionary:
 			shape_dict_new[shape] = clamp(shape_dict_new[shape], 0.0, 1.0)
 
 	return shape_dict_new
+
+func needs_3D_transform() -> bool:
+	return false

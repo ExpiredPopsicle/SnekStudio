@@ -303,6 +303,9 @@ func scene_shutdown():
 
 	_init_complete = false
 
+func needs_3D_transform() -> bool:
+	return true
+
 #endregion
 
 #region Post-Load Model Setup

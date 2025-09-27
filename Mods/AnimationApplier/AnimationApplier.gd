@@ -174,3 +174,6 @@ static func apply_animations(model, shape_dict):
 						bone_index,
 						node_to_modify.get_bone_rest(bone_index).basis.get_rotation_quaternion() *
 						total_bone_rotations[anim_path_rotation_key])
+
+func needs_3D_transform() -> bool:
+	return false

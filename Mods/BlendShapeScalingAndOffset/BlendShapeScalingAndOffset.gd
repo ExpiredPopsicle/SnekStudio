@@ -312,3 +312,6 @@ func apply_smoothing(
 				clamp(shape_dict_from_tracker[shape_name], 0.0, 1.0) * 1.0
 
 	return shape_dict_new
+
+func needs_3D_transform() -> bool:
+	return false

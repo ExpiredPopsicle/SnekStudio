@@ -19,3 +19,6 @@ func _ready():
 		"countdown", "Seconds active",
 		{"min" : 0.0,
 		 "max" : 3600.0})
+
+func needs_3D_transform() -> bool:
+	return false

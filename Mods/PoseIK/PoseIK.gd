@@ -666,3 +666,8 @@ func check_configuration() -> PackedStringArray:
 	if not check_mod_dependency("Mod_MediaPipeController", false):
 		errors.append("No MediaPipeController detected before PoseIK. There is nothing to feed tracker data into the PoseIK system.")
 	return errors
+
+func needs_3D_transform() -> bool:
+	# FIXME: This one does some odd stuff when a 3D offset is set. Might be fun
+	# to come back to later, though.
+	return false

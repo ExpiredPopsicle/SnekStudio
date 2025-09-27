@@ -272,3 +272,7 @@ func update_settings_from_ui(ui_window = null):
 	for k in range(item_count):
 		if ui_throwable_list.is_selected(k):
 			selected_throwables.append(throwable_list[k])
+
+# FIXME: Make this work for adjusting angles and stuff.
+func needs_3D_transform() -> bool:
+	return true

@@ -30,3 +30,6 @@ func _ready() -> void:
 	twitch.twitch_client_id = "mcelg5q6vbtp2phjxi3d5u4shb6uzh"
 	twitch.config_root = get_app().get_config_location()
 	add_child(twitch)
+
+func needs_3D_transform() -> bool:
+	return false

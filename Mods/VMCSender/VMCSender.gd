@@ -61,3 +61,6 @@ func _physics_process(delta: float) -> void:
 				bone_name_upper_first_letter,
 				origin.x, origin.y, origin.z,
 				rotation_quat.x, rotation_quat.y, rotation_quat.z, rotation_quat.w])
+
+func needs_3D_transform() -> bool:
+	return false

@@ -80,3 +80,6 @@ func _process(delta: float) -> void:
 		encoded_data.encode_double(40, 0)
 
 		_udp_peer.put_packet(encoded_data)
+
+func needs_3D_transform() -> bool:
+	return false

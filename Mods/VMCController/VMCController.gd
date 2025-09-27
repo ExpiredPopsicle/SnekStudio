@@ -329,3 +329,7 @@ func _on_OSCServer_message_received(address_string, arguments):
 						object_to_animate.set(
 							"blend_shapes/" + anim_path_max_value_key.get_subname(0),
 							anim_path_maximums[anim_path_max_value_key])
+
+# FIXME: We need global transform offsets on this one.
+func needs_3D_transform() -> bool:
+	return true

@@ -116,3 +116,8 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary) -> void:
 				$WorldEnvironment.environment.sky.sky_material.energy_multiplier = light_ambient_multiplier
 
 	_save_settings_to_scene()
+
+# FIXME: It would be really cool if we could use the 3D transform here to rotate
+# the reflections as well.
+func needs_3D_transform() -> bool:
+	return true

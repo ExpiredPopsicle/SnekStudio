@@ -32,3 +32,9 @@ func _process(delta: float) -> void:
 	#	for k in trackers["finger_positions"].keys():
 	#		trackers["finger_positions"][k] = rotation_transform.basis * trackers["finger_positions"][k]
 		
+
+# FIXME: This entire mod is likely obsolete because we can rotate the trackers
+# using the gizmo now, but this settings will allow us to change the pivot point
+# anyway.
+func needs_3D_transform() -> bool:
+	return true

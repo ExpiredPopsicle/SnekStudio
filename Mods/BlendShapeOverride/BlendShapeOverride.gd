@@ -30,3 +30,6 @@ func check_configuration() -> PackedStringArray:
 		errors.append("This mod needs to be ordered before the AnimationApplier mod.")
 
 	return errors
+
+func needs_3D_transform() -> bool:
+	return false
