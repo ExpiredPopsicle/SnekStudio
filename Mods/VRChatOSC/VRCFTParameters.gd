@@ -181,73 +181,6 @@ static var simplified_parameter_mapping : Dictionary = {
 			}
 		]
 	},
-	"CheekPuffSuckLeft": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "CheekPuffLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "CheekSuckLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"CheekPuffSuckRight": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "CheekPuffRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "CheekSuckRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"CheekPuffSuck": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": false,
-				"positive": [
-					{
-						"shape": "CheekPuffRight"
-					},
-					{
-						"shape": "CheekPuffLeft"
-					}
-				],
-				"negative": [
-					{
-						"shape": "CheekSuckRight"
-					},
-					{
-						"shape": "CheekSuckLeft"
-					}
-				]
-			}
-		]
-	},
-	"CheekSuck": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "CheekSuckLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "CheekSuckRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
 	"MouthUpperX": {
 		"combination_type": COMBINATION_TYPE.RANGE,
 		"combination_shapes": [
@@ -260,281 +193,6 @@ static var simplified_parameter_mapping : Dictionary = {
 				"shape": "MouthUpperLeft",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
 				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"MouthLowerX": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "MouthLowerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "MouthLowerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"LipSuckUpper": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipSuckUpperRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipSuckUpperLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipSuckLower": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipSuckLowerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipSuckLowerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipSuck": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipSuckUpper",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipSuckLower",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipFunnelUpper": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipFunnelUpperRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipFunnelUpperLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipFunnelLower": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipFunnelLowerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipFunnelLowerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipFunnel": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipFunnelUpper",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipFunnelLower",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipPuckerUpper": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipPuckerUpperRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipPuckerUpperLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipPuckerLower": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipPuckerLowerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipPuckerLowerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipPuckerRight": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipPuckerUpperRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipPuckerLowerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipPuckerLeft": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipPuckerUpperLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipPuckerLowerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipPucker": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipPuckerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipPuckerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipSuckFunnelUpper": {
-		"combination_type": COMBINATION_TYPE.SUBTRACT,
-		"combination_shapes": [
-			{
-				"shape": "LipSuckUpper",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipFunnelUpper",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipSuckFunnelLower": {
-		"combination_type": COMBINATION_TYPE.SUBTRACT,
-		"combination_shapes": [
-			{
-				"shape": "LipSuckLower",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipFunnelLower",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipSuckFunnelLowerLeft": {
-		"combination_type": COMBINATION_TYPE.SUBTRACT,
-		"combination_shapes": [
-			{
-				"shape": "LipSuckLowerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipFunnelLowerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipSuckFunnelLowerRight": {
-		"combination_type": COMBINATION_TYPE.SUBTRACT,
-		"combination_shapes": [
-			{
-				"shape": "LipSuckLowerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipFunnelLowerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipSuckFunnelUpperLeft": {
-		"combination_type": COMBINATION_TYPE.SUBTRACT,
-		"combination_shapes": [
-			{
-				"shape": "LipSuckUpperLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipFunnelUpperLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"LipSuckFunnelUpperRight": {
-		"combination_type": COMBINATION_TYPE.SUBTRACT,
-		"combination_shapes": [
-			{
-				"shape": "LipSuckUpperRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipFunnelUpperRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"MouthTightenerStretch": {
-		"combination_type": COMBINATION_TYPE.SUBTRACT,
-		"combination_shapes": [
-			{
-				"shape": "MouthTightener",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "MouthStretch",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"MouthTightenerStretchLeft": {
-		"combination_type": COMBINATION_TYPE.SUBTRACT,
-		"combination_shapes": [
-			{
-				"shape": "MouthTightenerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "MouthStretchLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"MouthTightenerStretchRight": {
-		"combination_type": COMBINATION_TYPE.SUBTRACT,
-		"combination_shapes": [
-			{
-				"shape": "MouthTightenerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "MouthStretchRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
 			}
 		]
 	},
@@ -664,66 +322,6 @@ static var simplified_parameter_mapping : Dictionary = {
 			{
 				"shape": "SmileSadLeft",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"TongueX": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "TongueRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "TongueLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"TongueY": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "TongueUp",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "TongueDown",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"TongueArchY": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "TongueCurlUp",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "TongueBendDown",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"TongueShape": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "TongueFlat",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "TongueSquish",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
 			}
 		]
 	},
@@ -971,19 +569,6 @@ static var simplified_parameter_mapping : Dictionary = {
 			},
 		]
 	},
-	"MouthTightener": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "MouthTightenerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-			},
-			{
-				"shape": "MouthTightenerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-			},
-		]
-	},
 	"MouthPress": {
 		"combination_type": COMBINATION_TYPE.AVERAGE,
 		"combination_shapes": [
@@ -1038,6 +623,21 @@ static var simplified_parameter_mapping : Dictionary = {
 			},
 		]
 	},
+	"RightEyeX": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "EyeLookOutRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "EyeLookInRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			},
+		]
+	},
 	"EyeRightY": {
 		"combination_type": COMBINATION_TYPE.RANGE,
 		"combination_shapes": [
@@ -1054,6 +654,21 @@ static var simplified_parameter_mapping : Dictionary = {
 		]
 	},
 	"EyeLeftX": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "EyeLookInLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "EyeLookOutLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			},
+		]
+	},
+	"LeftEyeX": {
 		"combination_type": COMBINATION_TYPE.RANGE,
 		"combination_shapes": [
 			{
@@ -1109,6 +724,19 @@ static var simplified_parameter_mapping : Dictionary = {
 			},
 		]
 	},
+	"EyesY": {
+		"combination_type": COMBINATION_TYPE.AVERAGE,
+		"combination_shapes": [
+			{
+				"shape": "EyeRightY",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED
+			},
+			{
+				"shape": "EyeLeftY",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED
+			},
+		]
+	},
 }
 # These are mostly taken from the mapper here: 
 # https://github.com/benaclejames/VRCFaceTracking/blob/a4a66fcd7ee776b1740512a481aecac686224af0/VRCFaceTracking.Core/Params/Expressions/Legacy/Lip/UnifiedSRanMapper.cs
@@ -1120,53 +748,6 @@ static var legacy_parameter_mapping : Dictionary = {
 				"shape": "MouthClosed",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
 				"weight": 1.0
-			}
-		]
-	},
-	"MouthUpperOverturn": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipFunnelUpperLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipFunnelUpperRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"MouthLowerOverturn": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipFunnelLowerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipFunnelLowerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"MouthPout": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipPuckerUpperLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipPuckerUpperRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipPuckerLowerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipPuckerLowerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
 			}
 		]
 	},
@@ -1196,55 +777,6 @@ static var legacy_parameter_mapping : Dictionary = {
 			}
 		]
 	},
-	"CheekPuffLeft": {
-		"combination_type": COMBINATION_TYPE.WEIGHTED_ADD,
-		"combination_shapes": [
-			{
-				"shape": "CheekPuffLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 1.0
-			}
-		]
-	},
-	"CheekSuck": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "CheekSuckLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "CheekSuckRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"MouthUpperInside": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipSuckUpperLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipSuckUpperRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"MouthLowerInside": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "LipSuckLowerLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "LipSuckLowerRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
 	"MouthLowerOverlay": {
 		"combination_type": COMBINATION_TYPE.WEIGHTED_ADD,
 		"combination_shapes": [
@@ -1252,16 +784,6 @@ static var legacy_parameter_mapping : Dictionary = {
 				"shape": "MouthRaiserLower",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
 				"weight": 1.0
-			}
-		]
-	},
-	"TongueLongStep1": {
-		"combination_type": COMBINATION_TYPE.WEIGHTED_ADD,
-		"combination_shapes": [
-			{
-				"shape": "TongueOut",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 2.0
 			}
 		]
 	},
@@ -1300,69 +822,16 @@ static var legacy_parameter_mapping : Dictionary = {
 			},
 		]
 	},
-	"PuffSuckRight": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "CheekPuffRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "CheekSuck",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			},
-		]
-	},
-	"PuffSuckLeft": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "CheekPuffLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "CheekSuck",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			},
-		]
-	},
-	"PuffSuck": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": true,
-				"positive": [
-					{
-						"shape": "CheekPuffLeft"
-					},
-					{
-						"shape": "CheekPuffRight"
-					}
-				],
-				"negative": [
-					{
-						"shape": "CheekSuck"
-					}
-				]
-			},
-		]
-	},
 	"JawOpenSuck": {
-		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_type": COMBINATION_TYPE.COPY,
 		"combination_shapes": [
 			{
 				"shape": "JawOpen",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
 			},
 			{
-				"shape": "CheekSuck",
+				"shape": "JawOpenSuck",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
 			},
 		]
 	},
@@ -1376,36 +845,6 @@ static var legacy_parameter_mapping : Dictionary = {
 			},
 			{
 				"shape": "MouthApeShape",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			},
-		]
-	},
-	"JawOpenPuffRight": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "JawOpen",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "CheekPuffRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			},
-		]
-	},
-	"JawOpenPuffLeft": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "JawOpen",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "CheekPuffLeft",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
 				"direction": DIRECTION.NEGATIVE
 			},
@@ -1498,25 +937,11 @@ static var legacy_parameter_mapping : Dictionary = {
 			{ "shape": "MouthLowerOverlay", "direction": ParameterMappings.DIRECTION.NEGATIVE }
 		]
 	},
-	"MouthUpperUpRightSuck": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{ "shape": "MouthUpperUpRight" },
-			{ "shape": "CheekSuck", "direction": ParameterMappings.DIRECTION.NEGATIVE }
-		]
-	},
 	"MouthUpperUpLeftUpperInside": {
 		"combination_type": COMBINATION_TYPE.RANGE,
 		"combination_shapes": [
 			{ "shape": "MouthUpperUpLeft" },
 			{ "shape": "MouthUpperInside", "direction": ParameterMappings.DIRECTION.NEGATIVE }
-		]
-	},
-	"MouthUpperUpLeftPuffLeft": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{ "shape": "MouthUpperUpLeft" },
-			{ "shape": "CheekPuffLeft", "direction": ParameterMappings.DIRECTION.NEGATIVE }
 		]
 	},
 	"MouthUpperUpLeftApe": {
@@ -1540,13 +965,6 @@ static var legacy_parameter_mapping : Dictionary = {
 			{ "shape": "MouthLowerOverlay", "direction": ParameterMappings.DIRECTION.NEGATIVE }
 		]
 	},
-	"MouthUpperUpLeftSuck": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{ "shape": "MouthUpperUpLeft" },
-			{ "shape": "CheekSuck", "direction": ParameterMappings.DIRECTION.NEGATIVE }
-		]
-	},
 	"MouthUpperUpUpperInside": {
 		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
 		"combination_shapes": [
@@ -1564,36 +982,6 @@ static var legacy_parameter_mapping : Dictionary = {
 				"use_max_value": true,
 				"positive": [ { "shape": "MouthUpperUpLeft" }, { "shape": "MouthUpperUpRight" } ],
 				"negative": [ { "shape": "MouthUpperInside" }, { "shape": "MouthLowerInside" } ]
-			}
-		]
-	},
-	"MouthUpperUpPuff": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": false,
-				"positive": [ { "shape": "MouthUpperUpLeft" }, { "shape": "MouthUpperUpRight" } ],
-				"negative": [ { "shape": "CheekPuffLeft" }, { "shape": "CheekPuffRight" } ]
-			}
-		]
-	},
-	"MouthUpperUpPuffLeft": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": false,
-				"positive": [ { "shape": "MouthUpperUpLeft" }, { "shape": "MouthUpperUpRight" } ],
-				"negative": [ { "shape": "CheekPuffLeft" } ]
-			}
-		]
-	},
-	"MouthUpperUpPuffRight": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": false,
-				"positive": [ { "shape": "MouthUpperUpLeft" }, { "shape": "MouthUpperUpRight" } ],
-				"negative": [ { "shape": "CheekPuffRight" } ]
 			}
 		]
 	},
@@ -1644,13 +1032,6 @@ static var legacy_parameter_mapping : Dictionary = {
 			{ "shape": "MouthLowerInside", "direction": ParameterMappings.DIRECTION.NEGATIVE }
 		]
 	},
-	"MouthLowerDownRightPuffRight": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{ "shape": "MouthLowerDownRight" },
-			{ "shape": "CheekPuffRight", "direction": ParameterMappings.DIRECTION.NEGATIVE }
-		]
-	},
 	"MouthLowerDownRightApe": {
 		"combination_type": COMBINATION_TYPE.RANGE,
 		"combination_shapes": [
@@ -1672,25 +1053,11 @@ static var legacy_parameter_mapping : Dictionary = {
 			{ "shape": "MouthLowerOverlay", "direction": ParameterMappings.DIRECTION.NEGATIVE }
 		]
 	},
-	"MouthLowerDownRightSuck": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{ "shape": "MouthLowerDownRight" },
-			{ "shape": "CheekSuck", "direction": ParameterMappings.DIRECTION.NEGATIVE }
-		]
-	},
 	"MouthLowerDownLeftLowerInside": {
 		"combination_type": COMBINATION_TYPE.RANGE,
 		"combination_shapes": [
 			{ "shape": "MouthLowerDownLeft" },
 			{ "shape": "MouthLowerInside", "direction": ParameterMappings.DIRECTION.NEGATIVE }
-		]
-	},
-	"MouthLowerDownLeftPuffLeft": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{ "shape": "MouthLowerDownLeft" },
-			{ "shape": "CheekPuffLeft", "direction": ParameterMappings.DIRECTION.NEGATIVE }
 		]
 	},
 	"MouthLowerDownLeftApe": {
@@ -1714,13 +1081,6 @@ static var legacy_parameter_mapping : Dictionary = {
 			{ "shape": "MouthLowerOverlay", "direction": ParameterMappings.DIRECTION.NEGATIVE }
 		]
 	},
-	"MouthLowerDownLeftSuck": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{ "shape": "MouthLowerDownLeft" },
-			{ "shape": "CheekSuck", "direction": ParameterMappings.DIRECTION.NEGATIVE }
-		]
-	},
 	"MouthLowerDownLowerInside": {
 		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
 		"combination_shapes": [
@@ -1738,36 +1098,6 @@ static var legacy_parameter_mapping : Dictionary = {
 				"use_max_value": true,
 				"positive": [ { "shape": "MouthLowerDownLeft" }, { "shape": "MouthLowerDownRight" } ],
 				"negative": [ { "shape": "MouthUpperInside" }, { "shape": "MouthLowerInside" } ]
-			}
-		]
-	},
-	"MouthLowerDownPuff": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": false,
-				"positive": [ { "shape": "MouthLowerDownLeft" }, { "shape": "MouthLowerDownRight" } ],
-				"negative": [ { "shape": "CheekPuffLeft" }, { "shape": "CheekPuffRight" } ]
-			}
-		]
-	},
-	"MouthLowerDownPuffLeft": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": false,
-				"positive": [ { "shape": "MouthLowerDownLeft" }, { "shape": "MouthLowerDownRight" } ],
-				"negative": [ { "shape": "CheekPuffLeft" } ]
-			}
-		]
-	},
-	"MouthLowerDownPuffRight": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": false,
-				"positive": [ { "shape": "MouthLowerDownLeft" }, { "shape": "MouthLowerDownRight" } ],
-				"negative": [ { "shape": "CheekPuffRight" } ]
 			}
 		]
 	},
@@ -1798,16 +1128,6 @@ static var legacy_parameter_mapping : Dictionary = {
 				"use_max_value": false,
 				"positive": [ { "shape": "MouthLowerDownLeft" }, { "shape": "MouthLowerDownRight" } ],
 				"negative": [ { "shape": "MouthLowerOverlay" } ]
-			}
-		]
-	},
-	"MouthLowerDownSuck": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": false,
-				"positive": [ { "shape": "MouthLowerDownLeft" }, { "shape": "MouthLowerDownRight" } ],
-				"negative": [ { "shape": "CheekSuck" } ]
 			}
 		]
 	},
@@ -1975,82 +1295,4 @@ static var legacy_parameter_mapping : Dictionary = {
 			}
 		]
 	},
-	"PuffRightUpperOverturn": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{ "shape": "CheekPuffRight" },
-			{ "shape": "MouthUpperOverturn", "direction": ParameterMappings.DIRECTION.NEGATIVE }
-		]
-	},
-	"PuffRightLowerOverturn": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{ "shape": "CheekPuffRight" },
-			{ "shape": "MouthLowerOverturn", "direction": ParameterMappings.DIRECTION.NEGATIVE }
-		]
-	},
-	"PuffRightOverturn": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": true,
-				"positive": [ { "shape": "CheekPuffRight" } ],
-				"negative": [ { "shape": "MouthUpperOverturn" }, { "shape": "MouthLowerOverturn" } ]
-			}
-		]
-	},
-	"PuffLeftUpperOverturn": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{ "shape": "CheekPuffLeft" },
-			{ "shape": "MouthUpperOverturn", "direction": ParameterMappings.DIRECTION.NEGATIVE }
-		]
-	},
-	"PuffLeftLowerOverturn": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{ "shape": "CheekPuffLeft" },
-			{ "shape": "MouthLowerOverturn", "direction": ParameterMappings.DIRECTION.NEGATIVE }
-		]
-	},
-	"PuffLeftOverturn": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": true,
-				"positive": [ { "shape": "CheekPuffLeft" } ],
-				"negative": [ { "shape": "MouthUpperOverturn" }, { "shape": "MouthLowerOverturn" } ]
-			}
-		]
-	},
-	"PuffUpperOverturn": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": false,
-				"positive": [ { "shape": "CheekPuffRight" }, { "shape": "CheekPuffLeft" } ],
-				"negative": [ { "shape": "MouthUpperOverturn" } ]
-			}
-		]
-	},
-	"PuffLowerOverturn": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": false,
-				"positive": [ { "shape": "CheekPuffRight" }, { "shape": "CheekPuffLeft" } ],
-				"negative": [ { "shape": "MouthLowerOverturn" } ]
-			}
-		]
-	},
-	"PuffOverturn": {
-		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
-		"combination_shapes": [
-			{
-				"use_max_value": true,
-				"positive": [ { "shape": "CheekPuffRight" }, { "shape": "CheekPuffLeft" } ],
-				"negative": [ { "shape": "MouthUpperOverturn" }, { "shape": "MouthLowerOverturn" } ]
-			}
-		]
-	}
 }

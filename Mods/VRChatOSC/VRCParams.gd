@@ -50,10 +50,20 @@ func initialize(raw_avatar_params : Dictionary, avatar_id : String, has_changed_
 			param
 		)
 	pass
+	
+func valid_params_from_dict(dict : Dictionary) -> Array[String]:
+	var keys = dict.keys()
+	var valid = _params.filter(func (p : VRCParam): return p.binary_key in keys)
+	var shapes : Array[String] = []
+	for valid_param in valid:
+		shapes.append(valid_param.binary_key)
+	return shapes
 
 ## Updates a particular key to the supplied value.
 ## This func takes care of the exchange between binary/float parameters in VRC tracking.
 func update_value(key : String, value):
+	
+	# TODO: Add cache for binary_key -> VRCParam. Make sure to reset in .reset method.
 	var params : Array[VRCParam] = _params.filter(func (p : VRCParam): return p.binary_key == key)
 	if len(params) == 0:
 		return

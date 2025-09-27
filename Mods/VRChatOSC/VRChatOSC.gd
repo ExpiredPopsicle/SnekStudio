@@ -8,6 +8,8 @@ class_name VRChatOSC
 var osc_query_name : String = str(randi_range(500000, 5000000))
 var osc_server_name : String = str(randi_range(500000, 5000000))
 var vrchat_osc_query_endpoint : String = ""
+## Cached processed keys that exist on the current avatar.
+var cached_valid_keys : Array[String] = []
 ## The current value of the avatar ID.
 var current_avatar_id : String
 ## The previous value of the avatar ID.
@@ -263,25 +265,29 @@ func _process(delta : float) -> void:
 	if vrchat_osc_query_endpoint == "":
 		return
 		
-	curr_client_send_time += delta
-	if curr_client_send_time > client_send_rate_limit_ms / 1000:
-		curr_client_send_time = 0
+	#curr_client_send_time += delta
+	#if curr_client_send_time > client_send_rate_limit_ms / 1000:
+	#	curr_client_send_time = 0
 
-		# Map the blendshapes we have from mediapipe to the unified versions.
-		var unified_blendshapes : Dictionary = _map_blendshapes_to_unified()
-		
-		# Apply unified blendshape simplification mapping
-		_apply_transform_rules(unified_blendshapes, ParameterMappings.simplified_parameter_mapping)
-		
-		# Apply legacy parameter mapping (this makes me sad)
-		_apply_transform_rules(unified_blendshapes, ParameterMappings.legacy_parameter_mapping)
-		
-		# Set params to values
-		for shape in unified_blendshapes:
-			vrc_params.update_value(shape, unified_blendshapes[shape])
+	# Map the blendshapes we have from mediapipe to the unified versions.
+	var unified_blendshapes : Dictionary = _map_blendshapes_to_unified()
+	
+	# Apply unified blendshape simplification mapping
+	_apply_transform_rules(unified_blendshapes, ParameterMappings.simplified_parameter_mapping)
+	# Apply legacy parameter mapping (this makes me sad)
+	_apply_transform_rules(unified_blendshapes, ParameterMappings.legacy_parameter_mapping)
 
-		# Finally, send all dirty params off to VRC
-		_send_dirty_params()
+	if len(cached_valid_keys) == 0:
+		cached_valid_keys = vrc_params.valid_params_from_dict(unified_blendshapes)
+
+	# Set params to values
+	for shape in unified_blendshapes:
+		if not shape in cached_valid_keys:
+			continue
+		vrc_params.update_value(shape, unified_blendshapes[shape])
+
+	# Finally, send all dirty params off to VRC
+	_send_dirty_params()
 
 
 func _map_blendshapes_to_unified() -> Dictionary:
@@ -291,6 +297,8 @@ func _map_blendshapes_to_unified() -> Dictionary:
 		if not arkit_to_unified_mapping.has(blendshape):
 			continue
 		var unified_blendshape = arkit_to_unified_mapping[blendshape]
+		#if len(cached_valid_keys) > 0 and not cached_valid_keys.has(unified_blendshape):
+		#	continue
 		unified_blendshapes[unified_blendshape] = blendshapes[blendshape]
 
 	return unified_blendshapes
@@ -459,6 +467,7 @@ func _avatar_params_request_complete(result : int, response_code : int,
 		# Update only if changed avi.
 		print("[VRChat OSC] Avatar has changed. Updating parameter keys, values and types.")
 		vrc_param_keys = []
+		cached_valid_keys = []
 		vrc_params.reset()
 
 	# We always pull raw avatar params to update the current value.
