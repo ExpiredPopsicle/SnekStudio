@@ -84,7 +84,10 @@ func _update_log_text():
 func _handle_selection_change():
 	var mods_list_node : ItemList = %ModsList
 	var selected = mods_list_node.get_selected_items()
-	
+
+	var gizmo : Gizmo3D = _get_app_root().get_gizmo()
+	gizmo.clear_selection()
+
 	if len(selected) > 0:
 
 		var newly_selected_mod = null
@@ -115,10 +118,15 @@ func _handle_selection_change():
 			%Mods_Settings_Panel.remove_child(child)
 			%TextEdit_ModName.text = ""
 			%TextEdit_ModName.editable = false
-	
+
+	if _selected_mod and is_instance_valid(_selected_mod):
+		gizmo.select(_selected_mod)
+
+	print("selected now: ", gizmo._selections)
+
 	_update_log_text()
 	_update_status_text()
-	
+
 func _on_mods_list_item_selected(_index):
 	_handle_selection_change()
 	
@@ -207,6 +215,8 @@ func _on_button_remove_mod_pressed():
 	mod.scene_shutdown()
 	mods_node.remove_child(mod)
 	mod.queue_free()
+	_selected_mod = null
+	mods_list_node.deselect_all()
 	_handle_selection_change()
 
 	update_mods_list()

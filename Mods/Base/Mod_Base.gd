@@ -929,6 +929,7 @@ func settings_window_add_vector3(
 	return outer_container
 
 func modify_setting(setting_name, value):
+	print("changing setting: ", setting_name, " to ", value)
 	var existing_settings = save_settings()
 	existing_settings[setting_name] = value
 	load_settings(existing_settings)

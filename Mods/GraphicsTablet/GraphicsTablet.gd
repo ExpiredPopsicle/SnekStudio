@@ -1,6 +1,5 @@
 extends Mod_Base
 
-
 func _process(delta: float) -> void:
 
 	var mouse_pos_in_window : Vector2 = get_viewport().get_mouse_position()

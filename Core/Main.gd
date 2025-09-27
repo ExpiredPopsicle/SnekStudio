@@ -733,6 +733,9 @@ func get_audio():
 func get_controller():
 	return $ModelController
 
+func get_gizmo() -> Gizmo3D:
+	return $Gizmo3D
+
 ## Get the saved user data directory. When running in the editor, this will be
 ## the "Saved" directory under the project. For running outside the editor, it
 ## will be the "Saved" directory under the same directory as the binary.

@@ -1,9 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://bst148ok43uyo"]
+[gd_scene load_steps=12 format=3 uid="uid://bst148ok43uyo"]
 
 [ext_resource type="Script" uid="uid://cfw605s4nxgam" path="res://Core/Main.gd" id="1_88riu"]
 [ext_resource type="PackedScene" uid="uid://dqrb5gghpk1iu" path="res://Core/UI/UI_Root.tscn" id="2_a0eek"]
 [ext_resource type="PackedScene" uid="uid://dq62o1q7l83ro" path="res://Core/CameraBoom/CameraBoom.tscn" id="3_ur4kn"]
 [ext_resource type="Script" uid="uid://v8u2efcjmg73" path="res://Core/ModelController.gd" id="5_upw4c"]
+[ext_resource type="Script" uid="uid://e3f1ox6y6cvg" path="res://addons/Gizmo3DScript/gizmo3D.gd" id="6_fxul2"]
 [ext_resource type="Script" uid="uid://bhjru7482htmb" path="res://Core/AudioInput/AudioStreamRecord.gd" id="10_dpnxj"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nh3ai"]
@@ -65,3 +66,7 @@ environment = SubResource("Environment_w4pqy")
 stream = SubResource("AudioStreamMicrophone_djr57")
 bus = &"Record"
 script = ExtResource("10_dpnxj")
+
+[node name="Gizmo3D" type="Node3D" parent="."]
+script = ExtResource("6_fxul2")
+metadata/_custom_type_script = "uid://e3f1ox6y6cvg"

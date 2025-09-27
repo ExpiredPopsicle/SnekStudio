@@ -38,7 +38,7 @@ window/vsync/vsync_mode=0
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/Godot-MToon-Shader/plugin.cfg", "res://addons/KiriPythonRPCWrapper/plugin.cfg", "res://addons/SnekStudioExport/plugin.cfg", "res://addons/TwitchGD4/plugin.cfg", "res://addons/godot-vrm/plugin.cfg")
+enabled=PackedStringArray("res://addons/Gizmo3DScript/plugin.cfg", "res://addons/Godot-MToon-Shader/plugin.cfg", "res://addons/KiriPythonRPCWrapper/plugin.cfg", "res://addons/SnekStudioExport/plugin.cfg", "res://addons/TwitchGD4/plugin.cfg", "res://addons/godot-vrm/plugin.cfg")
 
 [filesystem]
 
