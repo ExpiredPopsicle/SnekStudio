@@ -17,7 +17,7 @@ var vrc_params : VRCParams = VRCParams.new()
 ## Keys for quick lookup and verification.
 var vrc_param_keys : Array[String] = []
 var avatar_req : HTTPRequest
-var client_send_rate_limit_ms : int = 500
+var client_send_rate_limit_ms : int = 50
 var curr_client_send_time : float
 var processing_request : bool = false
 # Can we not JUST USE THE SAME MAPPING
@@ -128,6 +128,41 @@ func _apply_transform_rules(unified_blendshapes : Dictionary, base_dict : Dictio
 					sum += value
 					count += 1
 				unified_blendshapes[param_name] = sum / max(count, 1)
+			
+			ParameterMappings.COMBINATION_TYPE.RANGE_AVERAGE:
+				var positive_shapes : Array = shapes[0]["positive"]
+				var negative_shapes : Array = shapes[0]["negative"]
+				var use_max_value : bool = shapes[0].get("use_max_value", false)
+				if use_max_value:
+					var max_pos : float = 0.0
+					var max_neg : float = 0.0
+					for shape_info : Dictionary in positive_shapes:
+						var shape : String = shape_info["shape"]
+						var shape_type : ParameterMappings.SHAPE_KEY_TYPE = shape_info.get("shape_type", ParameterMappings.SHAPE_KEY_TYPE.UNIFIED)
+						var value : float = _get_unified_value(shape, shape_type, unified_blendshapes)
+						if value > max_pos:
+							max_pos = value
+					for shape_info : Dictionary in negative_shapes:
+						var shape : String = shape_info["shape"]
+						var shape_type : ParameterMappings.SHAPE_KEY_TYPE = shape_info.get("shape_type", ParameterMappings.SHAPE_KEY_TYPE.UNIFIED)
+						var value : float = _get_unified_value(shape, shape_type, unified_blendshapes)
+						if value > max_neg:
+							max_neg = value
+					unified_blendshapes[param_name] = max_pos + (max_neg * -1.0)
+				else:
+					var sum_pos : float = 0.0
+					var sum_neg : float = 0.0
+					for shape_info : Dictionary in positive_shapes:
+						var shape : String = shape_info["shape"]
+						var shape_type : ParameterMappings.SHAPE_KEY_TYPE = shape_info.get("shape_type", ParameterMappings.SHAPE_KEY_TYPE.UNIFIED)
+						var value : float = _get_unified_value(shape, shape_type, unified_blendshapes)
+						sum_pos += value
+					for shape_info : Dictionary in negative_shapes:
+						var shape : String = shape_info["shape"]
+						var shape_type : ParameterMappings.SHAPE_KEY_TYPE = shape_info.get("shape_type", ParameterMappings.SHAPE_KEY_TYPE.UNIFIED)
+						var value : float = _get_unified_value(shape, shape_type, unified_blendshapes)
+						sum_neg += value
+					unified_blendshapes[param_name] = (sum_pos / max(len(positive_shapes), 1)) + ((sum_neg * -1.0) / max(len(negative_shapes), 1))
 
 			ParameterMappings.COMBINATION_TYPE.RANGE:
 				var total : float = 0.0
@@ -141,7 +176,17 @@ func _apply_transform_rules(unified_blendshapes : Dictionary, base_dict : Dictio
 					else:
 						total -= value
 				unified_blendshapes[param_name] = total
-
+				
+			ParameterMappings.COMBINATION_TYPE.WEIGHTED_ADD:
+				var total : float = 0.0
+				for shape_info : Dictionary in shapes:
+					var shape : String = shape_info["shape"]
+					var shape_type : ParameterMappings.SHAPE_KEY_TYPE = shape_info.get("shape_type", ParameterMappings.SHAPE_KEY_TYPE.UNIFIED)
+					var weight : float = shape_info.get("weight", 1.0)
+					var value : float = _get_unified_value(shape, shape_type, unified_blendshapes)
+					total += value * weight
+				unified_blendshapes[param_name] = total
+				
 			ParameterMappings.COMBINATION_TYPE.WEIGHTED:
 				var src_shape_info : Dictionary = shapes[0]
 				var src_shape : String = src_shape_info["shape"]
@@ -156,6 +201,39 @@ func _apply_transform_rules(unified_blendshapes : Dictionary, base_dict : Dictio
 				var dst_weight : float = dst_shape_info["weight"]
 
 				unified_blendshapes[param_name] = src_value * src_weight + dst_value * dst_weight
+			
+			ParameterMappings.COMBINATION_TYPE.SUBTRACT:
+				var src_shape_info : Dictionary = shapes[0]
+				var src_shape : String = src_shape_info["shape"]
+				var src_type : ParameterMappings.SHAPE_KEY_TYPE = src_shape_info.get("shape_type", ParameterMappings.SHAPE_KEY_TYPE.UNIFIED)
+				var src_value : float = _get_unified_value(src_shape, src_type, unified_blendshapes)
+
+				var dst_shape_info : Dictionary = shapes[1]
+				var dst_shape : String = dst_shape_info["shape"]
+				var dst_type : ParameterMappings.SHAPE_KEY_TYPE = dst_shape_info.get("shape_type", ParameterMappings.SHAPE_KEY_TYPE.UNIFIED)
+				var dst_value : float = _get_unified_value(dst_shape, dst_type, unified_blendshapes)
+
+				unified_blendshapes[param_name] = src_value - dst_value
+
+			ParameterMappings.COMBINATION_TYPE.MAX:
+				var max_pos : float = 0.0
+				for shape_info : Dictionary in shapes:
+					var shape : String = shape_info["shape"]
+					var shape_type : ParameterMappings.SHAPE_KEY_TYPE = shape_info.get("shape_type", ParameterMappings.SHAPE_KEY_TYPE.UNIFIED)
+					var value : float = _get_unified_value(shape, shape_type, unified_blendshapes)
+					if value > max_pos:
+						max_pos = value
+				unified_blendshapes[param_name] = max_pos
+
+			ParameterMappings.COMBINATION_TYPE.MIN:
+				var min : float = 1.1 # Very unlikely > 1.0 exists given they're constrainted to 1.0
+				for shape_info : Dictionary in shapes:
+					var shape : String = shape_info["shape"]
+					var shape_type : ParameterMappings.SHAPE_KEY_TYPE = shape_info.get("shape_type", ParameterMappings.SHAPE_KEY_TYPE.UNIFIED)
+					var value : float = _get_unified_value(shape, shape_type, unified_blendshapes)
+					if value < min:
+						min = value
+				unified_blendshapes[param_name] = min
 
 func _ready() -> void:
 	avatar_req = HTTPRequest.new()

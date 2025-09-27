@@ -6,13 +6,11 @@
 [ext_resource type="Script" uid="uid://bg1sitssmsggs" path="res://Mods/VRChatOSC/OSCQueryServer.gd" id="4_ovfdg"]
 [ext_resource type="Script" uid="uid://csrri2vhxv4w5" path="res://Mods/VMCController/KiriOSC/KiriOSCServer.gd" id="5_lpbnq"]
 
-[node name="VrChatOsc" type="Node" node_paths=PackedStringArray("dns_service", "osc_client", "osc_query_server")]
+[node name="VrChatOsc" type="Node3D" node_paths=PackedStringArray("dns_service", "osc_client", "osc_query_server")]
 script = ExtResource("1_x840n")
 dns_service = NodePath("MulticastDNS")
-update_vrc_param_values = null
 osc_client = NodePath("KiriOSClient")
 osc_query_server = NodePath("OSCQueryServer")
-metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
 
 [node name="MulticastDNS" type="Node" parent="."]
 script = ExtResource("2_b4fua")
