@@ -15,6 +15,7 @@ var subwindows : Array[BasicSubWindow] = []
 
 func _process(_delta):
 	_set_process_order()
+	_process_undo_redo()
 
 func _set_process_order():
 
@@ -733,6 +734,7 @@ func get_audio():
 func get_controller():
 	return $ModelController
 
+## Get the movement/scaling/rotation gizmo.
 func get_gizmo() -> Gizmo3D:
 	return $Gizmo3D
 
@@ -777,3 +779,170 @@ static func get_added_mods_locations() -> PackedStringArray:
 		for global_path : String in paths_global:
 			paths_localized.append(ProjectSettings.localize_path(global_path))
 	return paths_localized
+
+
+
+
+#region Undo/Redo
+
+var _undo_state_stack : Array = []
+var _state_dirty_time : int = -1
+const _state_dirty_msec_before_change : int = 250
+
+## We're going to set this to true when we're in the middle of restoring state,
+## so it ignores any more attempts to mark the state as dirty.
+var _currently_restoring_state : bool = false;
+
+func _process_undo_redo() -> void:
+
+	# If the state stack is empty, initialize it with whatever the current
+	# settings are.
+	if len(_undo_state_stack) == 0:
+		var current_settings : Dictionary = serialize_settings()
+		_undo_state_stack.append(current_settings)
+
+	# Check if we're in a text widget right now. If we are, then all the
+	# undo/redo functionality should be handled by that.
+	var widget : Control = get_viewport().gui_get_focus_owner()
+	var should_undo_redo : bool = true
+	if widget is TextEdit or widget is LineEdit:
+		should_undo_redo = false
+
+	if should_undo_redo:
+		if Input.is_action_just_pressed("ui_redo"):
+			print("REDO!")
+		elif Input.is_action_just_pressed("ui_undo"):
+			print("UNDO!")
+			handle_undo()
+
+	if _state_dirty_time != -1:
+		if Time.get_ticks_msec() > _state_dirty_time + _state_dirty_msec_before_change:
+			var current_settings : Dictionary = serialize_settings()
+			if len(_undo_state_stack) == 0:
+				# Empty state stack? Push this state.
+				_undo_state_stack.append(current_settings)
+				print("undo settings saved (2)!")
+			else:
+				# Check to see if this is actually different.
+				# FIXME: Exclude camera position/direction from this.
+				# FIXME: Exclude window positions from this.
+				if _undo_state_stack[len(_undo_state_stack) - 1].hash() != current_settings.hash():
+					_undo_state_stack.append(current_settings)
+				print("undo settings saved (1)!")
+				print(JSON.stringify(current_settings, "    "))
+			_state_dirty_time = -1
+
+func _undo_needs_app_state(current_state : Dictionary, new_state : Dictionary) -> bool:
+	var cloned_1 : Dictionary = current_state.duplicate(true)
+	var cloned_2 : Dictionary = new_state.duplicate(true)
+	cloned_1.erase("mods")
+	cloned_2.erase("mods")
+	if cloned_1.hash() == cloned_2.hash():
+		return false
+	return true
+
+func _undo_needs_full_mod_update(current_state : Dictionary, new_state : Dictionary) -> bool:
+
+	# Are they probably identical? No update needed.
+	if current_state["mods"].hash() == new_state["mods"].hash():
+		return false
+
+	# If any mods were created or destroyed, we probably need a full update.
+	if len(current_state["mods"]) != len(new_state["mods"]):
+		return true
+
+	# If any object has changed type, or been re-ordered, then we need a full
+	# update.
+	for i in range(0, len(current_state["mods"])):
+		if current_state["mods"][i]["scene_path"] != new_state["mods"][i]["scene_path"]:
+			return true
+
+	# The mods are the same number, same order, and same types. Everything else
+	# can probably be updated with more targeted adjustments.
+	return false
+
+func _undo_needs_partial_mod_update(current_state : Dictionary, new_state : Dictionary) -> Array:
+
+	var changes_needed : Array = []
+
+	# Are they probably identical? No update needed.
+	if current_state["mods"].hash() == new_state["mods"].hash():
+		changes_needed
+
+	# Go through and find which mods have changes.
+	for i in range(0, len(current_state["mods"])):
+		if current_state["mods"][i].hash() != new_state["mods"][i].hash():
+			changes_needed.append(i)
+
+	return changes_needed
+
+func handle_undo() -> void:
+	if len(_undo_state_stack):
+
+		var gizmo : Gizmo3D = get_gizmo()
+
+		# Find the state to restore to. If the state on the top of the stack is
+		# identical to the current state, then we need to go back to the one
+		# before that.
+		var current_settings : Dictionary = serialize_settings()
+		var state_to_restore : Dictionary = _undo_state_stack.pop_back()
+		while current_settings.hash() == state_to_restore.hash() and len(_undo_state_stack):
+			state_to_restore = _undo_state_stack.pop_back()
+
+		_currently_restoring_state = true
+
+		# If we need to restore mods completely due to not having a 1:1 mapping,
+		# then just nuke everything.
+		if _undo_needs_full_mod_update(current_settings, state_to_restore):
+			get_gizmo().clear_selection()
+			reset_settings_to_default()
+			deserialize_settings(state_to_restore)
+			_force_update_ui()
+			get_gizmo().clear_selection()
+		else:
+
+			# Update scene state.
+			print("Checking for scene update...")
+			if _undo_needs_app_state(current_settings, state_to_restore):
+				print("Need scene update.")
+				deserialize_settings(state_to_restore, true, false)
+
+			# Update individual mods by replacing them.
+			var mods_to_update : Array = \
+				_undo_needs_partial_mod_update(current_settings, state_to_restore)
+			while len(mods_to_update):
+				var next_update_index : int = mods_to_update.pop_back()
+				var mod_data : Dictionary = state_to_restore["mods"][next_update_index]
+				var old_mod : Mod_Base = $Mods.get_child(next_update_index)
+				var new_mod : Mod_Base = load(mod_data["scene_path"]).instantiate()
+
+				var old_mod_was_selected : bool = gizmo.is_selected(old_mod)
+				gizmo.deselect(old_mod)
+
+				# Shutdown and remove the old mod.
+				old_mod.scene_shutdown()
+				$Mods.remove_child(old_mod)
+				old_mod.queue_free()
+
+				# Insert the new mod.
+				$Mods.add_child(new_mod)
+				$Mods.move_child(new_mod, next_update_index)
+				new_mod.load_settings(mod_data)
+				new_mod.scene_init()
+
+				_force_update_ui()
+
+				if old_mod_was_selected:
+					gizmo.select(new_mod)
+
+		_currently_restoring_state = false
+
+		# Leave the state we restored to on the top of the stack.
+		_undo_state_stack.append(state_to_restore)
+
+## Indicate that a setting has been changed.
+func mark_settings_dirty() -> void:
+	if not _currently_restoring_state:
+		_state_dirty_time = Time.get_ticks_msec()
+
+#endregion

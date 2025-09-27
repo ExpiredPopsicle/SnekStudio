@@ -931,8 +931,17 @@ func settings_window_add_vector3(
 func modify_setting(setting_name, value):
 	print("changing setting: ", setting_name, " to ", value)
 	var existing_settings = save_settings()
+
+	# If the setting is the same, there's nothing to do here.
+	if existing_settings.has(value):
+		if existing_settings[setting_name] == value:
+			return
+
 	existing_settings[setting_name] = value
 	load_settings(existing_settings)
+
+	# Settings have changed. We'll need to track this for undo.
+	get_app().mark_settings_dirty()
 
 #endregion
 

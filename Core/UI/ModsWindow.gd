@@ -105,9 +105,11 @@ func _handle_selection_change():
 			if _selected_mod:
 				%Mods_Settings_Panel.add_child(
 					_selected_mod.get_settings_window())
+				_clear_modname_undo()
 				%TextEdit_ModName.text = _selected_mod.name
 				%TextEdit_ModName.editable = true
 			else:
+				_clear_modname_undo()
 				%TextEdit_ModName.text = ""
 				%TextEdit_ModName.editable = false
 	
@@ -243,7 +245,24 @@ func _update_currently_selected_name():
 		mod.name = %TextEdit_ModName.text
 		mods_list_node.set_item_text(selected_item[0], mod.name)
 		_handle_selection_change()
+		_clear_modname_undo()
 		%TextEdit_ModName.text = mod.name
+
+func _clear_modname_undo():
+	# This appears to be what we have to do to clear the undo buffer.
+	# TextEdit just has a clear_undo_history().
+	var was_blank_last_time : bool = false
+	#var name_was : String = %TextEdit_ModName.text
+	while %TextEdit_ModName.has_undo():
+		print("undoing name... ", %TextEdit_ModName.text)
+		if %TextEdit_ModName.text == "":
+			if was_blank_last_time:
+				break
+			was_blank_last_time = true
+		else:
+			was_blank_last_time = false
+		%TextEdit_ModName.menu_option(LineEdit.MENU_UNDO)
+	#%TextEdit_ModName.text = name_was
 
 func _on_text_edit_mod_name_gui_input(event):
 	if event is InputEventKey:
