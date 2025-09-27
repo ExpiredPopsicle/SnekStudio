@@ -502,7 +502,6 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 		if "mods" in settings_dict:
 			shutdown_mods()
 			for mod_definition in settings_dict["mods"]:
-				print(mod_definition)
 				var packed_scene = load(mod_definition["scene_path"])
 				if packed_scene:
 					var scene = packed_scene.instantiate()
@@ -814,9 +813,9 @@ func _process_undo_redo() -> void:
 
 	if should_undo_redo:
 		if Input.is_action_just_pressed("ui_redo"):
-			print("REDO!")
+			# TODO: Implement this.
+			pass
 		elif Input.is_action_just_pressed("ui_undo"):
-			print("UNDO!")
 			handle_undo()
 
 	if _state_dirty_time != -1:
@@ -825,7 +824,6 @@ func _process_undo_redo() -> void:
 			if len(_undo_state_stack) == 0:
 				# Empty state stack? Push this state.
 				_undo_state_stack.append(current_settings)
-				print("undo settings saved (2)!")
 			else:
 
 				# Check to see if this is actually different.
@@ -834,8 +832,7 @@ func _process_undo_redo() -> void:
 
 				if not _compare_undo_states(current_settings, undo_stack_top):
 					_undo_state_stack.append(current_settings)
-				print("undo settings saved (1)!")
-				print(JSON.stringify(current_settings, "    "))
+
 			_state_dirty_time = -1
 
 func _undo_needs_app_state(current_state : Dictionary, new_state : Dictionary) -> bool:
@@ -1000,7 +997,6 @@ func handle_undo() -> void:
 				new_mod.set_name(mod_data["name"])
 				$Mods.add_child(new_mod)
 				$Mods.move_child(new_mod, next_update_index)
-				print("mod_data being restored: ", mod_data)
 				new_mod.load_settings(mod_data["settings"])
 				new_mod.update_settings_ui()
 				new_mod.scene_init()
