@@ -145,7 +145,6 @@ _data = {
 [node name="Throttle" type="Node3D"]
 
 [node name="throttle2" parent="." instance=ExtResource("1_1sn4h")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.361529, 0.533179, 0.786211)
 
 [node name="BoneAttachment3D" type="BoneAttachment3D" parent="throttle2/Throttle_Armature/Skeleton3D" index="1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)

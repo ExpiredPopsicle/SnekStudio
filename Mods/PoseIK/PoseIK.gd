@@ -396,8 +396,8 @@ func _process(delta : float) -> void:
 		update_hand(hand_landmarks_left, "Left")
 		update_hand(hand_landmarks_right, "Right")
 
-	# Solve all IK chains.
-	for chain_name in ["spine", "arm_left", "arm_right"]:
+	# Solve spine.
+	for chain_name in ["spine"]:
 		_ikchains_dict[chain_name].do_ik_chain()
 
 	# ---------------------------------------------------------------------------------------------
@@ -408,6 +408,11 @@ func _process(delta : float) -> void:
 	var head_offset : Vector3 = tracker_dict["head"]["transform"].origin - model_root.transform.origin
 	var lean_amount : float = sin(lean_check_axis.dot(head_offset))
 	handle_lean(skel, lean_amount * lean_scale)
+
+	# Solve arms.
+	for chain_name in ["arm_left", "arm_right"]:
+		_ikchains_dict[chain_name].do_ik_chain()
+
 
 func _reinit() -> void:
 	_reset_hand_landmarks()

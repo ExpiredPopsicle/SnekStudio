@@ -2,9 +2,8 @@
 
 [ext_resource type="Script" uid="uid://bhwmfiiu0cips" path="res://Mods/PoseIK/PoseIK.gd" id="1_nrhi5"]
 
-[node name="PoseIk" type="Node"]
+[node name="PoseIk" type="Node3D"]
 script = ExtResource("1_nrhi5")
-metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
 
 [node name="Head" type="Node3D" parent="."]
 

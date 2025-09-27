@@ -10,9 +10,8 @@ height = 0.1
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_spc0m"]
 
-[node name="Hotas" type="Node"]
+[node name="Hotas" type="Node3D"]
 script = ExtResource("1_spc0m")
-metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
 
 [node name="Throttle" type="MeshInstance3D" parent="."]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0.0824135, 1.27918, -0.314828)
@@ -40,7 +39,7 @@ visible = false
 mesh = SubResource("CylinderMesh_spc0m")
 
 [node name="FlightStick" parent="." instance=ExtResource("2_6uohj")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.16254, 1.2719, -0.207547)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.23954, 0)
 
 [node name="Throttle2" parent="." instance=ExtResource("3_q1wvq")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.089, 0.737428, -0.994)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.23512, 0)

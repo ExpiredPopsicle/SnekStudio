@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" uid="uid://qcxfyqj5uf20" path="res://Mods/Twitch/TwitchIntegration.gd" id="1_cpn3c"]
 
-[node name="TwitchIntegration" type="Node"]
+[node name="TwitchIntegration" type="Node3D"]
 script = ExtResource("1_cpn3c")

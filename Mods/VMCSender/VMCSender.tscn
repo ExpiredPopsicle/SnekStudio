@@ -3,9 +3,8 @@
 [ext_resource type="Script" uid="uid://c77bwcxqmqfed" path="res://Mods/VMCSender/VMCSender.gd" id="1_6stv3"]
 [ext_resource type="Script" uid="uid://goefhxca5k8g" path="res://Mods/VMCController/KiriOSC/KiriOSCClient.gd" id="2_lm3iq"]
 
-[node name="VMCSender" type="Node"]
+[node name="VMCSender" type="Node3D"]
 script = ExtResource("1_6stv3")
-metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
 
 [node name="KiriOSClient" type="Node" parent="."]
 script = ExtResource("2_lm3iq")

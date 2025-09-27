@@ -15,9 +15,11 @@ jobs:
   build:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
-    container: debian:bookworm
+    container: debian:trixie
+
     outputs:
-      version: ${{ steps.ver_exp.outputs.VERSION }}
+      version: ${{ steps.ver_exp.outputs.version }}
+
     steps:
       # Install git.
     - name: Git
@@ -30,18 +32,21 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: true
+        fetch-depth: '0'
+        fetch-tags: true
 
       # Do the build.
     - name: Build
       run: |
         Build/run_this_inside_debian_container_to_build.bsh
-    # set the version for flatpak
+
+      # set the version for flatpak
     - name: Version Export
       id: ver_exp
       shell: bash
       run: |
-        source Build/build_vars.sh
-        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        git config --global --add safe.directory /__w/SnekStudio/SnekStudio
+        echo "VERSION=$(git describe --tags --exclude nightly | cut -c2-)" >> $GITHUB_OUTPUT
 
     - name: Upload built files as artifact
       uses: actions/upload-artifact@v4
@@ -52,39 +57,126 @@ jobs:
   flatpak:
     needs: build
     runs-on: ubuntu-latest
+    container:  
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-24.08
+      options: --privileged
     steps:
-        # Create the release, I guess?
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: Auto generated release
-          draft: true
-          prerelease: false
-      
-      # check out git repository.
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-       # download build artifacts from build
-      - name: Download build output
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          path: Build/Builds/Dist/
-      - name: set VERSION
-        run: echo "VERSION=${{ needs.build.outputs.version}}" >> $GITHUB_ENV
-      - name: Build
-        run: |
-            Build/run_this_inside_ubuntu_after_build.bsh
-          
-    
-      - name: Upload Assets to Release with a wildcard
-        uses: shogo82148/actions-upload-release-asset@v1
-        with:
-          asset_path: "Build/Builds/Dist/SnekStudio_*"
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+        fetch-depth: "0"
+        fetch-tags: true
+
+    - name: Download build output
+      uses: actions/download-artifact@v4
+      with:
+        name: build-output
+        path: Build/Builds/Dist/
+
+
+    # i wish we didn't have to do this but flathub infra containers don't have package managers
+    # also since it doesn't have a pm you've got to use a container to hackily setup binfmt
+    - name: Install deps
+      run: |
+        # Use the static binaries because it's unable to use a package manager
+        curl https://download.docker.com/linux/static/stable/x86_64/docker-28.3.3.tgz --output ./docker.tgz
+        tar xzvf docker.tgz
+        mv docker/* /usr/bin
+
+    - name: Set up QEMU
+      id: qemu
+      uses: docker/setup-qemu-action@v3
+      with:
+        platforms: arm64
+
+    - name: set VERSION
+      run: echo "VERSION=${{ needs.build.outputs.version }}" >> $GITHUB_ENV
+
+    - name: setup flatpak files
+      run: |
+        cp ./flatpak/* .
+        cp -r ./Core/UI/Images/icons .
+        sed -i "s|AMD64_ARCHIVE|Build/Builds/Dist/SnekStudio_Linux-x86_64_${VERSION}.tar.gz|g" com.snekstudio.Snekstudio.yaml
+        sed -i "s|ARM64_ARCHIVE|Build/Builds/Dist/SnekStudio_Linux-arm64_${VERSION}.tar.gz|g" com.snekstudio.Snekstudio.yaml
+      
+    - name: Build x64
+      uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+      with:
+        bundle: SnekStudio_x86_64.flatpak
+        manifest-path: com.snekstudio.Snekstudio.yaml
+        cache: false # caching would mean we have to make Version more verbose
+        upload-artifact: false # we're going to push them to a release why add em as artifacts
+        arch: x86_64
+
+    - name: Build arm64
+      uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+      with:
+        bundle: SnekStudio_aarch64.flatpak
+        manifest-path: com.snekstudio.Snekstudio.yaml
+        cache: false
+        upload-artifact: false
+        arch: aarch64
+
+    - name: copy to dist
+      run: |
+        cp SnekStudio_*.flatpak Build/Builds/Dist/
+
+    - name: Upload built files as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-output-flatpak
+        path: Build/Builds/Dist/*.flatpak
+
+
+  publish:
+    needs: [build, flatpak]
+    runs-on: ubuntu-latest
+    container: debian:trixie
+
+    steps:
+
+      # Install git.
+    - name: Git
+      run: |
+        apt-get update
+        apt-get install -y git nodejs
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: true
+        fetch-depth: "0"
+        fetch-tags: true
+
+    - name: Download build output - binaries
+      uses: actions/download-artifact@v4
+      with:
+        name: build-output
+        path: Build/Builds/Dist/
+
+    - name: Download build output - flatpak
+      uses: actions/download-artifact@v4
+      with:
+        name: build-output-flatpak
+        path: Build/Builds/Dist/
+
+      # Create the release, I guess?
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: Auto generated release
+        draft: true
+        prerelease: false
+
+    - name: Upload Assets to Release with a wildcard
+      uses: shogo82148/actions-upload-release-asset@v1
+      with:
+        asset_path: "Build/Builds/Dist/SnekStudio_*"
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
