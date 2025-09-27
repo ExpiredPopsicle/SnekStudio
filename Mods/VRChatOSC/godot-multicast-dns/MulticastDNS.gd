@@ -51,7 +51,8 @@ func _process(delta : float) -> void:
 
 		on_receive.emit(dns_packet, packet)
 
-func send_query(packet : DNSPacket):
+## Sends DNS Packet to all connected client peers (UDP).
+func send_packet(packet : DNSPacket):
 	var raw_packet : StreamPeerBuffer = packet.to_packet()
 	var byte_array : PackedByteArray = raw_packet.data_array
 	for client : PacketPeerUDP in clients:

@@ -13,6 +13,8 @@ func reset():
 	_has_changed_avi = false
 	_avatar_id = ""
 	_raw_params = {}
+	_float_params = {}
+	_binary_params = {}
 
 func initialize(raw_avatar_params : Dictionary, avatar_id : String, has_changed_avi : bool):
 	_raw_params = raw_avatar_params

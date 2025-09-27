@@ -62,8 +62,8 @@ func to_packet(packet: StreamPeerBuffer, cache: Dictionary) -> void:
 
 		RECORD_TYPE.SRV:
 			# priority, weight, port, target
-			packet.put_u16(data["priority"])
-			packet.put_u16(data["weight"])
+			packet.put_u16(data.get("priority", 1))
+			packet.put_u16(data.get("weight", 1))
 			packet.put_u16(data["port"])
 			# target is a domain name (labels array)
 			var srv_q = DNSQuestion.new()

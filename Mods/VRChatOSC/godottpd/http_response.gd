@@ -10,7 +10,7 @@ var client: StreamPeer
 var server_identifier: String = "GodotTPD"
 
 ## A dictionary of headers
-## [br] Headers can be set using the `set(name, value)` function
+## [br] Headers can be set using the `set_header(name, value)` function
 var headers: Dictionary = {}
 
 ## An array of cookies
@@ -77,7 +77,7 @@ func json(status_code: int, data) -> void:
 ## [br]
 ## [br][param field] - The name of the header. i.e. [code]Accept-Type[/code]
 ## [br][param value] - The value of this header. i.e. [code]application/json[/code]
-func set(field: StringName, value: Variant) -> void:
+func set_header(field: StringName, value: Variant) -> void:
 	headers[field] = value
 
 

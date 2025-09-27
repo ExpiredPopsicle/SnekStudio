@@ -1,13 +1,17 @@
-[gd_scene load_steps=4 format=3 uid="uid://cpe3ulnjnrapo"]
+[gd_scene load_steps=6 format=3 uid="uid://cpe3ulnjnrapo"]
 
 [ext_resource type="Script" uid="uid://ysgfrvghy1n5" path="res://Mods/VRChatOSC/VRChatOSC.gd" id="1_x840n"]
 [ext_resource type="Script" uid="uid://bfemeu7ysbxwc" path="res://Mods/VRChatOSC/godot-multicast-dns/MulticastDNS.gd" id="2_b4fua"]
 [ext_resource type="Script" uid="uid://goefhxca5k8g" path="res://Mods/VMCController/KiriOSC/KiriOSCClient.gd" id="3_faft7"]
+[ext_resource type="Script" uid="uid://bg1sitssmsggs" path="res://Mods/VRChatOSC/OSCQueryServer.gd" id="4_ovfdg"]
+[ext_resource type="Script" uid="uid://csrri2vhxv4w5" path="res://Mods/VMCController/KiriOSC/KiriOSCServer.gd" id="5_lpbnq"]
 
-[node name="VrChatOsc" type="Node" node_paths=PackedStringArray("dns_service", "osc_client")]
+[node name="VrChatOsc" type="Node" node_paths=PackedStringArray("dns_service", "osc_client", "osc_query_server")]
 script = ExtResource("1_x840n")
 dns_service = NodePath("MulticastDNS")
+update_vrc_param_values = null
 osc_client = NodePath("KiriOSClient")
+osc_query_server = NodePath("OSCQueryServer")
 metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
 
 [node name="MulticastDNS" type="Node" parent="."]
@@ -17,3 +21,12 @@ metadata/_custom_type_script = "uid://bfemeu7ysbxwc"
 [node name="KiriOSClient" type="Node" parent="."]
 script = ExtResource("3_faft7")
 metadata/_custom_type_script = "uid://goefhxca5k8g"
+
+[node name="OSCQueryServer" type="Node" parent="." node_paths=PackedStringArray("osc_server")]
+script = ExtResource("4_ovfdg")
+osc_server = NodePath("../KiriOSCServer")
+metadata/_custom_type_script = "uid://bg1sitssmsggs"
+
+[node name="KiriOSCServer" type="Node" parent="."]
+script = ExtResource("5_lpbnq")
+metadata/_custom_type_script = "uid://csrri2vhxv4w5"
