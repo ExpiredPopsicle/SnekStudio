@@ -213,9 +213,15 @@ func _update_local_trackers() -> void:
 
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
 
-	$Head.global_transform = tracker_dict["head"].transform
-	$Hand_Left.global_transform = tracker_dict["hand_left"].transform
-	$Hand_Right.global_transform = tracker_dict["hand_right"].transform
+	if not tracker_dict:
+		return
+
+	if tracker_dict.has("head"):
+		$Head.global_transform = tracker_dict["head"].transform
+	if tracker_dict.has("hand_left"):
+		$Hand_Left.global_transform = tracker_dict["hand_left"].transform
+	if tracker_dict.has("hand_right"):
+		$Hand_Right.global_transform = tracker_dict["hand_right"].transform
 
 	# https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker
 	var mediapipe_hand_landmark_names : Array = [
@@ -403,11 +409,12 @@ func _process(delta : float) -> void:
 	# ---------------------------------------------------------------------------------------------
 	# Handle Leaning
 
-	var lean_check_axis : Vector3 = (skel.transform * skel.get_bone_global_pose(skel.find_bone("Hips"))).basis * Vector3(1.0, 0.0, 0.0)
-	lean_check_axis = lean_check_axis.normalized()
-	var head_offset : Vector3 = tracker_dict["head"]["transform"].origin - model_root.transform.origin
-	var lean_amount : float = sin(lean_check_axis.dot(head_offset))
-	handle_lean(skel, lean_amount * lean_scale)
+	if tracker_dict.has("head"):
+		var lean_check_axis : Vector3 = (skel.transform * skel.get_bone_global_pose(skel.find_bone("Hips"))).basis * Vector3(1.0, 0.0, 0.0)
+		lean_check_axis = lean_check_axis.normalized()
+		var head_offset : Vector3 = tracker_dict["head"]["transform"].origin - model_root.transform.origin
+		var lean_amount : float = sin(lean_check_axis.dot(head_offset))
+		handle_lean(skel, lean_amount * lean_scale)
 
 	# Solve arms.
 	for chain_name in ["arm_left", "arm_right"]:
@@ -643,10 +650,14 @@ func _update_finger_chain(finger_bone_array : Array, hand_landmarks : Array, whi
 		# Convert that to a rotation offset from the rest rotation.
 		var global_rotation_from_rest = skel.get_bone_global_rest(bone_to_modify_index).basis * rotation_axis_local
 
-		if not tracker_dict["hand_" + which_hand.to_lower()]["active"]:
-			skel.set_bone_pose_rotation(bone_to_modify_index, Basis())
+		var hand_name_with_side : String = "hand_" + which_hand.to_lower()
+		if tracker_dict.has(hand_name_with_side):
+			if not tracker_dict[hand_name_with_side]["active"]:
+				skel.set_bone_pose_rotation(bone_to_modify_index, Basis())
+			else:
+				rotate_bone_in_global_space(skel, bone_to_modify_index, global_rotation_from_rest, -angle_between)
 		else:
-			rotate_bone_in_global_space(skel, bone_to_modify_index, global_rotation_from_rest, -angle_between)
+			skel.set_bone_pose_rotation(bone_to_modify_index, Basis())
 
 		is_first_bone = false
 

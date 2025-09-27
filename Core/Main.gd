@@ -894,7 +894,6 @@ func _compare_undo_states(state1 : Variant, state2 : Variant, path_so_far : Stri
 
 		# Type mismatch.
 		if not is_instance_of(state2, TYPE_ARRAY):
-			print("mismatch8: ", path_so_far)
 			return false;
 
 		# Different array lengths.
@@ -952,11 +951,6 @@ func _pop_undo_state(current_settings : Dictionary) -> Dictionary:
 	return state_to_restore
 
 func handle_undo() -> void:
-	print("undo stack...")
-	print("---------------------------------------------------------------------")
-	for s in _undo_state_stack:
-		print(JSON.stringify(s["mods"], "    "))
-	print("---------------------------------------------------------------------")
 
 	if len(_undo_state_stack):
 
@@ -964,11 +958,6 @@ func handle_undo() -> void:
 
 		var current_settings : Dictionary = serialize_settings()
 		var state_to_restore : Dictionary = _pop_undo_state(current_settings)
-
-		print("Current state...")
-		print(JSON.stringify(current_settings["mods"], "    "))
-		print("Selected state to load...")
-		print(JSON.stringify(state_to_restore["mods"], "    "))
 
 		_currently_restoring_state = true
 
@@ -986,9 +975,7 @@ func handle_undo() -> void:
 		else:
 
 			# Update scene state.
-			print("Checking for scene update...")
 			if _undo_needs_app_state(current_settings, state_to_restore):
-				print("Need scene update.")
 				deserialize_settings(state_to_restore, true, false)
 
 			# Update individual mods by replacing them.
@@ -1006,9 +993,7 @@ func handle_undo() -> void:
 				old_mod.scene_shutdown()
 				$Mods.remove_child(old_mod)
 				old_mod.queue_free()
-				gizmo.clear_selection()
 				_force_update_ui()
-				gizmo.clear_selection()
 
 				# Insert the newly restored mod.
 				var new_mod : Mod_Base = load(mod_data["scene_path"]).instantiate()

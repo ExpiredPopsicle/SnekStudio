@@ -90,8 +90,8 @@ func save_settings():
 
 	if needs_3D_transform():
 		ret["_base_position"] = str(transform.origin)
-		print("HAS BASE (saving): ", ret["_base_position"])
 		ret["_base_rotation"] = str(transform.basis.get_euler())
+		ret["_base_scale"] = str(transform.basis.get_scale())
 
 	for prop in _settings_properties:
 		if "is_color" in prop["args"] and prop["args"]["is_color"]:
@@ -120,18 +120,16 @@ func load_settings(_settings_dict):
 	# Make the new complete settings by taking the old ones and copying over the
 	# new settings into it.
 	var new_settings = old_settings.duplicate()
-	print("_settings_dict base position: ", _settings_dict["_base_position"])
 	new_settings.merge(_settings_dict, true)
-	print("new_settings base position: ", new_settings["_base_position"])
 
 	load_before(old_settings, new_settings)
 
 	if new_settings.has("_base_position"):
-		print("HAS BASE POSITION: ", new_settings["_base_position"])
 		transform.origin = _parse_string_vec3(str(new_settings["_base_position"]))
 	if new_settings.has("_base_rotation"):
 		transform.basis = Basis.from_euler(_parse_string_vec3(str(new_settings["_base_rotation"])))
-	# FIXME: Add scale
+	if new_settings.has("_base_scale"):
+		transform.basis = transform.basis * Basis.from_scale(_parse_string_vec3(str(new_settings["_base_scale"])))
 
 	for prop in _settings_properties:
 		# FIXME: Should we just deduce is_color from the type of the property?
@@ -856,7 +854,7 @@ func add_tracked_setting(
 			new_setting_prop["args"].get("values", {}),
 			new_setting_prop["args"].get("allow_multiple", false),
 			new_setting_prop["args"].get("combobox", false))
-			
+
 	elif prop_val is Color:
 		new_widget = settings_window_add_colorpicker(
 			new_setting_prop["label"], new_setting_prop["name"])
@@ -890,30 +888,30 @@ func _test_redeem_with_settings_value(prop_name, local=true):
 func _get_file_path(prop_name, widget: LineEdit, filter: PackedStringArray):
 	var prop_val = get(prop_name)
 	var file_dialog = get_app()._get_ui_root().get_node("LineEditFileDialog")
-	
+
 	# Set the file format filter
 	file_dialog.set_filters(filter)
 	file_dialog.popup()
-	
+
 	prop_val = await file_dialog.file_selected
 	modify_setting(prop_name, prop_val)
 	widget.set_text(prop_val)
-	
+
 	# clear filter
 	file_dialog.clear_filters()
 
-# Pull settings from app and update UI widgets to reflect them.	
+# Pull settings from app and update UI widgets to reflect them.
 #
 # Default version here. Can be overridden.
 func update_settings_ui(_ui_window = null):
 	var current_settings = save_settings()
-	
+
 	var keys = current_settings.keys()
 	for key in keys:
 		if key in _settings_widgets_by_setting_name:
 			var value = current_settings[key]
 			var widget = _settings_widgets_by_setting_name[key]
-			
+
 			# Checkbox/boolean
 			if widget is CheckBox:
 				widget.button_pressed = value
@@ -925,16 +923,16 @@ func update_settings_ui(_ui_window = null):
 			if widget is SpinBox:
 				value = roundi(value)
 				widget.value = value
-			
+
 			# BasicSliderWithNumber/float
 			if widget is BasicSliderWithNumber:
 				value = roundf((value - widget.min_value) / widget.step) * widget.step + widget.min_value
 				widget.value = value
-			
+
 			if widget is ColorPickerButton:
 				widget.color = value
 				value = Color(value)
-			
+
 			# ItemList/array
 			if widget is ItemList:
 				widget.deselect_all()
@@ -953,7 +951,7 @@ func update_settings_ui(_ui_window = null):
 
 			if widget is VectorSettingWidget:
 				widget.value = value
-			
+
 			var default_value = widget.get_meta("default")
 			var is_default = false
 			if value is float:
@@ -963,8 +961,6 @@ func update_settings_ui(_ui_window = null):
 			var reset_default = widget.get_meta("reset_button")
 			reset_default.disabled = is_default
 			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
-
-
 
 #endregion
 
