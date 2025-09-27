@@ -88,6 +88,11 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 func save_settings():
 	var ret = {}
 
+	if needs_3D_transform():
+		ret["_base_position"] = str(transform.origin)
+		print("HAS BASE (saving): ", ret["_base_position"])
+		ret["_base_rotation"] = str(transform.basis.get_euler())
+
 	for prop in _settings_properties:
 		if "is_color" in prop["args"] and prop["args"]["is_color"]:
 			ret[prop["name"]] = get(prop["name"]).to_html()
@@ -115,9 +120,18 @@ func load_settings(_settings_dict):
 	# Make the new complete settings by taking the old ones and copying over the
 	# new settings into it.
 	var new_settings = old_settings.duplicate()
+	print("_settings_dict base position: ", _settings_dict["_base_position"])
 	new_settings.merge(_settings_dict, true)
+	print("new_settings base position: ", new_settings["_base_position"])
 
 	load_before(old_settings, new_settings)
+
+	if new_settings.has("_base_position"):
+		print("HAS BASE POSITION: ", new_settings["_base_position"])
+		transform.origin = _parse_string_vec3(str(new_settings["_base_position"]))
+	if new_settings.has("_base_rotation"):
+		transform.basis = Basis.from_euler(_parse_string_vec3(str(new_settings["_base_rotation"])))
+	# FIXME: Add scale
 
 	for prop in _settings_properties:
 		# FIXME: Should we just deduce is_color from the type of the property?
@@ -132,187 +146,6 @@ func load_settings(_settings_dict):
 
 	load_after(old_settings, new_settings)
 
-## Create a new setting group. This is a collapsible (default collapsed) group
-## of settings in the settings window. Useful for adding advanced settings that
-## you wouldn't normally need to mess with.
-func add_setting_group(group_name : String, label_text : String) -> SettingsWindowGroup:
-	var window : Container = get_settings_window()
-
-	assert(not (group_name in _settings_groups))
-
-	var new_control : SettingsWindowGroup = \
-		preload("res://Core/UI/SettingsWindowGroup.tscn").instantiate()
-	window.add_child(new_control)
-	_settings_groups[group_name] = new_control
-	new_control.set_label(label_text)
-
-	return new_control
-
-func add_tracked_setting(
-	setting_name : String,
-	label_text : String,
-	extra_args : Dictionary = {},
-	group_name : String = ""):
-
-	# Just make sure the property is actually in the list.
-	var prop_found = false
-	var props_list = get_property_list()
-	for prop in props_list:
-		if prop["name"] == setting_name:
-			prop_found = true
-			break
-	assert(prop_found)
-
-	var new_setting_prop = {}
-	new_setting_prop["name"] = setting_name
-	new_setting_prop["label"] = label_text
-	new_setting_prop["args"] = extra_args
-
-	if get(setting_name) is Color:
-		new_setting_prop["args"]["is_color"] = true
-
-	_settings_properties.append(new_setting_prop)
-
-	var prop_val = get(new_setting_prop["name"])
-
-	var new_widget : Control = null
-
-	if prop_val is String:
-		new_widget = settings_window_add_lineedit(
-			new_setting_prop["label"], new_setting_prop["name"],
-			new_setting_prop["args"].get("is_redeem", false),
-			new_setting_prop["args"].get("is_fileaccess", false))
-
-	elif prop_val is bool:
-		new_widget = settings_window_add_boolean(new_setting_prop["label"], new_setting_prop["name"])
-
-	elif prop_val is float:
-		new_widget = settings_window_add_slider_with_number(
-			new_setting_prop["label"], new_setting_prop["name"],
-			new_setting_prop["args"].get("min", 0.0),
-			new_setting_prop["args"].get("max", 1.0),
-			new_setting_prop["args"].get("step", 0.1))
-
-	elif prop_val is int:
-		new_widget = settings_window_add_spinbox(
-			new_setting_prop["label"], new_setting_prop["name"],
-			new_setting_prop["args"].get("min", 0),
-			new_setting_prop["args"].get("max", 4294967296))
-
-	elif prop_val is Array:
-		new_widget = settings_window_add_selector(
-			new_setting_prop["label"], new_setting_prop["name"],
-			new_setting_prop["args"].get("values", {}),
-			new_setting_prop["args"].get("allow_multiple", false),
-			new_setting_prop["args"].get("combobox", false))
-			
-	elif prop_val is Color:
-		new_widget = settings_window_add_colorpicker(
-			new_setting_prop["label"], new_setting_prop["name"])
-
-	elif prop_val is Vector3:
-		new_widget = settings_window_add_vector3(
-			new_setting_prop["label"], new_setting_prop["name"])
-
-	else:
-		# I don't recognize that type for a new setting.
-		assert(false)
-
-	if new_widget:
-		if group_name == "":
-			var window : Container = get_settings_window()
-			window.add_child(new_widget)
-		else:
-			assert(group_name in _settings_groups)
-			var group_widget : SettingsWindowGroup = \
-				_settings_groups[group_name]
-			group_widget.add_setting_control(new_widget)
-
-func _test_redeem_with_settings_value(prop_name, local=true):
-	var prop_val = get(prop_name)
-	if local:
-		handle_channel_point_redeem("testuser", "TestUser", prop_val, "Test input")
-	else:
-		get_app()._on_handle_channel_points_redeem(
-			"testuser", "TestUser", prop_val, "Test input")
-
-func _get_file_path(prop_name, widget: LineEdit, filter: PackedStringArray):
-	var prop_val = get(prop_name)
-	var file_dialog = get_app()._get_ui_root().get_node("LineEditFileDialog")
-	
-	# Set the file format filter
-	file_dialog.set_filters(filter)
-	file_dialog.popup()
-	
-	prop_val = await file_dialog.file_selected
-	modify_setting(prop_name, prop_val)
-	widget.set_text(prop_val)
-	
-	# clear filter
-	file_dialog.clear_filters()
-
-# Pull settings from app and update UI widgets to reflect them.	
-#
-# Default version here. Can be overridden.
-func update_settings_ui(_ui_window = null):
-	var current_settings = save_settings()
-	
-	var keys = current_settings.keys()
-	for key in keys:
-		if key in _settings_widgets_by_setting_name:
-			var value = current_settings[key]
-			var widget = _settings_widgets_by_setting_name[key]
-			
-			# Checkbox/boolean
-			if widget is CheckBox:
-				widget.button_pressed = value
-
-			# LineEdit/string
-			if widget is LineEdit:
-				widget.text = value
-
-			if widget is SpinBox:
-				value = roundi(value)
-				widget.value = value
-			
-			# BasicSliderWithNumber/float
-			if widget is BasicSliderWithNumber:
-				value = roundf((value - widget.min_value) / widget.step) * widget.step + widget.min_value
-				widget.value = value
-			
-			if widget is ColorPickerButton:
-				widget.color = value
-				value = Color(value)
-			
-			# ItemList/array
-			if widget is ItemList:
-				widget.deselect_all()
-				for val in value:
-					for item_index in range(widget.item_count):
-						if widget.get_item_text(item_index) == val:
-							widget.select(item_index)
-							break
-
-			if widget is OptionButton:
-				for val in value:
-					for item_index in range(widget.item_count):
-						if widget.get_item_text(item_index) == val:
-							widget.select(item_index)
-							break
-
-			if widget is VectorSettingWidget:
-				widget.value = value
-			
-			var default_value = widget.get_meta("default")
-			var is_default = false
-			if value is float:
-				is_default = is_equal_approx(value, default_value)
-			else:
-				is_default = value == default_value
-			var reset_default = widget.get_meta("reset_button")
-			reset_default.disabled = is_default
-			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
-
 ## Override to receive messages from the global mod message API.
 func _handle_global_mod_message(_key : String, _values : Dictionary):
 	return
@@ -320,6 +153,11 @@ func _handle_global_mod_message(_key : String, _values : Dictionary):
 ## Return a list of errors or warnings indicating that the mod may have issues.
 func check_configuration() -> PackedStringArray:
 	return []
+
+## Override this to keep the gizmo from showing up when it's not needed.
+## Defaults to true so that we can have visual-only mods withotu any code.
+func needs_3D_transform() -> bool:
+	return true
 
 #endregion
 
@@ -942,6 +780,191 @@ func modify_setting(setting_name, value):
 
 	# Settings have changed. We'll need to track this for undo.
 	get_app().mark_settings_dirty()
+
+## Create a new setting group. This is a collapsible (default collapsed) group
+## of settings in the settings window. Useful for adding advanced settings that
+## you wouldn't normally need to mess with.
+func add_setting_group(group_name : String, label_text : String) -> SettingsWindowGroup:
+	var window : Container = get_settings_window()
+
+	assert(not (group_name in _settings_groups))
+
+	var new_control : SettingsWindowGroup = \
+		preload("res://Core/UI/SettingsWindowGroup.tscn").instantiate()
+	window.add_child(new_control)
+	_settings_groups[group_name] = new_control
+	new_control.set_label(label_text)
+
+	return new_control
+
+## Add a settings property that we'll automatically make a configuration widget
+## and serialization settings for.
+func add_tracked_setting(
+	setting_name : String,
+	label_text : String,
+	extra_args : Dictionary = {},
+	group_name : String = ""):
+
+	# Just make sure the property is actually in the list.
+	var prop_found = false
+	var props_list = get_property_list()
+	for prop in props_list:
+		if prop["name"] == setting_name:
+			prop_found = true
+			break
+	assert(prop_found)
+
+	var new_setting_prop = {}
+	new_setting_prop["name"] = setting_name
+	new_setting_prop["label"] = label_text
+	new_setting_prop["args"] = extra_args
+
+	if get(setting_name) is Color:
+		new_setting_prop["args"]["is_color"] = true
+
+	_settings_properties.append(new_setting_prop)
+
+	var prop_val = get(new_setting_prop["name"])
+
+	var new_widget : Control = null
+
+	if prop_val is String:
+		new_widget = settings_window_add_lineedit(
+			new_setting_prop["label"], new_setting_prop["name"],
+			new_setting_prop["args"].get("is_redeem", false),
+			new_setting_prop["args"].get("is_fileaccess", false))
+
+	elif prop_val is bool:
+		new_widget = settings_window_add_boolean(new_setting_prop["label"], new_setting_prop["name"])
+
+	elif prop_val is float:
+		new_widget = settings_window_add_slider_with_number(
+			new_setting_prop["label"], new_setting_prop["name"],
+			new_setting_prop["args"].get("min", 0.0),
+			new_setting_prop["args"].get("max", 1.0),
+			new_setting_prop["args"].get("step", 0.1))
+
+	elif prop_val is int:
+		new_widget = settings_window_add_spinbox(
+			new_setting_prop["label"], new_setting_prop["name"],
+			new_setting_prop["args"].get("min", 0),
+			new_setting_prop["args"].get("max", 4294967296))
+
+	elif prop_val is Array:
+		new_widget = settings_window_add_selector(
+			new_setting_prop["label"], new_setting_prop["name"],
+			new_setting_prop["args"].get("values", {}),
+			new_setting_prop["args"].get("allow_multiple", false),
+			new_setting_prop["args"].get("combobox", false))
+			
+	elif prop_val is Color:
+		new_widget = settings_window_add_colorpicker(
+			new_setting_prop["label"], new_setting_prop["name"])
+
+	elif prop_val is Vector3:
+		new_widget = settings_window_add_vector3(
+			new_setting_prop["label"], new_setting_prop["name"])
+
+	else:
+		# I don't recognize that type for a new setting.
+		assert(false)
+
+	if new_widget:
+		if group_name == "":
+			var window : Container = get_settings_window()
+			window.add_child(new_widget)
+		else:
+			assert(group_name in _settings_groups)
+			var group_widget : SettingsWindowGroup = \
+				_settings_groups[group_name]
+			group_widget.add_setting_control(new_widget)
+
+func _test_redeem_with_settings_value(prop_name, local=true):
+	var prop_val = get(prop_name)
+	if local:
+		handle_channel_point_redeem("testuser", "TestUser", prop_val, "Test input")
+	else:
+		get_app()._on_handle_channel_points_redeem(
+			"testuser", "TestUser", prop_val, "Test input")
+
+func _get_file_path(prop_name, widget: LineEdit, filter: PackedStringArray):
+	var prop_val = get(prop_name)
+	var file_dialog = get_app()._get_ui_root().get_node("LineEditFileDialog")
+	
+	# Set the file format filter
+	file_dialog.set_filters(filter)
+	file_dialog.popup()
+	
+	prop_val = await file_dialog.file_selected
+	modify_setting(prop_name, prop_val)
+	widget.set_text(prop_val)
+	
+	# clear filter
+	file_dialog.clear_filters()
+
+# Pull settings from app and update UI widgets to reflect them.	
+#
+# Default version here. Can be overridden.
+func update_settings_ui(_ui_window = null):
+	var current_settings = save_settings()
+	
+	var keys = current_settings.keys()
+	for key in keys:
+		if key in _settings_widgets_by_setting_name:
+			var value = current_settings[key]
+			var widget = _settings_widgets_by_setting_name[key]
+			
+			# Checkbox/boolean
+			if widget is CheckBox:
+				widget.button_pressed = value
+
+			# LineEdit/string
+			if widget is LineEdit:
+				widget.text = value
+
+			if widget is SpinBox:
+				value = roundi(value)
+				widget.value = value
+			
+			# BasicSliderWithNumber/float
+			if widget is BasicSliderWithNumber:
+				value = roundf((value - widget.min_value) / widget.step) * widget.step + widget.min_value
+				widget.value = value
+			
+			if widget is ColorPickerButton:
+				widget.color = value
+				value = Color(value)
+			
+			# ItemList/array
+			if widget is ItemList:
+				widget.deselect_all()
+				for val in value:
+					for item_index in range(widget.item_count):
+						if widget.get_item_text(item_index) == val:
+							widget.select(item_index)
+							break
+
+			if widget is OptionButton:
+				for val in value:
+					for item_index in range(widget.item_count):
+						if widget.get_item_text(item_index) == val:
+							widget.select(item_index)
+							break
+
+			if widget is VectorSettingWidget:
+				widget.value = value
+			
+			var default_value = widget.get_meta("default")
+			var is_default = false
+			if value is float:
+				is_default = is_equal_approx(value, default_value)
+			else:
+				is_default = value == default_value
+			var reset_default = widget.get_meta("reset_button")
+			reset_default.disabled = is_default
+			reset_default.self_modulate = 0xFFFFFFFF * int(!is_default)
+
+
 
 #endregion
 

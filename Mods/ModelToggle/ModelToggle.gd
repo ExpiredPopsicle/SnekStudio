@@ -63,3 +63,6 @@ func _ready():
 	add_tracked_setting("redeem_name", "Redeem name", {"is_redeem" : true})
 	add_tracked_setting("time_until_undo", "Time until reset", {"min": 0.0, "max":24*60})
 	update_settings_ui()
+
+func needs_3D_transform() -> bool:
+	return false

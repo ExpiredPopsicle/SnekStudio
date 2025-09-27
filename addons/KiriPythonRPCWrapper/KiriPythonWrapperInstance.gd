@@ -239,7 +239,6 @@ func execute_python(
 	open_terminal : bool = false):
 
 	var python_exe_path : String = _get_python_executable()
-	print("Python exe path: ", python_exe_path)
 	return OS.execute(
 		python_exe_path, args, output,
 		read_stderr, open_terminal)

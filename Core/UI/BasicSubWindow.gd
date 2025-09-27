@@ -159,10 +159,8 @@ func _on_window_title_panel_gui_input(event):
 				is_move_dragging = true
 				_drag_start_position = position
 				_drag_current_position = Vector2(0, 0)
-				print("starting drag")
 			else:
 				is_move_dragging = false
-				print("Stopping drag")
 
 func _on_window_border_mouse_entered():
 	is_mouse_in_border = true
@@ -288,6 +286,11 @@ func close_window():
 		popout_window.hide()
 	else:
 		hide()
+
+func is_window_visible():
+	if popped_out:
+		return popout_window.visible
+	return visible
 
 func show_window():
 	visible = true

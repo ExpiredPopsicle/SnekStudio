@@ -25,10 +25,6 @@ config/icon="res://Core/UI/Images/kiri_smug.png"
 buses/default_bus_layout="res://Core/AudioInput/default_bus_layout.tres"
 driver/enable_input=true
 
-[debug]
-
-settings/stdout/print_fps=true
-
 [display]
 
 window/size/transparent=true

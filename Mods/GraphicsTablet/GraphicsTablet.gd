@@ -53,6 +53,11 @@ func _process(delta: float) -> void:
 
 
 	for side in ["right"]:
+
+		# Don't crash without tracking data.
+		if not tracker_dict.has("hand_" + side):
+			continue
+
 		if not tracker_dict["hand_" + side]["active"]:
 
 			var hand_tracker : Node3D = %Hand

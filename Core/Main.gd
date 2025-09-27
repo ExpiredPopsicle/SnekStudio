@@ -99,15 +99,19 @@ func _load_mods() -> void:
 	_mods_loaded = true
 
 func _ready():
-	
+
 	_load_mods()
 
 	set_background_transparency(true)
 
 	# Auto-load on startup.
 	load_settings()
-	
+
 	$AudioStreamRecord.play()
+
+	# When the gizmo is used to move a module, mark the settings state as dirty,
+	# so we can undo the movement.
+	get_gizmo().transform_end.connect(func(mode): mark_settings_dirty() )
 
 func _exit_tree():
 	# We may need to kill some background processes and stuff (like the
@@ -461,9 +465,9 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 				settings_dict["volume_input"])
 				
 		if _setting_changed("sound_device_input", old_settings_dict, settings_dict):
-			print("output device before setting input: ", AudioServer.get_output_device())
+			#print("output device before setting input: ", AudioServer.get_output_device())
 			AudioServer.set_input_device(settings_dict["sound_device_input"])
-			print("output device after setting input:  ", AudioServer.get_output_device())
+			#print("output device after setting input:  ", AudioServer.get_output_device())
 			_audio_needs_restart = true
 		#else:
 		#	AudioServer.set_input_device("Default")
@@ -823,10 +827,12 @@ func _process_undo_redo() -> void:
 				_undo_state_stack.append(current_settings)
 				print("undo settings saved (2)!")
 			else:
+
 				# Check to see if this is actually different.
-				# FIXME: Exclude camera position/direction from this.
-				# FIXME: Exclude window positions from this.
-				if _undo_state_stack[len(_undo_state_stack) - 1].hash() != current_settings.hash():
+				var undo_stack_top : Dictionary = _undo_state_stack[len(_undo_state_stack) - 1]
+				_clean_skipped_undo_data(current_settings, undo_stack_top)
+
+				if not _compare_undo_states(current_settings, undo_stack_top):
 					_undo_state_stack.append(current_settings)
 				print("undo settings saved (1)!")
 				print(JSON.stringify(current_settings, "    "))
@@ -835,8 +841,7 @@ func _process_undo_redo() -> void:
 func _undo_needs_app_state(current_state : Dictionary, new_state : Dictionary) -> bool:
 	var cloned_1 : Dictionary = current_state.duplicate(true)
 	var cloned_2 : Dictionary = new_state.duplicate(true)
-	cloned_1.erase("mods")
-	cloned_2.erase("mods")
+	_clean_skipped_undo_data(current_state, new_state)
 	if cloned_1.hash() == cloned_2.hash():
 		return false
 	return true
@@ -876,29 +881,108 @@ func _undo_needs_partial_mod_update(current_state : Dictionary, new_state : Dict
 
 	return changes_needed
 
+func _clean_skipped_undo_data(
+	current_state : Dictionary,
+	destination_state : Dictionary):
+	destination_state["camera"] = current_state["camera"]
+	destination_state["subwindows"] = current_state["subwindows"]
+
+## Returns true if identical.
+func _compare_undo_states(state1 : Variant, state2 : Variant, path_so_far : String = "") -> bool:
+
+	if is_instance_of(state1, TYPE_ARRAY):
+
+		# Type mismatch.
+		if not is_instance_of(state2, TYPE_ARRAY):
+			print("mismatch8: ", path_so_far)
+			return false;
+
+		# Different array lengths.
+		if len(state1) != len(state2):
+			return false
+
+		# Different array contents = mismatch.
+		for i in range(0, len(state1)):
+			if not _compare_undo_states(state1[i], state2[i], path_so_far + "[" + str(i) + "]"):
+				return false;
+
+	elif is_instance_of(state2, TYPE_DICTIONARY):
+
+		# Type mismatch.
+		if not is_instance_of(state2, TYPE_DICTIONARY):
+			return false;
+
+		var k1 : Array = state1.keys()
+		k1.sort()
+		var k2 : Array = state2.keys()
+		k2.sort()
+
+		# Different keys
+		if not _compare_undo_states(k1, k2):
+			return false
+
+		# Contents mismatch.
+		for k in k1:
+			if not _compare_undo_states(state1[k], state2[k], path_so_far + "[" + str(k) + "]"):
+				return false;
+
+	else:
+
+		# All other types get reduced to strings.
+		if str(state1) != str(state2):
+			return false
+
+	return true
+
+func _pop_undo_state(current_settings : Dictionary) -> Dictionary:
+
+	if len(_undo_state_stack) == 0:
+		return current_settings
+
+	# Find the state to restore to. If the state on the top of the stack is
+	# identical to the current state, then we need to go back to the one
+	# before that.
+	var state_to_restore : Dictionary = _undo_state_stack.pop_back()
+	_clean_skipped_undo_data(current_settings, state_to_restore)
+	while _compare_undo_states(current_settings, state_to_restore) and len(_undo_state_stack):
+		if len(_undo_state_stack) == 0:
+			return current_settings
+		state_to_restore = _undo_state_stack.pop_back()
+		_clean_skipped_undo_data(current_settings, state_to_restore)
+	return state_to_restore
+
 func handle_undo() -> void:
+	print("undo stack...")
+	print("---------------------------------------------------------------------")
+	for s in _undo_state_stack:
+		print(JSON.stringify(s["mods"], "    "))
+	print("---------------------------------------------------------------------")
+
 	if len(_undo_state_stack):
 
 		var gizmo : Gizmo3D = get_gizmo()
 
-		# Find the state to restore to. If the state on the top of the stack is
-		# identical to the current state, then we need to go back to the one
-		# before that.
 		var current_settings : Dictionary = serialize_settings()
-		var state_to_restore : Dictionary = _undo_state_stack.pop_back()
-		while current_settings.hash() == state_to_restore.hash() and len(_undo_state_stack):
-			state_to_restore = _undo_state_stack.pop_back()
+		var state_to_restore : Dictionary = _pop_undo_state(current_settings)
+
+		print("Current state...")
+		print(JSON.stringify(current_settings["mods"], "    "))
+		print("Selected state to load...")
+		print(JSON.stringify(state_to_restore["mods"], "    "))
 
 		_currently_restoring_state = true
 
 		# If we need to restore mods completely due to not having a 1:1 mapping,
 		# then just nuke everything.
 		if _undo_needs_full_mod_update(current_settings, state_to_restore):
+
+			# FIXME: Save/restore mod selection here.
 			get_gizmo().clear_selection()
 			reset_settings_to_default()
 			deserialize_settings(state_to_restore)
 			_force_update_ui()
 			get_gizmo().clear_selection()
+
 		else:
 
 			# Update scene state.
@@ -914,7 +998,6 @@ func handle_undo() -> void:
 				var next_update_index : int = mods_to_update.pop_back()
 				var mod_data : Dictionary = state_to_restore["mods"][next_update_index]
 				var old_mod : Mod_Base = $Mods.get_child(next_update_index)
-				var new_mod : Mod_Base = load(mod_data["scene_path"]).instantiate()
 
 				var old_mod_was_selected : bool = gizmo.is_selected(old_mod)
 				gizmo.deselect(old_mod)
@@ -923,17 +1006,25 @@ func handle_undo() -> void:
 				old_mod.scene_shutdown()
 				$Mods.remove_child(old_mod)
 				old_mod.queue_free()
+				gizmo.clear_selection()
+				_force_update_ui()
+				gizmo.clear_selection()
 
-				# Insert the new mod.
+				# Insert the newly restored mod.
+				var new_mod : Mod_Base = load(mod_data["scene_path"]).instantiate()
+				new_mod.set_name(mod_data["name"])
 				$Mods.add_child(new_mod)
 				$Mods.move_child(new_mod, next_update_index)
-				new_mod.load_settings(mod_data)
+				print("mod_data being restored: ", mod_data)
+				new_mod.load_settings(mod_data["settings"])
+				new_mod.update_settings_ui()
 				new_mod.scene_init()
 
 				_force_update_ui()
 
+				gizmo.clear_selection()
 				if old_mod_was_selected:
-					gizmo.select(new_mod)
+					select_mod(new_mod)
 
 		_currently_restoring_state = false
 
@@ -944,5 +1035,12 @@ func handle_undo() -> void:
 func mark_settings_dirty() -> void:
 	if not _currently_restoring_state:
 		_state_dirty_time = Time.get_ticks_msec()
+
+
+func select_mod(mod : Mod_Base) -> void:
+	# FIXME: This should store current selection state here in the main app, not
+	# in the UI element. Unfortunately that will be a mess to detangle because
+	# the current system is so reliant on the mod window state.
+	get_node("%UI_Root/%ModsWindow").select_mod(mod)
 
 #endregion

@@ -215,11 +215,9 @@ func unpack_python():
 	for possible_path in possible_executable_paths:
 		if FileAccess.file_exists(cache_path_godot.path_join(possible_path)):
 			cache_status["executable_path"] = possible_path
-			print("Found executable: ", possible_path)
 			break
 
 	# Mark this as completely unpacked and write out some metadata.
-	print("Writing unpacked marker.")
 	var platform_status : Dictionary = _get_platform_status()
 	var platform_status_this_platform : Dictionary = platform_status["platforms"][get_host_os_name()]
 	var python_archive_filename : String = platform_status_this_platform["complete_filename"]
@@ -325,7 +323,6 @@ func get_extra_scripts_list(platform_list : Array = []) -> Array:
 		if DirAccess.dir_exists_absolute(wheels_path):
 			var wheels_list : PackedStringArray = DirAccess.get_files_at(wheels_path)
 			for wheel in wheels_list:
-				print("Adding wheel: ", wheel)
 				var wheel_full : String = wheels_path.path_join(wheel)
 				extra_python_files.append(wheel_full)
 

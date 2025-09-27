@@ -54,6 +54,9 @@ func _on_button_add_mod_pressed() -> void:
 		mod.scene_init()
 		%ModsWindow.update_mods_list()
 
+		# Flag undo state.
+		_get_app_root().mark_settings_dirty()
+
 func _on_button_cancel_pressed():
 	close_window()
 

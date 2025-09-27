@@ -206,8 +206,6 @@ func _set_state(state : KiriSocketState, error_string=null):
 
 func _server_to_client_thread_func(connection : StreamPeerTCP, address):
 
-	print("_server_to_client_thread_func start")
-
 	_set_state(KiriSocketState.CONNECTED)
 
 	while not _should_quit:
@@ -228,8 +226,6 @@ func _server_to_client_thread_func(connection : StreamPeerTCP, address):
 
 	connection.disconnect_from_host()
 	_worker_thread = false
-	
-	print("_server_to_client_thread_func stop")
 
 func _server_thread_func(address):
 

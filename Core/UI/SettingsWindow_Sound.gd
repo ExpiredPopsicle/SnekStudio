@@ -30,7 +30,6 @@ func settings_changed_from_app():
 	var input_popup = %MenuButton_InputDevice.get_popup()
 	input_popup.clear()
 	for input_device in input_device_list:
-		print(input_device)
 		input_popup.add_item(input_device)
 		
 	if "volume_input" in settings_dict:

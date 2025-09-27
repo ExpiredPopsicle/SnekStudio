@@ -156,12 +156,10 @@ func open(path: String) -> Error:
 		return err
 
 	# Hash it.
-	print("Computing tar hash...")
 	var hashing : HashingContext = HashingContext.new()
 	hashing.start(HashingContext.HASH_SHA256)
 	hashing.update(_tar_file_cache)
 	_tar_file_hash = hashing.finish()
-	print("Done computing tar hash.")
 
 	var tar_file_offset = 0
 	var zero_filled_record_count = 0
@@ -354,7 +352,8 @@ func unpack_file(dest_path : String, filename : String, force_overwrite : bool =
 				need_permission_update = false
 				#print("Permission are fine: ", record.mode, " ", existing_permissions, " ", full_dest_path)
 			else:
-				print("Permission update needed on existing file: ", record.mode, " ", existing_permissions, " ", full_dest_path)
+				#print("Permission update needed on existing file: ", record.mode, " ", existing_permissions, " ", full_dest_path)
+				pass
 
 	if record.is_link:
 

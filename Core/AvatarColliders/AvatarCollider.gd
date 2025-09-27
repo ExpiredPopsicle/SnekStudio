@@ -10,7 +10,6 @@ func get_enabled():
 	return false
 
 func set_enabled(new_enabled):
-	print(new_enabled)
 	if new_enabled:
 		$CharacterBody3D.collision_layer = 1
 		$CharacterBody3D.collision_mask = 2

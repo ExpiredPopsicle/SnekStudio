@@ -359,11 +359,9 @@ func _scan_video_devices():
 	var dl = tracker_python_process.call_rpc_sync(
 		"enumerate_camera_devices", [])
 	var device_list : Array = dl if dl is Array else []
-	print(device_list)
 
 	for device in device_list:
 		var device_generated_name = "{name} ({backend}:{index})".format(device)
-		print(device_generated_name)
 		_devices_list.append(device_generated_name)
 		_devices_by_list_entry[device_generated_name] = device
 

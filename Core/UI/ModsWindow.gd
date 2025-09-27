@@ -8,10 +8,6 @@ var embed_mod_status_offset: int = 0
 var popout_mod_list_offset: int = 0
 var popout_mod_status_offset: int = 0
 
-func show_window():
-	super.show_window()
-	_update_log_text()
-
 func _process(_delta: float) -> void:
 	_update_error_list()
 
@@ -81,12 +77,26 @@ func _update_log_text():
 	else:
 		%TextEdit_ModLog.set_v_scroll(old_scroll_vertical) 
 
+func select_mod(mod : Mod_Base):
+	var mods_list_node : ItemList = %ModsList
+	mods_list_node.deselect_all()
+	if mod != null:
+		mods_list_node.select(mod.get_index())
+	_handle_selection_change()
+
+# FIXME: Move this, and selection-handling functionality out of this UI thing
+# and into main app state.
+func _update_gizmo() -> void:
+	var gizmo : Gizmo3D = _get_app_root().get_gizmo()
+	gizmo.clear_selection()
+	if is_window_visible():
+		if _selected_mod and is_instance_valid(_selected_mod):
+			if _selected_mod.needs_3D_transform():
+				gizmo.select(_selected_mod)
+
 func _handle_selection_change():
 	var mods_list_node : ItemList = %ModsList
 	var selected = mods_list_node.get_selected_items()
-
-	var gizmo : Gizmo3D = _get_app_root().get_gizmo()
-	gizmo.clear_selection()
 
 	if len(selected) > 0:
 
@@ -121,11 +131,7 @@ func _handle_selection_change():
 			%TextEdit_ModName.text = ""
 			%TextEdit_ModName.editable = false
 
-	if _selected_mod and is_instance_valid(_selected_mod):
-		gizmo.select(_selected_mod)
-
-	print("selected now: ", gizmo._selections)
-
+	_update_gizmo()
 	_update_log_text()
 	_update_status_text()
 
@@ -223,6 +229,10 @@ func _on_button_remove_mod_pressed():
 
 	update_mods_list()
 
+	# Flag undo state.
+	_get_app_root().mark_settings_dirty()
+
+
 func _on_button_add_mod_pressed():
 	var add_window = _get_app_root().get_node("%UI_Root/%ModAddWindow")
 	add_window._save_current_window_state()
@@ -254,7 +264,6 @@ func _clear_modname_undo():
 	var was_blank_last_time : bool = false
 	#var name_was : String = %TextEdit_ModName.text
 	while %TextEdit_ModName.has_undo():
-		print("undoing name... ", %TextEdit_ModName.text)
 		if %TextEdit_ModName.text == "":
 			if was_blank_last_time:
 				break
@@ -313,3 +322,9 @@ func deserialize_window(dict: Dictionary) -> void:
 func close_window() -> void:
 	save_current_splitter_offsets()
 	super.close_window()
+	_update_gizmo()
+
+func show_window():
+	super.show_window()
+	_update_log_text()
+	_update_gizmo()
