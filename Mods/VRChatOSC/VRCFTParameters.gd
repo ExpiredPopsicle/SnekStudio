@@ -22,6 +22,45 @@ enum DIRECTION {
 }
 
 static var simplified_parameter_mapping : Dictionary = {
+	"MouthFrown": {
+		"combination_type": COMBINATION_TYPE.AVERAGE,
+		"combination_shapes": [
+			{
+				"shape": "MouthFrownRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+			},
+			{
+				"shape": "MouthFrownLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+			},
+		]
+	},
+	"MouthSmile": {
+		"combination_type": COMBINATION_TYPE.AVERAGE,
+		"combination_shapes": [
+			{
+				"shape": "MouthSmileRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+			},
+			{
+				"shape": "MouthSmileLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+			},
+		]
+	},
+	"MouthStretch": {
+		"combination_type": COMBINATION_TYPE.AVERAGE,
+		"combination_shapes": [
+			{
+				"shape": "MouthStretchRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+			},
+			{
+				"shape": "MouthStretchLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+			},
+		]
+	},
 	"EyeWide": {
 		"combination_type": COMBINATION_TYPE.MAX,
 		"combination_shapes": [
@@ -61,6 +100,36 @@ static var simplified_parameter_mapping : Dictionary = {
 			}
 		]
 	},
+		"BrowUpRight": {
+		"combination_type": COMBINATION_TYPE.WEIGHTED,
+		"combination_shapes": [
+			{
+				"shape": "BrowOuterUpRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.6
+			},
+			{
+				"shape": "BrowInnerUpRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.4
+			},
+		]
+	},
+	"BrowUpLeft": {
+		"combination_type": COMBINATION_TYPE.WEIGHTED,
+		"combination_shapes": [
+			{
+				"shape": "BrowOuterUpLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.6
+			},
+			{
+				"shape": "BrowInnerUpLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"weight": 0.4
+			},
+		]
+	},
 	"BrowUp": {
 		"combination_type": COMBINATION_TYPE.AVERAGE,
 		"combination_shapes": [
@@ -83,19 +152,6 @@ static var simplified_parameter_mapping : Dictionary = {
 			},
 			{
 				"shape": "BrowDownLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"BrowInnerUp": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "BrowInnerUpLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "BrowInnerUpRight",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED
 			}
 		]
@@ -185,143 +241,14 @@ static var simplified_parameter_mapping : Dictionary = {
 		"combination_type": COMBINATION_TYPE.RANGE,
 		"combination_shapes": [
 			{
-				"shape": "MouthUpperRight",
+				"shape": "MouthUpperUpRight",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
 				"direction": DIRECTION.POSITIVE
 			},
 			{
-				"shape": "MouthUpperLeft",
+				"shape": "MouthUpperUpLeft",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
 				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"MouthCornerYLeft": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "MouthCornerSlantLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "MouthFrownLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"MouthCornerYRight": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "MouthCornerSlantRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "MouthFrownRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"MouthCornerY": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "MouthCornerYLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "MouthCornerYRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"SmileFrownRight": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "MouthSmileRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "MouthFrownRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"SmileFrownLeft": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "MouthSmileLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "MouthFrownLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"SmileFrown": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "SmileFrownRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "SmileFrownLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			}
-		]
-	},
-	"SmileSadRight": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "MouthSmileRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "MouthSadRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"SmileSadLeft": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "MouthSmileLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "MouthSadLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			}
-		]
-	},
-	"SmileSad": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "SmileSadRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
-			},
-			{
-				"shape": "SmileSadLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED
 			}
 		]
 	},
@@ -355,96 +282,6 @@ static var simplified_parameter_mapping : Dictionary = {
 			},
 		]
 	},
-	"BrowUpRight": {
-		"combination_type": COMBINATION_TYPE.WEIGHTED,
-		"combination_shapes": [
-			{
-				"shape": "BrowOuterUpRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 0.6
-			},
-			{
-				"shape": "BrowInnerUpRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 0.4
-			},
-		]
-	},
-	"BrowUpLeft": {
-		"combination_type": COMBINATION_TYPE.WEIGHTED,
-		"combination_shapes": [
-			{
-				"shape": "BrowOuterUpLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 0.6
-			},
-			{
-				"shape": "BrowInnerUpLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 0.4
-			},
-		]
-	},
-	"BrowDownRight": {
-		"combination_type": COMBINATION_TYPE.WEIGHTED,
-		"combination_shapes": [
-			{
-				"shape": "BrowLowererRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 0.75
-			},
-			{
-				"shape": "BrowPinchRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 0.25
-			},
-		]
-	},
-	"BrowDownLeft": {
-		"combination_type": COMBINATION_TYPE.WEIGHTED,
-		"combination_shapes": [
-			{
-				"shape": "BrowLowererLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 0.75
-			},
-			{
-				"shape": "BrowPinchLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 0.25
-			},
-		]
-	},
-	"MouthSmileRight": {
-		"combination_type": COMBINATION_TYPE.WEIGHTED,
-		"combination_shapes": [
-			{
-				"shape": "MouthCornerPullRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 0.8
-			},
-			{
-				"shape": "MouthCornerSlantRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 0.2
-			},
-		]
-	},
-	"MouthSmileLeft": {
-		"combination_type": COMBINATION_TYPE.WEIGHTED,
-		"combination_shapes": [
-			{
-				"shape": "MouthCornerPullLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 0.8
-			},
-			{
-				"shape": "MouthCornerSlantLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"weight": 0.2
-			},
-		]
-	},
 	"MouthOpen": {
 		"combination_type": COMBINATION_TYPE.WEIGHTED,
 		"combination_shapes": [
@@ -471,18 +308,17 @@ static var simplified_parameter_mapping : Dictionary = {
 		]
 	},
 	"MouthX": {
-		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_type": COMBINATION_TYPE.RANGE_AVERAGE,
 		"combination_shapes": [
 			{
-				"shape": "MouthRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "MouthLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			},
+				"use_max_value": true,
+				"positive": [{
+					"shape": "MouthUpperRight",
+				}],
+				"negative": [{
+					"shape": "MouthLowerRight"
+				}]
+			}
 		]
 	},
 	"JawX": {
@@ -552,19 +388,6 @@ static var simplified_parameter_mapping : Dictionary = {
 			},
 			{
 				"shape": "EyeLidRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-			},
-		]
-	},
-	"MouthStretch": {
-		"combination_type": COMBINATION_TYPE.AVERAGE,
-		"combination_shapes": [
-			{
-				"shape": "MouthStretchRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-			},
-			{
-				"shape": "MouthStretchLeft",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
 			},
 		]
@@ -741,6 +564,92 @@ static var simplified_parameter_mapping : Dictionary = {
 # These are mostly taken from the mapper here: 
 # https://github.com/benaclejames/VRCFaceTracking/blob/a4a66fcd7ee776b1740512a481aecac686224af0/VRCFaceTracking.Core/Params/Expressions/Legacy/Lip/UnifiedSRanMapper.cs
 static var legacy_parameter_mapping : Dictionary = {
+	"SmileFrownRight": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "MouthSmileRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "MouthFrownRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			}
+		]
+	},
+	"SmileFrownLeft": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "MouthSmileLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "MouthFrownLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			}
+		]
+	},
+	"SmileFrown": {
+		"combination_type": COMBINATION_TYPE.AVERAGE,
+		"combination_shapes": [
+			{
+				"shape": "SmileFrownRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED
+			},
+			{
+				"shape": "SmileFrownLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED
+			}
+		]
+	},
+	"SmileSadRight": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "MouthSmileRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "MouthSadRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			}
+		]
+	},
+	"SmileSadLeft": {
+		"combination_type": COMBINATION_TYPE.RANGE,
+		"combination_shapes": [
+			{
+				"shape": "MouthSmileLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.POSITIVE
+			},
+			{
+				"shape": "MouthSadLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
+				"direction": DIRECTION.NEGATIVE
+			}
+		]
+	},
+	"SmileSad": {
+		"combination_type": COMBINATION_TYPE.AVERAGE,
+		"combination_shapes": [
+			{
+				"shape": "SmileSadRight",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED
+			},
+			{
+				"shape": "SmileSadLeft",
+				"shape_type": SHAPE_KEY_TYPE.UNIFIED
+			}
+		]
+	},
 	"MouthApeShape": {
 		"combination_type": COMBINATION_TYPE.WEIGHTED_ADD,
 		"combination_shapes": [
@@ -792,36 +701,6 @@ static var legacy_parameter_mapping : Dictionary = {
 	# These are done at the end of the mapping for the
 	# sole purpose of simplification of legacy parameters.
 	# -------- START SIMPLIFIED LEGACY PARAMETERS --------
-	"SmileSadRight": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "MouthSmileRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "MouthSadRight",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			},
-		]
-	},
-	"SmileSadLeft": {
-		"combination_type": COMBINATION_TYPE.RANGE,
-		"combination_shapes": [
-			{
-				"shape": "MouthSmileLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.POSITIVE
-			},
-			{
-				"shape": "MouthSadLeft",
-				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
-				"direction": DIRECTION.NEGATIVE
-			},
-		]
-	},
 	"JawOpenSuck": {
 		"combination_type": COMBINATION_TYPE.COPY,
 		"combination_shapes": [

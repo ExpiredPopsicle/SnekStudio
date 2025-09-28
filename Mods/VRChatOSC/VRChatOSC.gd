@@ -19,7 +19,7 @@ var vrc_params : VRCParams = VRCParams.new()
 ## Keys for quick lookup and verification.
 var vrc_param_keys : Array[String] = []
 var avatar_req : HTTPRequest
-var client_send_rate_limit_ms : int = 50
+var client_send_rate_limit_ms : int = 500
 var curr_client_send_time : float
 var processing_request : bool = false
 # Can we not JUST USE THE SAME MAPPING
@@ -111,7 +111,8 @@ func _apply_transform_rules(unified_blendshapes : Dictionary, base_dict : Dictio
 					if src_value < 0:
 						src_value = abs(src_value)
 					else:
-						src_value *= -1
+						# We inverse the value from 1.0
+						src_value = 1.0 - src_value
 
 				for i in range(1, shapes.size()):
 					var dst_shape_info : Dictionary = shapes[i]
@@ -260,34 +261,56 @@ func _ready() -> void:
 		var new_value = key
 		arkit_to_unified_mapping[new_key] = new_value
 
+#FIXME: REMOVE BEFORE PR
+var hits = {}
 func _process(delta : float) -> void:
 	
 	if vrchat_osc_query_endpoint == "":
 		return
 		
-	#curr_client_send_time += delta
-	#if curr_client_send_time > client_send_rate_limit_ms / 1000:
-	#	curr_client_send_time = 0
+	curr_client_send_time += delta
+	if curr_client_send_time > client_send_rate_limit_ms / 1000:
+		curr_client_send_time = 0
 
-	# Map the blendshapes we have from mediapipe to the unified versions.
-	var unified_blendshapes : Dictionary = _map_blendshapes_to_unified()
-	
-	# Apply unified blendshape simplification mapping
-	_apply_transform_rules(unified_blendshapes, ParameterMappings.simplified_parameter_mapping)
-	# Apply legacy parameter mapping (this makes me sad)
-	_apply_transform_rules(unified_blendshapes, ParameterMappings.legacy_parameter_mapping)
+		# Map the blendshapes we have from mediapipe to the unified versions.
+		var unified_blendshapes : Dictionary = _map_blendshapes_to_unified()
+		
+		# Apply unified blendshape simplification mapping
+		_apply_transform_rules(unified_blendshapes, ParameterMappings.simplified_parameter_mapping)
+		
+		if unified_blendshapes.has("MouthStretchRight") and unified_blendshapes.has("MouthStretchLeft") \
+			and unified_blendshapes.has("MouthSmileRight") and unified_blendshapes.has("MouthSmileLeft"):
+			# Set MouthSadLeft/Right - complexish conversions
+			unified_blendshapes["MouthSadRight"] = \
+				maxf(0, \
+					unified_blendshapes["MouthFrown"] > unified_blendshapes["MouthStretchRight"] 
+					if unified_blendshapes["MouthFrown"] \
+					 else unified_blendshapes["MouthStretchRight"] - unified_blendshapes["MouthSmileRight"])
+			unified_blendshapes["MouthSadLeft"] = \
+				maxf(0, \
+					unified_blendshapes["MouthFrown"] > unified_blendshapes["MouthStretchLeft"] 
+					if unified_blendshapes["MouthFrown"] \
+					 else unified_blendshapes["MouthStretchLeft"] - unified_blendshapes["MouthSmileLeft"])
+			
+		# Apply legacy parameter mapping (this makes me sad)
+		_apply_transform_rules(unified_blendshapes, ParameterMappings.legacy_parameter_mapping)
 
-	if len(cached_valid_keys) == 0:
-		cached_valid_keys = vrc_params.valid_params_from_dict(unified_blendshapes)
+		if len(cached_valid_keys) == 0:
+			cached_valid_keys = vrc_params.valid_params_from_dict(unified_blendshapes)
 
-	# Set params to values
-	for shape in unified_blendshapes:
-		if not shape in cached_valid_keys:
-			continue
-		vrc_params.update_value(shape, unified_blendshapes[shape])
+		# Set params to values
+		for shape in unified_blendshapes:
+			if not hits.has(shape):
+				hits[shape] = 0
+			if unified_blendshapes[shape] <= 0.001:
+				hits[shape] += 1
+			if not shape in cached_valid_keys:
+				continue
+			vrc_params.update_value(shape, unified_blendshapes[shape])
 
-	# Finally, send all dirty params off to VRC
-	_send_dirty_params()
+		# Finally, send all dirty params off to VRC
+		_send_dirty_params()
+		#print(unified_blendshapes["JawOpen"])
 
 
 func _map_blendshapes_to_unified() -> Dictionary:
@@ -305,8 +328,14 @@ func _map_blendshapes_to_unified() -> Dictionary:
 
 func _send_dirty_params():
 	var to_send_osc : Array[VRCParam] = vrc_params.get_dirty()
-
+	var bundle : Array = []
+	
 	for param in to_send_osc:
+		if param.binary_key == "JawOpen":
+			#print("JawOpen")
+			#print(param.value)
+			#print(param.key)
+			pass
 		param.reset_dirty()
 		# We send the message with the full path for the avatar parameter, and type.
 		var type = param.type
@@ -316,8 +345,12 @@ func _send_dirty_params():
 				type = "T"
 			else:
 				type = "F"
-		osc_client.send_osc_message(param.full_path, type, [param.value])
-
+		bundle.append(osc_client.prepare_osc_message(param.full_path, type, [param.value]))
+		#osc_client.send_osc_message(param.full_path, type, [param.value])
+		
+	var send = osc_client.create_osc_bundle(3535, bundle)
+	osc_client.send_osc_message_raw(send)
+	
 func _osc_query_received(address : String, args) -> void:
 	if address == "/avatar/change":
 		print("WAOH")
@@ -447,6 +480,8 @@ func _get_avatar_params():
 
 func _avatar_params_request_complete(result : int, response_code : int, 
 									headers: PackedStringArray, body: PackedByteArray) -> void:
+	processing_request = false
+	
 	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
 		printerr("Request for VRC avatar params failed.")
 		return
@@ -472,8 +507,6 @@ func _avatar_params_request_complete(result : int, response_code : int,
 
 	# We always pull raw avatar params to update the current value.
 	var raw_avatar_params = json["CONTENTS"]["parameters"]["CONTENTS"]
-
-	processing_request = false
 
 	if not update_vrc_param_values and not has_changed_avi:
 		previous_avatar_id = current_avatar_id

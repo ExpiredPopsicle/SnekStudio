@@ -20,7 +20,11 @@ func initialize(raw_avatar_params : Dictionary, avatar_id : String, has_changed_
 	_raw_params = raw_avatar_params
 	_avatar_id = avatar_id
 	_has_changed_avi = has_changed_avi
-
+	
+	if raw_avatar_params.has("FT"):
+		raw_avatar_params = raw_avatar_params["FT"]["CONTENTS"]
+		_raw_params = raw_avatar_params
+	
 	if raw_avatar_params.has("v2"):
 		raw_avatar_params = raw_avatar_params["v2"]["CONTENTS"]
 		_raw_params = raw_avatar_params
