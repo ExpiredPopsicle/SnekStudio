@@ -35,8 +35,8 @@ static func from_packet(packet : StreamPeerBuffer, cache: Dictionary) -> DNSReco
 		dns_record._ns_record(packet)
 	elif dns_record.dns_type == RECORD_TYPE.TXT:
 		dns_record._txt_record(packet)
-	else:
-		print("Unsupported DNS record type found: ", dns_record.dns_type)
+#	else:
+#		print("Unsupported DNS record type found: ", dns_record.dns_type)
 
 	return dns_record
 

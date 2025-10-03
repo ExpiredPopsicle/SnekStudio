@@ -232,15 +232,29 @@ func _apply_transform_rules(unified_blendshapes : Dictionary, base_dict : Dictio
 				unified_blendshapes[param_name] = max_pos
 
 			ParameterMappings.COMBINATION_TYPE.MIN:
-				var min : float = 1.1 # Very unlikely > 1.0 exists given they're constrainted to 1.0
+				var min_num : float = 1.1 # Very unlikely > 1.0 exists given they're constrainted to 1.0
 				for shape_info : Dictionary in shapes:
 					var shape : String = shape_info["shape"]
 					var shape_type : ParameterMappings.SHAPE_KEY_TYPE = shape_info.get("shape_type", ParameterMappings.SHAPE_KEY_TYPE.UNIFIED)
 					var value : float = _get_unified_value(shape, shape_type, unified_blendshapes)
-					if value < min:
-						min = value
-				unified_blendshapes[param_name] = min
+					if value < min_num:
+						min_num = value
+				unified_blendshapes[param_name] = min_num
 
+func scene_init() -> void:
+	print("[VRChat Face Tracking] Starting services and requesting avatar parameters...")
+	if not osc_query_server.running:
+		osc_query_server.start()
+	if not dns_service.running:
+		dns_service.start()
+	previous_avatar_id = ""
+	_get_avatar_params()
+
+func scene_shutdown() -> void:
+	print("[VRChat Face Tracking] Stopping servers...")
+	osc_query_server.stop()
+	dns_service.stop()
+	
 func _ready() -> void:
 	avatar_req = HTTPRequest.new()
 	add_child(avatar_req)
@@ -282,7 +296,7 @@ func _process(delta : float) -> void:
 		return
 		
 	curr_client_send_time += delta
-	if curr_client_send_time > client_send_rate_limit_ms / 1000:
+	if curr_client_send_time > int(client_send_rate_limit_ms) / 1000:
 		curr_client_send_time = 0
 
 		# Map the blendshapes we have from mediapipe to the unified versions.
@@ -380,7 +394,7 @@ func _send_dirty_params():
 	
 func _osc_query_received(address : String, args) -> void:
 	if address == "/avatar/change":
-		print("WAOH")
+		print("[VRChat Face Tracking] Avatar change detected via OSC Query Server.")
 		_get_avatar_params()
 
 func _resolve_dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> void:
@@ -494,7 +508,7 @@ func _vrc_dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> void:
 		# If it is the first time going through, we get the current avi params.
 		_get_avatar_params()
 		
-	print("[VRChat OSC] Found VRChat OSC Query Endpoint: %s" % vrchat_osc_query_endpoint)
+	print("[VRChat Face Tracking] Found VRChat OSC Query Endpoint: %s" % vrchat_osc_query_endpoint)
 
 func _get_avatar_params():
 	if vrchat_osc_query_endpoint == "":
@@ -504,22 +518,22 @@ func _get_avatar_params():
 	var err = avatar_req.request(vrchat_osc_query_endpoint + "/avatar")
 	processing_request = true
 	if err != OK:
-		printerr("[VRChat OSC] Failed to request VRC avatar parameters with error code: %d" % err)
+		printerr("[VRChat Face Tracking] Failed to request VRC avatar parameters with error code: %d" % err)
 
 func _avatar_params_request_complete(result : int, response_code : int, 
 									headers: PackedStringArray, body: PackedByteArray) -> void:
 	processing_request = false
 	
 	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-		printerr("[VRChat OSC] Request for VRC avatar params failed.")
+		printerr("[VRChat Face Tracking] Request for VRC avatar params failed.")
 		return
-	print("[VRChat OSC] Avatar param request complete.")
+	print("[VRChat Face Tracking] Avatar param request complete.")
 	
 	var json = JSON.parse_string(body.get_string_from_utf8())
 	var root_contents : Dictionary = json["CONTENTS"]
 	if not root_contents.has("parameters") or not root_contents.has("change"):
 		# Could be booting game/loading/logging in/not in game.
-		printerr("[VRChat OSC] No parameters, or avatar information exists.")
+		printerr("[VRChat Face Tracking] No parameters, or avatar information exists.")
 		return
 
 	# Uh oh... that's a lot of hardcoded values.
@@ -528,7 +542,7 @@ func _avatar_params_request_complete(result : int, response_code : int,
 	var has_changed_avi : bool = current_avatar_id != previous_avatar_id
 	if has_changed_avi:
 		# Update only if changed avi.
-		print("[VRChat OSC] Avatar has changed. Updating parameter keys, values and types.")
+		print("[VRChat Face Tracking] Avatar has changed. Updating parameter keys, values and types.")
 		vrc_param_keys = []
 		cached_valid_keys = []
 		vrc_params.reset()

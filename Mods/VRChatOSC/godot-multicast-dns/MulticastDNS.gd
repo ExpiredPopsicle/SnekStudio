@@ -5,15 +5,23 @@ var server : UDPServer
 var clients : Array[PacketPeerUDP] = []
 var multicast_address : String = "224.0.0.251"
 var local_addresses : Array[String] = []
-
+var running : bool = false
 signal on_receive(packet : DNSPacket, raw_packet : StreamPeerBuffer)
 
 func _ready() -> void:
+	start()
+
+func start() -> void:
+	running = true
 	server = UDPServer.new()
 	# We only listen on ipv4, we're not using mDNS for IPv6.
 	var err = server.listen(5353, "0.0.0.0")
 	if err != OK:
 		printerr("[Multicast DNS] Failed to start listening on port 5353 with error code %d" % err)
+
+func stop() -> void:
+	server.stop()
+	running = false
 
 func _process(delta : float) -> void:
 	server.poll() # Important!
