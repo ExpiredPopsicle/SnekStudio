@@ -291,7 +291,18 @@ func _process(delta : float) -> void:
 					unified_blendshapes["MouthFrown"] > unified_blendshapes["MouthStretchLeft"] 
 					if unified_blendshapes["MouthFrown"] \
 					 else unified_blendshapes["MouthStretchLeft"] - unified_blendshapes["MouthSmileLeft"])
-			
+		
+		if unified_blendshapes.has("EyeWideLeft") \
+			and unified_blendshapes.has("EyeWideRight") \
+			and unified_blendshapes.has("EyeLidLeft") \
+			and unified_blendshapes.has("EyeLidRight") \
+			and unified_blendshapes.has("EyeSquintLeft") \
+			and unified_blendshapes.has("EyeSquintRight"):
+			# Complex calcs separated out for simplicity. 
+			# This ends up as Left/RightEyeLidExpandedSqueeze.
+			calc_eyelid_expanded_squeeze(unified_blendshapes, "Left", "EyeWideLeft", "EyeLidLeft", "EyeSquintLeft")
+			calc_eyelid_expanded_squeeze(unified_blendshapes, "Right", "EyeWideRight", "EyeLidRight", "EyeSquintRight")
+
 		# Apply legacy parameter mapping (this makes me sad)
 		_apply_transform_rules(unified_blendshapes, ParameterMappings.legacy_parameter_mapping)
 
@@ -307,12 +318,25 @@ func _process(delta : float) -> void:
 			if not shape in cached_valid_keys:
 				continue
 			vrc_params.update_value(shape, unified_blendshapes[shape])
-
 		# Finally, send all dirty params off to VRC
 		_send_dirty_params()
-		#print(unified_blendshapes["JawOpen"])
 
+func calc_squeeze(bs: Dictionary, wide_key: String, lid_key: String, squint_key: String) -> float:
+	var wide = bs[wide_key]
+	var lid = bs[lid_key]
+	var squint = bs[squint_key]
+	return wide * 0.2 + (lid * 0.8) - (1.0 - pow(lid, 0.15) * squint)
 
+func calc_eyelid_expanded_squeeze(bs: Dictionary, side: String, wide_key: String, lid_key: String, squint_key: String) -> void:
+	var value = calc_squeeze(bs, wide_key, lid_key, squint_key)
+	var target_key = side + "EyeLidExpandedSqueeze"
+	if value > 0.8:
+		bs[target_key] = bs[wide_key]
+	elif value >= 0.0:
+		bs[target_key] = bs[lid_key]
+	else:
+		bs[target_key] = (1.0 - pow(bs[lid_key], 0.15) * bs[squint_key])
+ 
 func _map_blendshapes_to_unified() -> Dictionary:
 	var blendshapes : Dictionary = get_global_mod_data("BlendShapes")
 	var unified_blendshapes : Dictionary = {}
@@ -438,7 +462,8 @@ func _vrc_dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> void:
 		return
 
 	var domain_label : String = ptr_record.data["full_label"]
-	if not domain_label.begins_with("VRChat-Client"):
+	if not domain_label.begins_with("VRChat-Client") \
+		and not domain_label.begins_with("ChilloutVR-GameClient"):
 		return
 
 	var a_records : Array[DNSRecord] = packet.dns_additional.filter(

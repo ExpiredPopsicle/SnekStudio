@@ -100,7 +100,7 @@ static var simplified_parameter_mapping : Dictionary = {
 			}
 		]
 	},
-		"BrowUpRight": {
+	"BrowUpRight": {
 		"combination_type": COMBINATION_TYPE.WEIGHTED,
 		"combination_shapes": [
 			{
@@ -224,6 +224,7 @@ static var simplified_parameter_mapping : Dictionary = {
 			}
 		]
 	},
+	# Just group the already existing mediapipe keys.
 	"CheekSquint": {
 		"combination_type": COMBINATION_TYPE.AVERAGE,
 		"combination_shapes": [
@@ -267,6 +268,7 @@ static var simplified_parameter_mapping : Dictionary = {
 			},
 		]
 	},
+	# Again, group from existing keys.
 	"MouthLowerDown": {
 		"combination_type": COMBINATION_TYPE.WEIGHTED,
 		"combination_shapes": [
@@ -409,15 +411,16 @@ static var simplified_parameter_mapping : Dictionary = {
 		"combination_type": COMBINATION_TYPE.AVERAGE,
 		"combination_shapes": [
 			{
-				"shape": "MouthDimpleRight",
+				"shape": "MouthDimplerRight",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
 			},
 			{
-				"shape": "MouthDimpleLeft",
+				"shape": "MouthDimplerLeft",
 				"shape_type": SHAPE_KEY_TYPE.UNIFIED,
 			},
 		]
 	},
+	# Just group the existing mediapipe keys.
 	"NoseSneer": {
 		"combination_type": COMBINATION_TYPE.AVERAGE,
 		"combination_shapes": [

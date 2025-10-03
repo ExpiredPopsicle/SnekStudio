@@ -153,7 +153,7 @@ func _osc_string(s : String) -> PackedByteArray:
 
 	# Technically the OSC specs state "non-null ASCII characters followed by null", but we use utf8.
 	# This is due to the comm format in VMC: "Use UTF-8. (Data includes non ascii type)"
-	packet.append_array(s.to_ascii_buffer())
+	packet.append_array(s.to_utf8_buffer())
 	packet.append(0)
 
 	# Pad to a multiple of 4 bytes

@@ -20,7 +20,8 @@ func _process(delta : float) -> void:
 	if server.is_connection_available():
 		var receiver = server.take_connection()
 		for interface_details : Dictionary in IP.get_local_interfaces():
-			receiver.join_multicast_group(multicast_address, interface_details["name"])
+			if not receiver.is_bound():
+				receiver.join_multicast_group(multicast_address, interface_details["name"])
 			# TODO: Make sender sockets for each local interface to support sending.
 			for ip_addr in interface_details["addresses"]:
 				if local_addresses.has(ip_addr):
