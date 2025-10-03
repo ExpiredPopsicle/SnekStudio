@@ -5,6 +5,9 @@ class_name VRChatOSC
 @export var update_vrc_param_values : bool = false
 @export var osc_client : KiriOSClient
 @export var osc_query_server : OSCQueryServer
+# User Settings
+var send_eye_tracking : bool = true
+# Internal fields
 var osc_query_name : String = str(randi_range(500000, 5000000))
 var osc_server_name : String = str(randi_range(500000, 5000000))
 var vrchat_osc_query_endpoint : String = ""
@@ -261,10 +264,20 @@ func _ready() -> void:
 		var new_value = key
 		arkit_to_unified_mapping[new_key] = new_value
 
-#FIXME: REMOVE BEFORE PR
-var hits = {}
-func _process(delta : float) -> void:
+	add_tracked_setting("send_eye_tracking", "Send eye tracking blendshapes")
 	
+	var force_avatar_detection_button : Button = Button.new()
+	force_avatar_detection_button.text = "Force Avatar Refresh"
+	force_avatar_detection_button.pressed.connect(
+		func():
+			previous_avatar_id = ""
+			_get_avatar_params()
+			update_settings_ui())
+	get_settings_window().add_child(force_avatar_detection_button)
+	
+	update_settings_ui()
+
+func _process(delta : float) -> void:
 	if vrchat_osc_query_endpoint == "":
 		return
 		
@@ -300,8 +313,8 @@ func _process(delta : float) -> void:
 			and unified_blendshapes.has("EyeSquintRight"):
 			# Complex calcs separated out for simplicity. 
 			# This ends up as Left/RightEyeLidExpandedSqueeze.
-			calc_eyelid_expanded_squeeze(unified_blendshapes, "Left", "EyeWideLeft", "EyeLidLeft", "EyeSquintLeft")
-			calc_eyelid_expanded_squeeze(unified_blendshapes, "Right", "EyeWideRight", "EyeLidRight", "EyeSquintRight")
+			_calc_eyelid_expanded_squeeze(unified_blendshapes, "Left", "EyeWideLeft", "EyeLidLeft", "EyeSquintLeft")
+			_calc_eyelid_expanded_squeeze(unified_blendshapes, "Right", "EyeWideRight", "EyeLidRight", "EyeSquintRight")
 
 		# Apply legacy parameter mapping (this makes me sad)
 		_apply_transform_rules(unified_blendshapes, ParameterMappings.legacy_parameter_mapping)
@@ -310,25 +323,23 @@ func _process(delta : float) -> void:
 			cached_valid_keys = vrc_params.valid_params_from_dict(unified_blendshapes)
 
 		# Set params to values
-		for shape in unified_blendshapes:
-			if not hits.has(shape):
-				hits[shape] = 0
-			if unified_blendshapes[shape] <= 0.001:
-				hits[shape] += 1
+		for shape : String in unified_blendshapes:
 			if not shape in cached_valid_keys:
+				continue
+			if not send_eye_tracking and shape.contains("Eye"):
 				continue
 			vrc_params.update_value(shape, unified_blendshapes[shape])
 		# Finally, send all dirty params off to VRC
 		_send_dirty_params()
 
-func calc_squeeze(bs: Dictionary, wide_key: String, lid_key: String, squint_key: String) -> float:
+func _calc_squeeze(bs: Dictionary, wide_key: String, lid_key: String, squint_key: String) -> float:
 	var wide = bs[wide_key]
 	var lid = bs[lid_key]
 	var squint = bs[squint_key]
 	return wide * 0.2 + (lid * 0.8) - (1.0 - pow(lid, 0.15) * squint)
 
-func calc_eyelid_expanded_squeeze(bs: Dictionary, side: String, wide_key: String, lid_key: String, squint_key: String) -> void:
-	var value = calc_squeeze(bs, wide_key, lid_key, squint_key)
+func _calc_eyelid_expanded_squeeze(bs: Dictionary, side: String, wide_key: String, lid_key: String, squint_key: String) -> void:
+	var value = _calc_squeeze(bs, wide_key, lid_key, squint_key)
 	var target_key = side + "EyeLidExpandedSqueeze"
 	if value > 0.8:
 		bs[target_key] = bs[wide_key]
@@ -344,8 +355,6 @@ func _map_blendshapes_to_unified() -> Dictionary:
 		if not arkit_to_unified_mapping.has(blendshape):
 			continue
 		var unified_blendshape = arkit_to_unified_mapping[blendshape]
-		#if len(cached_valid_keys) > 0 and not cached_valid_keys.has(unified_blendshape):
-		#	continue
 		unified_blendshapes[unified_blendshape] = blendshapes[blendshape]
 
 	return unified_blendshapes
@@ -355,11 +364,6 @@ func _send_dirty_params():
 	var bundle : Array = []
 	
 	for param in to_send_osc:
-		if param.binary_key == "JawOpen":
-			#print("JawOpen")
-			#print(param.value)
-			#print(param.key)
-			pass
 		param.reset_dirty()
 		# We send the message with the full path for the avatar parameter, and type.
 		var type = param.type
@@ -370,7 +374,6 @@ func _send_dirty_params():
 			else:
 				type = "F"
 		bundle.append(osc_client.prepare_osc_message(param.full_path, type, [param.value]))
-		#osc_client.send_osc_message(param.full_path, type, [param.value])
 		
 	var send = osc_client.create_osc_bundle(3535, bundle)
 	osc_client.send_osc_message_raw(send)
@@ -508,7 +511,7 @@ func _avatar_params_request_complete(result : int, response_code : int,
 	processing_request = false
 	
 	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-		printerr("Request for VRC avatar params failed.")
+		printerr("[VRChat OSC] Request for VRC avatar params failed.")
 		return
 	print("[VRChat OSC] Avatar param request complete.")
 	
