@@ -21,6 +21,8 @@ func initialize(raw_avatar_params : Dictionary, avatar_id : String, has_changed_
 	_avatar_id = avatar_id
 	_has_changed_avi = has_changed_avi
 	
+	var orig_params = raw_avatar_params
+	
 	if raw_avatar_params.has("FT"):
 		raw_avatar_params = raw_avatar_params["FT"]["CONTENTS"]
 		_raw_params = raw_avatar_params
@@ -28,9 +30,16 @@ func initialize(raw_avatar_params : Dictionary, avatar_id : String, has_changed_
 	if raw_avatar_params.has("v2"):
 		raw_avatar_params = raw_avatar_params["v2"]["CONTENTS"]
 		_raw_params = raw_avatar_params
-
+	
 	# Only if we are wanting to update/change param values do we progress here.
 	var param_names = raw_avatar_params.keys()
+	
+	# Catch-all fallback to the overall root avi parameters.
+	if len(param_names) == 0:
+		raw_avatar_params = orig_params
+		_raw_params = raw_avatar_params
+		param_names = raw_avatar_params.keys()
+
 	for key in param_names:
 		# Verify this is a type/value parameter.
 		if not "TYPE" in raw_avatar_params[key] or not "VALUE" in raw_avatar_params[key]:
