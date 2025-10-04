@@ -7,6 +7,7 @@ class_name OSCQueryServer
 @export var osc_paths : Dictionary = {}
 @export var osc_server_ip : String = "127.0.0.1"
 @export var osc_server_port : int = 9001
+@export var osc_query_server_port : int = 61613
 
 var running : bool = false
 signal on_host_info_requested
@@ -20,7 +21,8 @@ func _ready():
 func start() -> void:
 	running = true
 	osc_server.change_port_and_ip(osc_server_port, osc_server_ip)
-	osc_server.message_received.connect(_message_received)
+	if len(osc_server.message_received.get_connections()) == 0:
+		osc_server.message_received.connect(_message_received)
 	osc_server.start_server()
 
 	var host_info_router = OSCQueryHostInfoRouter.new()
@@ -32,7 +34,7 @@ func start() -> void:
 	if http_server == null:
 		http_server = HttpServer.new()
 		http_server.bind_address = "127.0.0.1"
-		http_server.port = 61613 # TODO: Make random port. This is advertised on mDNS to apps.
+		http_server.port = osc_query_server_port
 		add_child(http_server)
 		http_server.register_router("^/HOST_INFO", host_info_router)
 		http_server.register_router("^/", address_router)
@@ -44,6 +46,22 @@ func stop() -> void:
 	osc_server.stop_server()
 	running = false
 
+func set_osc_server_port(new_port : int) -> void:
+	if new_port != osc_server_port:
+		osc_server_port = new_port
+		stop()
+		start()
+	else:
+		osc_server_port = new_port
+		
+func set_osc_query_server_port(new_port : int) -> void:
+	if new_port != osc_query_server_port:
+		osc_query_server_port = new_port
+		stop()
+		start()
+	else:
+		osc_query_server_port = new_port
+		
 func _message_received(address : String, args) -> void:
 	on_osc_server_message_received.emit(address, args)
 	

@@ -7,6 +7,20 @@ class_name VRChatOSC
 @export var osc_query_server : OSCQueryServer
 # User Settings
 var send_eye_tracking : bool = true
+var osc_server_listen_port : int = 9001:
+	get:
+		return osc_server_listen_port
+	set(value):
+		if osc_query_server != null:
+			osc_query_server.set_osc_server_port(osc_server_listen_port)
+
+var osc_query_server_listen_port : int = 61631:
+	get:
+		return osc_query_server_listen_port
+	set(value):
+		if osc_query_server != null:
+			osc_query_server.set_osc_query_server_port(osc_query_server_listen_port)
+
 # Internal fields
 var osc_query_name : String = str(randi_range(500000, 5000000))
 var osc_server_name : String = str(randi_range(500000, 5000000))
@@ -279,6 +293,8 @@ func _ready() -> void:
 		arkit_to_unified_mapping[new_key] = new_value
 
 	add_tracked_setting("send_eye_tracking", "Send eye tracking blendshapes")
+	add_tracked_setting("osc_query_server_listen_port", "OSC Query Server Listen Port")
+	add_tracked_setting("osc_server_listen_port", "OSC Server Listen Port")
 	
 	var force_avatar_detection_button : Button = Button.new()
 	force_avatar_detection_button.text = "Force Avatar Refresh"
