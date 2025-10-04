@@ -310,17 +310,17 @@ func _ready() -> void:
 func _process(delta : float) -> void:
 	if vrchat_osc_query_endpoint == "":
 		return
-		
+
 	curr_client_send_time += delta
 	if curr_client_send_time > int(client_send_rate_limit_ms) / 1000:
 		curr_client_send_time = 0
 
 		# Map the blendshapes we have from mediapipe to the unified versions.
 		var unified_blendshapes : Dictionary = _map_blendshapes_to_unified()
-		
+
 		# Apply unified blendshape simplification mapping
 		_apply_transform_rules(unified_blendshapes, ParameterMappings.simplified_parameter_mapping)
-		
+
 		if unified_blendshapes.has("MouthStretchRight") and unified_blendshapes.has("MouthStretchLeft") \
 			and unified_blendshapes.has("MouthSmileRight") and unified_blendshapes.has("MouthSmileLeft"):
 			# Set MouthSadLeft/Right - complexish conversions
@@ -334,7 +334,7 @@ func _process(delta : float) -> void:
 					unified_blendshapes["MouthFrown"] > unified_blendshapes["MouthStretchLeft"] 
 					if unified_blendshapes["MouthFrown"] \
 					 else unified_blendshapes["MouthStretchLeft"] - unified_blendshapes["MouthSmileLeft"])
-		
+
 		if unified_blendshapes.has("EyeWideLeft") \
 			and unified_blendshapes.has("EyeWideRight") \
 			and unified_blendshapes.has("EyeLidLeft") \
@@ -392,7 +392,7 @@ func _map_blendshapes_to_unified() -> Dictionary:
 func _send_dirty_params():
 	var to_send_osc : Array[VRCParam] = vrc_params.get_dirty()
 	var bundle : Array = []
-	
+
 	for param in to_send_osc:
 		param.reset_dirty()
 		# We send the message with the full path for the avatar parameter, and type.
@@ -407,16 +407,16 @@ func _send_dirty_params():
 		
 	var send = osc_client.create_osc_bundle(3535, bundle)
 	osc_client.send_osc_message_raw(send)
-	
-func _osc_query_received(address : String, args) -> void:
+
+func _osc_query_received(address : String, _args) -> void:
 	if address == "/avatar/change":
 		print("[VRChat Face Tracking] Avatar change detected via OSC Query Server.")
 		_get_avatar_params()
 
-func _resolve_dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> void:
+func _resolve_dns_packet(packet : DNSPacket, _raw_packet : StreamPeerBuffer) -> void:
 	if vrchat_osc_query_endpoint == "" or packet.opcode != 0:
 		return
-	
+
 	for question : DNSQuestion in packet.dns_questions:
 		# We have two services to respond to: 
 		# 1. The OSC Query Server (http) (_oscjson._tcp.local)
@@ -428,10 +428,10 @@ func _resolve_dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> v
 		elif question.full_label.begins_with("_oscjson._tcp.local"):
 			service_name = "SNEKS-" + osc_query_name
 			is_osc_query = true
-			
+
 		if service_name == "":
 			continue
-		
+
 		var full_name : Array[String] = [service_name, question.labels[0], question.labels[1], question.labels[2]]
 		var full_service_name : Array[String] = [service_name, question.labels[0].replace("_", ""), question.labels[1].replace("_", "")]
 		
@@ -440,7 +440,7 @@ func _resolve_dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> v
 		txt_record.labels = full_name
 		txt_record.dns_type = DNSRecord.RECORD_TYPE.TXT
 		txt_record.data = { "text": "txtvers=1" }
-		
+
 		var srv_record = DNSRecord.new()
 		srv_record.labels = full_name
 		srv_record.dns_type = DNSRecord.RECORD_TYPE.SRV
@@ -449,7 +449,7 @@ func _resolve_dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> v
 		else:
 			srv_record.data = { "port": osc_query_server.osc_server_port }
 		srv_record.data.set("target", full_service_name)
-		
+
 		var a_record = DNSRecord.new()
 		a_record.dns_type = DNSRecord.RECORD_TYPE.A
 		a_record.labels = full_service_name
@@ -458,15 +458,15 @@ func _resolve_dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> v
 			a_record.data = { "address": osc_query_server.http_server.bind_address }
 		else:
 			a_record.data = { "address": osc_query_server.osc_server_ip }
-			
+
 		var ptr_record = DNSRecord.new()
 		ptr_record.dns_type = DNSRecord.RECORD_TYPE.PTR
 		ptr_record.data = { "domain_labels": full_name }
 		ptr_record.labels = question.labels
-		
+
 		var answers : Array[DNSRecord] = [ptr_record]
 		var additional : Array[DNSRecord] = [txt_record, srv_record, a_record]
-		
+
 		var new_packet = DNSPacket.new()
 		new_packet.dns_answers = answers
 		new_packet.dns_additional = additional
@@ -477,11 +477,11 @@ func _resolve_dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> v
 		new_packet.opcode = 0
 		new_packet.response_code = 0
 		new_packet.id = 0
-		
+
 		# Send it off to our peers to alert them to the answer.
 		dns_service.send_packet(new_packet)
-		
-func _vrc_dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> void:
+
+func _vrc_dns_packet(packet : DNSPacket, _raw_packet : StreamPeerBuffer) -> void:
 	if not packet.query_response:
 		return
 	if len(packet.dns_answers) == 0 or len(packet.dns_additional) == 0:
@@ -516,14 +516,14 @@ func _vrc_dns_packet(packet : DNSPacket, raw_packet : StreamPeerBuffer) -> void:
 		ip_address,
 		port
 	]
-	
+
 	if not osc_client.is_client_active():
 		# Init osc sender. Default to 9000 (default OSC port).
 		osc_client.change_port_and_ip(9000, ip_address)
 		osc_client.start_client()
 		# If it is the first time going through, we get the current avi params.
 		_get_avatar_params()
-		
+
 	print("[VRChat Face Tracking] Found VRChat OSC Query Endpoint: %s" % vrchat_osc_query_endpoint)
 
 func _get_avatar_params():
@@ -537,14 +537,14 @@ func _get_avatar_params():
 		printerr("[VRChat Face Tracking] Failed to request VRC avatar parameters with error code: %d" % err)
 
 func _avatar_params_request_complete(result : int, response_code : int, 
-									headers: PackedStringArray, body: PackedByteArray) -> void:
+									_headers: PackedStringArray, body: PackedByteArray) -> void:
 	processing_request = false
-	
+
 	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
 		printerr("[VRChat Face Tracking] Request for VRC avatar params failed.")
 		return
 	print("[VRChat Face Tracking] Avatar param request complete.")
-	
+
 	var json = JSON.parse_string(body.get_string_from_utf8())
 	var root_contents : Dictionary = json["CONTENTS"]
 	if not root_contents.has("parameters") or not root_contents.has("change"):

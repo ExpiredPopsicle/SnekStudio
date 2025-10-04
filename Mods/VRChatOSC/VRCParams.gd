@@ -63,7 +63,7 @@ func initialize(raw_avatar_params : Dictionary, avatar_id : String, has_changed_
 			param
 		)
 	pass
-	
+
 func valid_params_from_dict(dict : Dictionary) -> Array[String]:
 	var keys = dict.keys()
 	var valid = _params.filter(func (p : VRCParam): return p.binary_key in keys)
@@ -75,14 +75,13 @@ func valid_params_from_dict(dict : Dictionary) -> Array[String]:
 ## Updates a particular key to the supplied value.
 ## This func takes care of the exchange between binary/float parameters in VRC tracking.
 func update_value(key : String, value):
-	
 	# TODO: Add cache for binary_key -> VRCParam. Make sure to reset in .reset method.
 	var params : Array[VRCParam] = _params.filter(func (p : VRCParam): return p.binary_key == key)
 	if len(params) == 0:
 		return
 
 	var param : VRCParam = params[0]
-	
+
 	if param.is_binary():
 		# This is actually an Array[VRCParam] but ... Godot...
 		var param_group : Array = _binary_params[param.binary_key]
@@ -97,13 +96,13 @@ func update_value(key : String, value):
 		var neg_params : Array = param_group.filter(func (p : VRCParam): return p.binary_exponent == 0)
 		if len(neg_params) == 1:
 			neg_params[0].update_value(is_neg)
-		
+
 
 		param_group.sort_custom(
 			func (a : VRCParam, b : VRCParam):
 				return a.binary_exponent < b.binary_exponent
 		)
-		
+
 		# 1. Determine N (number of magnitude bits)
 		var N : int = len(param_group.filter(func (p : VRCParam): return p.binary_exponent != 0))
 
