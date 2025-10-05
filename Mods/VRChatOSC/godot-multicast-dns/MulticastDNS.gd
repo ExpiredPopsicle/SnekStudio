@@ -23,7 +23,7 @@ func stop() -> void:
 	server.stop()
 	running = false
 
-func _process(delta : float) -> void:
+func _process(_delta : float) -> void:
 	server.poll() # Important!
 	if server.is_connection_available():
 		var receiver = server.take_connection()
@@ -45,7 +45,7 @@ func _process(delta : float) -> void:
 
 		# Make sure it is local, this may be disregarded in some situations in the future?
 		# FIXME: If issues happen, remove this check.
-		var packet_ip = receiver.get_packet_ip()
+		var _packet_ip = receiver.get_packet_ip()
 		if not local_addresses.has(receiver.get_packet_ip()):
 			continue
 

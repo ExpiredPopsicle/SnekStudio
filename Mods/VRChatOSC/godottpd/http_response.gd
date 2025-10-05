@@ -37,8 +37,8 @@ func send_raw(status_code: int, data: PackedByteArray = PackedByteArray([]), con
 	client.put_data(("Server: %s\r\n" % server_identifier).to_ascii_buffer())
 	for header in headers.keys():
 		client.put_data(("%s: %s\r\n" % [header, headers[header]]).to_ascii_buffer())
-	for cookie in cookies:
-		client.put_data(("Set-Cookie: %s\r\n" % cookie).to_ascii_buffer())
+	for cookiez in cookies:
+		client.put_data(("Set-Cookie: %s\r\n" % cookiez).to_ascii_buffer())
 	client.put_data(("Content-Length: %d\r\n" % data.size()).to_ascii_buffer())
 	client.put_data("Connection: close\r\n".to_ascii_buffer())
 	client.put_data(("Access-Control-Allow-Origin: %s\r\n" % access_control_origin).to_ascii_buffer())
@@ -88,21 +88,21 @@ func set_header(field: StringName, value: Variant) -> void:
 ## [br][param options] - A Dictionary of [url=https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#attributes]cookie attributes[/url]
 ## for this specific cokkie in the [code]{ "secure" : "true"}[/code] format.
 func cookie(name: String, value: String, options: Dictionary = {}) -> void:
-	var cookie: String = name+"="+value
-	if options.has("domain"): cookie+="; Domain="+options["domain"]
-	if options.has("max-age"): cookie+="; Max-Age="+options["max-age"]
-	if options.has("expires"): cookie+="; Expires="+options["expires"]
-	if options.has("path"): cookie+="; Path="+options["path"]
-	if options.has("secure"): cookie+="; Secure="+options["secure"]
-	if options.has("httpOnly"): cookie+="; HttpOnly="+options["httpOnly"]
+	var cookie_tmp: String = name+"="+value
+	if options.has("domain"): cookie_tmp+="; Domain="+options["domain"]
+	if options.has("max-age"): cookie_tmp+="; Max-Age="+options["max-age"]
+	if options.has("expires"): cookie_tmp+="; Expires="+options["expires"]
+	if options.has("path"): cookie_tmp+="; Path="+options["path"]
+	if options.has("secure"): cookie_tmp+="; Secure="+options["secure"]
+	if options.has("httpOnly"): cookie_tmp+="; HttpOnly="+options["httpOnly"]
 	if options.has("sameSite"):
 		match (options["sameSite"]):
-			true: cookie += "; SameSite=Strict"
-			"lax": cookie += "; SameSite=Lax"
-			"strict": cookie += "; SameSite=Strict"
-			"none": cookie += "; SameSite=None"
+			true: cookie_tmp += "; SameSite=Strict"
+			"lax": cookie_tmp += "; SameSite=Lax"
+			"strict": cookie_tmp += "; SameSite=Strict"
+			"none": cookie_tmp += "; SameSite=None"
 			_: pass
-	cookies.append(cookie)
+	cookies.append(cookie_tmp)
 
 
 ## Automatically matches a "status_code" to an RFC 7231 compliant "status_text"

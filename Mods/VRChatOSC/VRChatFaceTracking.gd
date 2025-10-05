@@ -348,7 +348,14 @@ func _process(delta : float) -> void:
 
 		# Apply legacy parameter mapping (this makes me sad)
 		_apply_transform_rules(unified_blendshapes, ParameterMappings.legacy_parameter_mapping)
-
+		
+		var tracker_dict : Dictionary = get_global_mod_data("trackers")
+		if tracker_dict.has("head"):
+			var head_basis : Basis = tracker_dict["head"].transform.basis
+			var basic_rot = head_basis.get_euler()
+			unified_blendshapes["HeadRotationX"] = -basic_rot.y
+			unified_blendshapes["HeadRotationY"] = -basic_rot.x
+			
 		if len(cached_valid_keys) == 0:
 			cached_valid_keys = vrc_params.valid_params_from_dict(unified_blendshapes)
 
