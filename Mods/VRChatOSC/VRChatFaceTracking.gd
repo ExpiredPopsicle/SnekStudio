@@ -355,6 +355,7 @@ func _process(delta : float) -> void:
 			var basic_rot = head_basis.get_euler()
 			unified_blendshapes["HeadRotationX"] = -basic_rot.y
 			unified_blendshapes["HeadRotationY"] = -basic_rot.x
+			unified_blendshapes["HeadRotationZ"] = basic_rot.z
 			
 		if len(cached_valid_keys) == 0:
 			cached_valid_keys = vrc_params.valid_params_from_dict(unified_blendshapes)
