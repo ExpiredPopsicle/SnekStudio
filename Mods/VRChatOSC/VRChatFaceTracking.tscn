@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://ysgfrvghy1n5" path="res://Mods/VRChatOSC/VRChatFaceTracking.gd" id="1_md8v4"]
 [ext_resource type="Script" uid="uid://bfemeu7ysbxwc" path="res://Mods/VRChatOSC/godot-multicast-dns/MulticastDNS.gd" id="2_xkeea"]
 [ext_resource type="Script" uid="uid://goefhxca5k8g" path="res://Mods/VMCController/KiriOSC/KiriOSCClient.gd" id="3_435n5"]
-[ext_resource type="Script" uid="uid://bg1sitssmsggs" path="res://Mods/VRChatOSC/OSCQueryServer.gd" id="4_shth5"]
+[ext_resource type="Script" uid="uid://bg1sitssmsggs" path="res://Mods/VRChatOSC/osc-query/OSCQueryServer.gd" id="4_shth5"]
 [ext_resource type="Script" uid="uid://csrri2vhxv4w5" path="res://Mods/VMCController/KiriOSC/KiriOSCServer.gd" id="5_k104g"]
 
 [node name="VRChatFaceTracking" type="Node3D" node_paths=PackedStringArray("dns_service", "osc_client", "osc_query_server")]

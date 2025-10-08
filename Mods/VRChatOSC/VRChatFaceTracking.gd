@@ -105,7 +105,6 @@ func _get_unified_value(shape : String, shape_type : ParameterMappings.SHAPE_KEY
 	
 func _get_unified_shape(shape: String, shape_type: ParameterMappings.SHAPE_KEY_TYPE) -> String:
 	if shape_type == ParameterMappings.SHAPE_KEY_TYPE.UNIFIED:
-		
 		return shape
 	elif shape_type == ParameterMappings.SHAPE_KEY_TYPE.MEDIAPIPE:
 		return arkit_to_unified_mapping.get(shape, shape)
