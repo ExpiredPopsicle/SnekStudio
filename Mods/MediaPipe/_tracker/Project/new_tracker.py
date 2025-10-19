@@ -835,7 +835,15 @@ def enumerate_camera_devices():
             "path" : camera_info.path,
             "index" : camera_info.index
         }
-
-        all_camera_data.append(camera_data)
-
+        
+        cap = cv2.VideoCapture(camera_info.index, capture_api_preference)
+        working = False
+        if cap.isOpened():
+                ret, frame = cap.read()
+                if ret and frame is not None:
+                    working = True
+        cap.release()
+        if working:
+            all_camera_data.append(camera_data)
+            
     return all_camera_data
