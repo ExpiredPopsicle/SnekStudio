@@ -2,4 +2,4 @@ mediapipe==0.10.14
 psutil==6.0.0
 cv2-enumerate-cameras==1.1.18.2
 numpy==1.26.0
-
+linuxpy==0.23.0; sys_platform == "linux"
