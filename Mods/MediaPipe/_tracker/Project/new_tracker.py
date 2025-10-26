@@ -836,6 +836,27 @@ def enumerate_camera_devices():
             "index" : camera_info.index
         }
 
-        all_camera_data.append(camera_data)
+        if sys.platform == "linux":
+            from linuxpy.video.device import Device, VideoCapture
+
+            cap = cv2.VideoCapture(camera_info.index, capture_api_preference)
+            works = False
+            if cap.isOpened():
+                ret, frame = cap.read()
+                if ret and frame is not None:
+                    works = True
+            else:
+                with Device(camera_info.path) as camera:
+                    try:
+                        for frame in camera:
+                            pass
+                    except OSError as e:
+                        if e.errno == 16:
+                            works = True
+            cap.release()
+            if works:
+                all_camera_data.append(camera_data)
+        else:
+            all_camera_data.append(camera_data)
 
     return all_camera_data
