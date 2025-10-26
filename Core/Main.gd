@@ -730,7 +730,7 @@ func reinit_mods():
 func get_audio():
 	return $AudioStreamRecord
 
-func get_controller():
+func get_controller() -> ModelController:
 	return $ModelController
 
 ## Get the saved user data directory. When running in the editor, this will be
