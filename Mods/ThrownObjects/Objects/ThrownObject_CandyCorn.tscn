@@ -1,0 +1,32 @@
+[gd_scene load_steps=7 format=3 uid="uid://dd35svadcyok8"]
+
+[ext_resource type="PackedScene" uid="uid://fhm0lw7jf81x" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject.tscn" id="1_arcvq"]
+[ext_resource type="AudioStream" uid="uid://bik6ce4jagwh7" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_Sound_HitHurt.wav" id="2_qeawh"]
+[ext_resource type="Shader" uid="uid://bk88vaf1p35ef" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteShader.gdshader" id="3_k6ykm"]
+[ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="4_eepr2"]
+[ext_resource type="PackedScene" uid="uid://byjfrvt7mjhho" path="res://Mods/ThrownObjects/Objects/CandyCorn/candycorn.glb" id="5_qeawh"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_10slh"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("3_k6ykm")
+shader_parameter/texture_albedo = ExtResource("4_eepr2")
+shader_parameter/rotation = 0.0
+shader_parameter/uniform_scale = 1.0
+
+[node name="ThrownObject" instance=ExtResource("1_arcvq")]
+sticky = false
+collision_sound = ExtResource("2_qeawh")
+collision_force = 0.1
+
+[node name="MeshInstance" parent="." index="0"]
+visible = false
+
+[node name="Sprite3D" parent="." index="3"]
+visible = false
+material_override = SubResource("ShaderMaterial_10slh")
+
+[node name="Particles" parent="." index="4"]
+visible = false
+
+[node name="candycorn" parent="." index="5" instance=ExtResource("5_qeawh")]
