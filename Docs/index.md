@@ -9,6 +9,6 @@ Documentation is a work in progress. Below, you will find a user guide, and for 
 
 # Mod Documentation
 
-This section contains mod documentation, which includes additional information about each mod. It is currently a work in progress.
+This section contains mod documentation, which includes additional information about each mod.
 
 - [LipSync](Mods/LipSync.md)
