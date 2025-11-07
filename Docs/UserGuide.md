@@ -235,6 +235,4 @@ Feel free to test redeems using the **Modules → Channel Event Tester** tool.
 
 This guide should provide you with a strong foundation for using SnekStudio effectively, allowing for intricate model interactions and settings adjustments. Don’t hesitate to explore the various features and mods available to enhance your experience!
 
-For further assistance, refer to the mod install guide or consult the community forums for tips and troubleshooting.
-
-
+For further assistance, check out [individual mod documentation](index.md) or join the [community](https://snekstudio.com/#community) through Discord or Matrix.
