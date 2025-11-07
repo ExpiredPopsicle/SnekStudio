@@ -14,7 +14,7 @@ To access different versions, visit the [Releases Page](https://github.com/Expir
 
 A **Flatpak** is available for Linux users.
 
-If your platform is not available for download, you can open the project in the **Godot Editor**. More information on this process can be found in the README: [Getting Started](https://github.com/ExpiredPopsicle/SnekStudio/README.md#getting-started-linux--windows).
+If your platform is not available for download, you can open the project in the **Godot Editor**. More information on this process can be found in the README: [Getting Started](https://github.com/ExpiredPopsicle/SnekStudio/blob/main/README.md#getting-started-linux--windows).
 
 ---
 
