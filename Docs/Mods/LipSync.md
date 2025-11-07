@@ -15,6 +15,7 @@ LipSync does not rely on MediaPipe but it can enhance existing MediaPipe trackin
 * AnimationApplier mod (LipSync must be ordered before this mod and after MediaPipeController),
 * VRM avatar with Basic VRM, or MediaPipe blend shapes,
 
+---
 
 # Mod Settings
 ![Default mod settings for lipsync mod](../Images/lipsync-mod-settings.png)
