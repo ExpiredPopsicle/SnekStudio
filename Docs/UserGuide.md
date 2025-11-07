@@ -2,17 +2,17 @@
 
 You can download **stable releases** or **nightly releases**. Both options are available for **Linux** and **Windows**.
 
-## Latest Release
+## Latest Release (stable)
 
 The latest release can be downloaded [here](https://github.com/ExpiredPopsicle/SnekStudio/releases/latest).
 
-## Other Releases
+## Other Releases (nightly)
 
 To access different versions, visit the [Releases Page](https://github.com/ExpiredPopsicle/SnekStudio/releases).
 
 ## Linux Users
 
-A **Flatpak** is available for Linux users.
+A **Flatpak** is available for Linux users which is an asset on the releases.
 
 If your platform is not available for download, you can open the project in the **Godot Editor**. More information on this process can be found in the README: [Getting Started](https://github.com/ExpiredPopsicle/SnekStudio/blob/main/README.md#getting-started-linux--windows).
 
