@@ -146,7 +146,7 @@ Several mods are involved in the tracking process, and they must be ordered corr
 4. **BlendShapeScalingAndOffset**: Changes blend shape scaling, offset, and smoothing.
 5. **LipSync (optional)**: Enables microphone tracking for lip and mouth movement. This mod should be placed before the animation applier.
 6. **AnimationApplier**: Applies animations to the model.
-7. **RotateTrackers (optional)**: Rotates trackers to compensate for slight camera angles. This must be positioned between mod 1 (MediaPipe) and mod 7 (PoseIK) in the list.
+7. **RotateTrackers (optional)**: Rotates trackers to compensate for slight camera angles. This must be positioned between mod 1 (MediaPipe) and mod 8 (PoseIK) in the list.
 8. **PoseIK**: Positions the model based on tracker input.
 9. **BlendShapeOverride (optional)**: Overrides blend shape values directly.
 
