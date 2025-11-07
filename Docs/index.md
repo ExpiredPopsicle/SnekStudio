@@ -11,5 +11,7 @@ Documentation is a work in progress. Below, you will find a user guide, and for 
 
 This section contains mod documentation, which includes additional information about each mod.
 
-- [LipSync](Mods/LipSync.md)
 - [ModelToggle](Mods/ModelToggle.md)
+- [ThrownObjects](Mods/ThrownObjects.md)
+- [LipSync](Mods/LipSync.md)
+

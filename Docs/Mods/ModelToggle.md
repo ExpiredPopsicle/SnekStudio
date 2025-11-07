@@ -15,7 +15,7 @@ Used in conjunction with the TwitchIntegration module.
 ---
 
 # Mod Settings
-![Model Toggle Settings Example](Images/model-toggle-settings-example.png)
+![Model Toggle Settings Example](../Images/model-toggle-settings-example.png)
 
 ## Start Hidden
 When the mod loads, it will check if the setting is start hidden. If it is, it will immediately set the object to hidden and not show it. This might be useful if you only want to have the mod shown when someone redeems or if you want to manually toggle the object without Twitch redeems.
