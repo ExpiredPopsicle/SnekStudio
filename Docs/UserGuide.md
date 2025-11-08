@@ -207,7 +207,7 @@ Your final setup might look like this on Linux:
 
 ### Twitch Integration
 
-If you wish to use mods that feature redeems (such as **HeadPats**, **ObjectThrower**, **ModelToggle**), you must add the **TwitchIntegration** mod.
+If you wish to use mods that feature redeems (such as **HeadPats**, [**ThrownObjects**](Mods/ThrownObjects.md), [**ModelToggle**](Mods/ModelToggle.md)), you must add the **TwitchIntegration** mod.
 
 Navigate to the mod list (**Modules → Mod List**) and add the **TwitchIntegration** mod via the add dialog:
 

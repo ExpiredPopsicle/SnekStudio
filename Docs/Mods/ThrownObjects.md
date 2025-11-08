@@ -70,3 +70,27 @@ You can select multiple thrown objects from this list by using the following key
 * Hold Shift Key - Select a range of objects quickly - similar to a file explorer application when selecting files.
 
 ![Selected multiple throwables](../Images/thrownobject-mod-throwables-multi.png)
+
+---
+
+# Colliders
+
+Once you have a few things set up, you might want to tweak the head collider, or other colliders if you want to.  By default, a head collider is added so you do not need to adjust any colliders if you do not want to.
+
+You can access the colliders window through the Settings -> Colliders menu item.
+
+![Colliders menu item](../Images/menu-colliders.png)
+
+For example, making your head collider huge makes objects never really hit your head but physics still moves your head.
+
+![Random objects thrown with giant collider for head](../Images/colliders-example-head.png)
+
+You may also want to add colliders to your hands to bap the objects away as they're thrown in. This can easily be done by adding a new collider to your hand:
+
+![Hand collider example](../Images/colliders-example-hand.png)
+
+You can then click on the collider which will turn the collider in the camera green. Adjust the radius to suit the hand:
+
+![Adjusting hand collider radius](../Images/colliders-example-hand-radius.png)
+
+Feel free to add other colliders that might suit your model.
