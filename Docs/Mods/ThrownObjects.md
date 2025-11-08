@@ -52,6 +52,8 @@ Count Multiplier is a numeric factor that amplifies the number of objects thrown
 
 When redeemed or bits are sent, it multiplies the total count of objects calculated from either channel point redemptions or bits contributed. When bits-only is not selected it will be the number of objects thrown.
 
+Remember, the **Channel Event Tester** works well for this testing! Modules menu bar -> Channel Events Tester. Just fill in the bits and click "Test Chat", or "Test Redeem" for redeem.
+
 ### Channel Point Example
 If Count Multiplier is set to 3, and there is a redeem that matches the name set in Redeem Name, then 3 objects will be thrown.
 
