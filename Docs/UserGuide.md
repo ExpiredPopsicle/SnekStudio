@@ -173,7 +173,7 @@ You may see more than one device with the same name. In the example, there are t
 
 ![Tracking working](Images/mediapipecontroller-tracking-example.png)
 
-In the settings, you can also adjust whether hand tracking is enabled and modify other settings like head rotation smoothing, blending, and reset time. Feel free to play around with these options. More details on each can be found in the (TODO) **MediaPipeController** mod docs.
+In the settings, you can also adjust whether hand tracking is enabled and modify other settings like head rotation smoothing, blending, and reset time. Feel free to play around with these options. More details on each can be found in the [**MediaPipeController**](Mods/MediaPipeController.md) mod docs.
 
 ---
 

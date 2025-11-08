@@ -13,5 +13,6 @@ This section contains mod documentation, which includes additional information a
 
 - [ModelToggle](Mods/ModelToggle.md)
 - [ThrownObjects](Mods/ThrownObjects.md)
+- [MediaPipeController](Mods/MediaPipeController.md)
 - [LipSync](Mods/LipSync.md)
 
