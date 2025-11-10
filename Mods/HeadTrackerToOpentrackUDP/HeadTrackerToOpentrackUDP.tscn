@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://d3lin3gnld4vi"]
+
+[ext_resource type="Script" uid="uid://b1bf55tf5k4em" path="res://Mods/HeadTrackerToOpentrackUDP/HeadTrackerToOpentrackUDP.gd" id="1_4xcxy"]
+
+[node name="HeadTrackerToOpentrackUdp" type="Node3D"]
+script = ExtResource("1_4xcxy")

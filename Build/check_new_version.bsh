@@ -1,0 +1,17 @@
+#!/bin/bash
+
+cd "$(dirname "$(realpath "$0")")"
+
+VERSION_FROM_GIT="$(git describe --tags --exclude nightly | cut -c2-)"
+VERSION_FROM_PROJECT="$(cat ../project.godot | grep ^config/version | sed -e "s/config\/version=\"\([0-9\.]*\)\"/\1/")"
+
+echo "Version/tag from Git:       ${VERSION_FROM_GIT}"
+echo "Version from project.godot: ${VERSION_FROM_PROJECT}"
+
+if [ "${VERSION_FROM_GIT}" \!= "${VERSION_FROM_PROJECT}" ]; then
+    echo "Versions don't match between the Git tag and project.godot."
+    exit 1
+fi
+
+echo "Good to go!"
+

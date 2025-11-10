@@ -1,0 +1,45 @@
+[gd_scene load_steps=6 format=3 uid="uid://25drjv3l8cf2"]
+
+[ext_resource type="Script" uid="uid://lwu6r6cpya84" path="res://Mods/HOTAS/HOTAS.gd" id="1_spc0m"]
+[ext_resource type="PackedScene" uid="uid://bnbngqpgx2ir" path="res://Mods/HOTAS/FlightStick/FlightStick.tscn" id="2_6uohj"]
+[ext_resource type="PackedScene" uid="uid://darjcuhcbhrds" path="res://Mods/HOTAS/FlightStick/Throttle.tscn" id="3_q1wvq"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_spc0m"]
+radius = 0.05
+height = 0.1
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_spc0m"]
+
+[node name="Hotas" type="Node3D"]
+script = ExtResource("1_spc0m")
+
+[node name="Throttle" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0.0824135, 1.27918, -0.314828)
+visible = false
+mesh = SubResource("SphereMesh_spc0m")
+skeleton = NodePath("Hand_Left")
+
+[node name="Hand_Left" type="Node3D" parent="Throttle"]
+unique_name_in_owner = true
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0.140524, 0)
+
+[node name="Stick" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.308987, 1.21678, -0.314828)
+visible = false
+mesh = SubResource("SphereMesh_spc0m")
+skeleton = NodePath("../Throttle/Hand_Left")
+
+[node name="Hand_Right" type="Node3D" parent="Stick"]
+unique_name_in_owner = true
+transform = Transform3D(5.4634e-15, -1, -4.37114e-08, -4.37114e-08, -4.37114e-08, 1, -1, 0, -4.37114e-08, -0.0357314, 0.171547, -0.0661047)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Stick"]
+transform = Transform3D(0.05, 0, 0, 0, 0.115, 0, 0, 0, 0.05, 0, 0.150081, 0)
+visible = false
+mesh = SubResource("CylinderMesh_spc0m")
+
+[node name="FlightStick" parent="." instance=ExtResource("2_6uohj")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.23954, 0)
+
+[node name="Throttle2" parent="." instance=ExtResource("3_q1wvq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.23512, 0)

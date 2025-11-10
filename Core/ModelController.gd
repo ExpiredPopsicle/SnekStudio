@@ -121,22 +121,13 @@ func find_mapped_bone_index(bone_name : String):
 			#print("  MAPPED BONE: ", mapped_bone_name, " ", bone_index2)
 			if bone_index2 != -1:
 				return bone_index2
-			
-	
+
 	# Couldn't find the mapped bone name. Attempt to find the bone directly on
 	# the model.
 	var bone_index3 = skeleton.find_bone(fixed_bone_name)
 	if bone_index3 != -1:
 		return bone_index3
 
-#	for k in range(0, 100):
-#		if bone_mapping.profile.get_bone_name(k) == fixed_bone_name:
-#			print("SDCSDCSDCSDSDSC")
-
-	
-	# FIXME: Just return the same thing that Skeletonfind_bone() returns when
-	# it can't find a bone.
-	#print("CANNOT FIND BONE: ", fixed_bone_name)
 	return -1
 
 ## Get a bone's "global" (local to the skeleton objectm not the scene) pose.

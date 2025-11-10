@@ -26,12 +26,8 @@ var _init_complete = false
 
 var frames_missing_before_spine_reset = 6.0
 var blend_to_rest_speed = 4.5
-var head_vertical_offset : float = -0.2
-var hips_vertical_blend_speed : float = 6.0
 
-
-# FIXME: Make this a dictionary (spine, left hand, right hand, etc)
-var _ikchains = []
+# FIXME: Prune unused settings.
 
 # Settings stuff
 @export var mirror_mode : bool = true
@@ -45,8 +41,6 @@ var video_device = Array() # It's an array that we only ever put one thing in.
 var blendshape_calibration = {}
 
 var debug_visible_hand_trackers = false
-
-# TODO: Add settings for these
 
 var do_ik_curve = true
 var do_yaw_global = true
@@ -64,15 +58,14 @@ var functions_blendshapes = preload("MediaPipeController_BlendShapes.gd")
 # FIXME: Make key for this configurable.
 var tracking_pause = false
 
+var head_rotation_smoothing : float = 2.0
+var head_position_smoothing : float = 2.0
+
 var hand_confidence_time_threshold = 1.0
 var hand_count_change_time_threshold = 1.0
 
 var hand_rotation_smoothing : float = 2.0
 var hand_position_smoothing : float = 4.0
-var chest_yaw_scale : float = 0.25
-var lean_scale : float = 2.0
-var hip_adjustment_speed : float = 1.0
-
 
 var hand_position_scale : Vector3 = Vector3(7.0, 7.0, 3.5)
 var hand_position_offset : Vector3 = Vector3(0.0, -0.14, 0.0)
@@ -85,7 +78,7 @@ var last_packet_received = null
 # What we should show in the new error/warning reporting.
 var _current_error_to_show : String = ""
 
-var hack_reset_hips_every_frame : bool = true
+#region Standard Interface Implementation
 
 func _ready():
 
@@ -139,14 +132,16 @@ func _ready():
 		{ "min" : 0.0, "max" : 10.0, "step" : 0.1 },
 		"advanced")
 
+
 	add_tracked_setting(
-		"head_vertical_offset", "Head vertical offset",
-		{ "min" : -1.0, "max" : 1.0 },
+		"head_position_smoothing", "Head Position Smoothing",
+		{ "min" : 1.0, "max" : 10.0 },
 		"advanced")
 	add_tracked_setting(
-		"hips_vertical_blend_speed", "Hips vertical blend speed",
-		{ "min" : 0.0, "max" : 20.0 },
+		"head_rotation_smoothing", "Head Rotation Smoothing",
+		{ "min" : 1.0, "max" : 10.0 },
 		"advanced")
+
 
 	add_tracked_setting(
 		"hand_position_smoothing", "Hand Position Smoothing",
@@ -157,19 +152,7 @@ func _ready():
 		{ "min" : 1.0, "max" : 5.0 },
 		"advanced")
 
-	add_tracked_setting(
-		"chest_yaw_scale", "Chest Yaw Rotation Scale",
-		{ "min" : -2.0, "max" : 2.0 },
-		"advanced")
 
-	add_tracked_setting(
-		"lean_scale", "Lean Scale",
-		{ "min" : -4.0, "max" : 4.0 },
-		"advanced")
-
-	add_tracked_setting(
-		"hip_adjustment_speed", "Hip Adjustment Speed", { "min" : 0.0, "max" : 10.0 },
-		"advanced")
 
 	add_tracked_setting(
 		"hand_position_scale", "Hand Position Scale", {},
@@ -185,10 +168,15 @@ func _ready():
 		"debug_visible_hand_trackers", "Debug: Visible hand trackers", {},
 		"advanced")
 
-	add_tracked_setting(
-		"hack_reset_hips_every_frame",
-		"Hack: Reset hips every frame (prevent drift)", {},
-		"advanced")
+	#add_tracked_setting(
+		#"hack_reset_hips_every_frame",
+		#"Hack: Reset hips every frame (prevent drift)", {},
+		#"advanced")
+#
+	#add_tracked_setting(
+		#"hack_reset_shoulders_every_frame",
+		#"Hack: Reset shoulders every frame (prevent shoulder drift)", {},
+		#"advanced")
 
 	hand_rest_trackers["Left"] = $LeftHandRestReference
 	hand_rest_trackers["Right"] = $RightHandRestReference
@@ -207,30 +195,28 @@ func _ready():
 	get_settings_window().add_child(clear_calibration_button)
 	clear_calibration_button.pressed.connect(func() : blendshape_calibration = {})
 
-	# FIXME: REMOVE THIS. It's just to work around an annoyance while I stream
-	#   until the actual bug is fixed.
-	var reset_pose_button : Button = Button.new()
-	reset_pose_button.text = "Reset pose (FIXME!!!)"
-	get_settings_window().add_child(reset_pose_button)
-	reset_pose_button.pressed.connect(
-		func():
-			get_app().get_controller().reset_skeleton_to_rest_pose()
-			get_app().get_controller().reset_blend_shapes()
-			blend_shape_last_values = {}
-	)
+	_reinit()
 
-	var reset_pose_button2 : Button = Button.new()
-	reset_pose_button2.text = "Reset pose - Just hips (FIXME)"
-	get_settings_window().add_child(reset_pose_button2)
-	reset_pose_button2.pressed.connect(
-		func():
-			var skel : Skeleton3D = get_app().get_skeleton()
-			var hips_index : int = skel.find_bone("Hips")
-			if hips_index != -1:
-				skel.reset_bone_pose(hips_index)
-	)
+func _reinit():
+	_update_arm_rest_positions()
+	_reset_hand_landmarks()
 
-	_update_for_new_model_if_needed()
+func check_configuration() -> PackedStringArray:
+	var errors : PackedStringArray = []
+
+	if video_device == ["None"] or len(video_device) == 0:
+		errors.append("No camera is currently selected.")
+
+	if len(_current_error_to_show):
+		errors.append(_current_error_to_show)
+
+	if not check_mod_dependency("Mod_AnimationApplier", true):
+		errors.append("No AnimationApplier detected, or detected before MediaPipeController. Blend shapes will not function as expected.")
+
+	if not check_mod_dependency("Mod_PoseIK", true):
+		errors.append("No PoseIK module detected after MediaPipeController. This is required to pose the model based on the MediaPipeController tracker data.")
+
+	return errors
 
 func save_before(_settings_current: Dictionary):
 	_settings_current["blendshape_calibration"] = blendshape_calibration
@@ -238,6 +224,185 @@ func save_before(_settings_current: Dictionary):
 ## Convert a Vector3 to an array, for sending across an RPC call.
 static func _vec3_to_array(vec : Vector3):
 	return [vec[0], vec[1], vec[2]]
+
+func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
+	super.load_after(_settings_old, _settings_new)
+	_update_arm_rest_positions()
+	_send_settings_to_tracker()
+
+	var reset_blend_shapes = false
+	if reset_blend_shapes:
+		for k in blend_shape_last_values.keys():
+			blend_shape_last_values[k] = 0.0
+	
+	if _settings_old["blendshape_calibration"] != _settings_new["blendshape_calibration"]:
+		blendshape_calibration = _settings_new["blendshape_calibration"]
+
+	_reinit()
+
+func scene_init():
+
+	_start_process()
+
+	# Find a port number that's open to use. Must be done before start_tracker.
+	# OR call the set port number RPC after changing it.
+	assert(!udp_server)
+	udp_server = PacketPeerUDP.new()
+	var udp_error = 1
+	_udp_port = udp_port_base
+	while udp_error != OK:
+		udp_error = udp_server.bind(_udp_port, "127.0.0.1")
+		if udp_error != OK:
+			_udp_port += 1
+
+	_start_tracker()
+
+	blend_shape_last_values = {}
+	last_parsed_data = {}
+
+	# Move hand "rest" trackers into the scene.
+	var root = get_skeleton().get_parent()
+	var left_rest = $LeftHandRestReference
+	var right_rest = $RightHandRestReference
+	remove_child(left_rest)
+	remove_child(right_rest)
+	root.add_child(left_rest)
+	root.add_child(right_rest)
+
+	# Set the head tracker to match the model's head position.
+	var head_bone_index = get_skeleton().find_bone("Head")
+	$Head.global_transform = get_skeleton().get_bone_global_rest(
+		head_bone_index)
+
+	_reinit()
+
+	_init_complete = true
+
+func scene_shutdown():
+
+	_stop_tracker()
+
+	_stop_process()
+
+	udp_server.close()
+	udp_server = null
+
+	var root = get_skeleton().get_parent()
+	var left_rest = root.get_node("LeftHandRestReference")
+	var right_rest = root.get_node("RightHandRestReference")
+
+	root.remove_child(left_rest)
+	root.remove_child(right_rest)
+	add_child(left_rest)
+	add_child(right_rest)
+
+	# Reset pose and blendshapes.
+	get_app().get_controller().reset_skeleton_to_rest_pose()
+	get_app().get_controller().reset_blend_shapes()
+	blend_shape_last_values = {}
+
+	_init_complete = false
+
+#endregion
+
+#region Post-Load Model Setup
+
+func _update_arm_rest_positions():
+	var skel : Skeleton3D = get_skeleton()
+	
+	if skel:
+		
+		for side in [ "Left", "Right" ]:
+			
+			var rotation_axis : Vector3 = Vector3(0.0, 0.0, 1.0)
+			if side == "Left":
+				rotation_axis *= -1
+
+			# Rotate the shoulder down so the arm is resting at a specific angle
+			# on the Z axis.
+			# on the Z axis.
+			var shoulder_index = skel.find_bone(side + "Shoulder")
+			var hand_index = skel.find_bone(side + "Hand")
+			var shoulder_origin : Vector3 = skel.get_bone_global_rest(shoulder_index).origin
+			var hand_origin : Vector3 = skel.get_bone_global_rest(hand_index).origin
+			var rotation_basis = Basis(rotation_axis, deg_to_rad(arm_rest_angle))
+			var new_offset : Vector3 = (hand_origin - shoulder_origin).rotated(
+					rotation_axis, deg_to_rad(arm_rest_angle))
+			hand_rest_trackers[side].transform.origin = shoulder_origin + new_offset
+			hand_rest_trackers[side].transform.basis = rotation_basis
+
+func _calibrate_face():
+	var data = {}
+	var start = Time.get_ticks_msec()
+	blendshape_calibration = {}
+
+	for key in blend_shape_last_values.keys():
+		data[key] = []
+
+	# Calibrate for 200 ms
+	while Time.get_ticks_msec() < start + 200:
+		for key in blend_shape_last_values:
+			if blend_shape_last_values[key] > 0 && key.countn("eye") == 0:
+				data[key].append(blend_shape_last_values[key])
+		await get_tree().process_frame
+
+	# Average data gathered
+	for blendshape in data.keys():
+		blendshape_calibration[blendshape] = (data[blendshape].reduce(func(accum, number): return accum + number, 0)) / 2.0
+
+#endregion
+
+#region Tracker Process Interop
+
+func _scan_video_devices():
+
+	var dl = tracker_python_process.call_rpc_sync(
+		"enumerate_camera_devices", [])
+	var device_list : Array = dl if dl is Array else []
+	print(device_list)
+
+	for device in device_list:
+		var device_generated_name = "{name} ({backend}:{index})".format(device)
+		print(device_generated_name)
+		_devices_list.append(device_generated_name)
+		_devices_by_list_entry[device_generated_name] = device
+
+	# Create a fake "None" entry.
+	_devices_list.insert(0, "None")
+	_devices_by_list_entry["None"] = { "index" : -1 }
+
+func _start_tracker():
+	
+	tracker_python_process.call_rpc_async(
+		"set_udp_port_number", [_udp_port])
+
+	tracker_python_process.call_rpc_async(
+		"set_hand_confidence_time_threshold", [hand_confidence_time_threshold])
+
+	var video_device_index_to_use = 0
+	
+	if len(video_device) > 0:
+		if video_device[0] in _devices_by_list_entry:
+			var actual_device_data = _devices_by_list_entry[video_device[0]]
+			video_device_index_to_use = int(actual_device_data["index"])
+	else:
+		video_device_index_to_use = -1
+
+	# FIXME: Replace this all with a single settings dict.
+	tracker_python_process.call_rpc_async(
+		"set_video_device_number", [video_device_index_to_use])
+	tracker_python_process.call_rpc_async(
+		"set_hand_count_change_time_threshold", [hand_count_change_time_threshold])
+
+	tracker_python_process.call_rpc_async(
+		"start_tracker", [])
+
+func _stop_tracker():
+
+	tracker_python_process.call_rpc_sync(
+		"stop_tracker", [])
+
+	set_status("Stopped")
 
 func _send_settings_to_tracker():
 
@@ -276,375 +441,11 @@ func _send_settings_to_tracker():
 			"hand_to_head_scale"   : hand_to_head_scale
 		}])
 
-func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
-	super.load_after(_settings_old, _settings_new)
-	_update_arm_rest_positions()
+#endregion
 
-	if _settings_new["chest_yaw_scale"] != _settings_old["chest_yaw_scale"]:
-		_setup_ik_chains()
+#region Update Code
 
-	_send_settings_to_tracker()
-
-	var reset_blend_shapes = false
-	if reset_blend_shapes:
-		for k in blend_shape_last_values.keys():
-			blend_shape_last_values[k] = 0.0
-	
-	if _settings_old["blendshape_calibration"] != _settings_new["blendshape_calibration"]:
-		blendshape_calibration = _settings_new["blendshape_calibration"]
-
-func scene_init():
-
-	_start_process()
-
-	# Find a port number that's open to use. Must be done before start_tracker.
-	# OR call the set port number RPC after changing it.
-	assert(!udp_server)
-	udp_server = PacketPeerUDP.new()
-	var udp_error = 1
-	_udp_port = udp_port_base
-	while udp_error != OK:
-		udp_error = udp_server.bind(_udp_port, "127.0.0.1")
-		if udp_error != OK:
-			_udp_port += 1
-
-	start_tracker()
-
-	blend_shape_last_values = {}
-	last_parsed_data = {}
-
-	# Move hand "rest" trackers into the scene.
-	var root = get_skeleton().get_parent()
-	var left_rest = $LeftHandRestReference
-	var right_rest = $RightHandRestReference
-	remove_child(left_rest)
-	remove_child(right_rest)
-	root.add_child(left_rest)
-	root.add_child(right_rest)
-
-	# Set the head tracker to match the model's head position.
-	var head_bone_index = get_skeleton().find_bone("Head")
-	$Head.global_transform = get_skeleton().get_bone_global_rest(
-		head_bone_index)
-
-	_setup_ik_chains()
-	_update_arm_rest_positions()
-	
-	_init_complete = true
-
-func scene_shutdown():
-
-	stop_tracker()
-
-	_stop_process()
-
-	udp_server.close()
-	udp_server = null
-
-	var root = get_skeleton().get_parent()
-	var left_rest = root.get_node("LeftHandRestReference")
-	var right_rest = root.get_node("RightHandRestReference")
-
-	root.remove_child(left_rest)
-	root.remove_child(right_rest)
-	add_child(left_rest)
-	add_child(right_rest)
-
-	_ikchains = []
-
-	# Reset pose and blendshapes.
-	get_app().get_controller().reset_skeleton_to_rest_pose()
-	get_app().get_controller().reset_blend_shapes()
-	blend_shape_last_values = {}
-
-	_init_complete = false
-
-# -----------------------------------------------------------------------------
-# Post-load model setup.
-
-func _update_arm_rest_positions():
-	var skel : Skeleton3D = get_skeleton()
-	
-	if skel:
-		
-		for side in [ "Left", "Right" ]:
-			
-			var rotation_axis : Vector3 = Vector3(0.0, 0.0, 1.0)
-			if side == "Left":
-				rotation_axis *= -1
-
-			# Rotate the shoulder down so the arm is resting at a specific angle
-			# on the Z axis.
-			var shoulder_index = skel.find_bone(side + "Shoulder")
-			var hand_index = skel.find_bone(side + "Hand")
-			var shoulder_origin : Vector3 = skel.get_bone_global_rest(shoulder_index).origin
-			var hand_origin : Vector3 = skel.get_bone_global_rest(hand_index).origin
-			var rotation_basis = Basis(rotation_axis, deg_to_rad(arm_rest_angle))
-			var new_offset : Vector3 = (hand_origin - shoulder_origin).rotated(
-					rotation_axis, deg_to_rad(arm_rest_angle))
-			hand_rest_trackers[side].transform.origin = shoulder_origin + new_offset
-			hand_rest_trackers[side].transform.basis = rotation_basis
-
-func _setup_ik_chains():
-
-	# ORDER MATTERS ON THE CHAIN ARRAY. SPINE BEFORE ARMS BEFORE FINGERS.
-
-	_ikchains = []
-	
-	var chain_spine : MediaPipeController_IKChain = MediaPipeController_IKChain.new()
-	chain_spine.skeleton = get_skeleton()
-	chain_spine.base_bone = "Hips"
-	chain_spine.tip_bone = "Head"
-	chain_spine.rotation_low = 0.0 * PI
-	chain_spine.rotation_high = 2.0 * PI
-	chain_spine.do_yaw = true
-	chain_spine.main_axis_of_rotation = Vector3(1.0, 0.0, 0.0)
-	chain_spine.secondary_axis_of_rotation = Vector3(0.0, 1.0, 0.0)
-	chain_spine.pole_direction_target = Vector3(0.0, 0.0, 0.0) # No pole target
-	chain_spine.tracker_object = $Head
-	chain_spine.yaw_scale = chest_yaw_scale
-
-	#chain_spine.do_rotate_to_match_tracker = false
-	#chain_spine.do_point_tracker = false
-	#chain_spine.do_pole_targets = false
-
-	# FIXME: Add yaw scale as an option.
-	_ikchains.append(chain_spine)
-
-	var x_pole_dist = 10.0
-	var z_pole_dist = 10.0
-	var y_pole_dist = 5.0
-	
-	var arm_rotation_axis = Vector3(0.0, 1.0, 0.0).normalized()
-	var finger_rotation_axis = Vector3(0.0, 0.0, 1.0).normalized()
-
-
-
-	var hand_tracker_left : Node3D = $Hand_Left
-	var hand_tracker_right : Node3D = $Hand_Right
-
-	# Make sure finger landmarks exist already.
-	_reset_hand_landmarks()
-
-
-
-	for side in [ "Left", "Right" ]:
-
-		var chain_hand = MediaPipeController_IKChain.new()
-		chain_hand.skeleton = get_skeleton()
-		chain_hand.base_bone = side + "UpperArm"
-		chain_hand.tip_bone = side + "Hand"
-		#chain_hand.tip_bone = side + "IndexProximal"
-		chain_hand.rotation_low = 0.05 * PI
-		chain_hand.rotation_high = 2.0 * 0.99 * PI
-		chain_hand.do_yaw = false
-		chain_hand.do_bone_roll = true
-		chain_hand.secondary_axis_of_rotation = Vector3(0.0, 1.0, 0.0)
-
-		if side == "Left":
-			chain_hand.main_axis_of_rotation = -arm_rotation_axis
-			chain_hand.pole_direction_target = Vector3(
-				x_pole_dist, -y_pole_dist, -z_pole_dist)
-			chain_hand.tracker_object = hand_tracker_left
-		else:
-			chain_hand.main_axis_of_rotation = arm_rotation_axis
-			chain_hand.pole_direction_target = Vector3(
-				-x_pole_dist, -y_pole_dist, -z_pole_dist)
-			chain_hand.tracker_object = hand_tracker_right
-			
-		_ikchains.append(chain_hand)
-
-	return
-
-	# See here for where these numbers come from:
-	#   https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker
-	var fingertip_tracking_mappings = {
-		"Index" : 8,
-		"Middle" : 12,
-		"Ring" : 16,
-		"Little" : 20,
-		"Thumb" : 4
-	}
-
-	for side in [ "Left", "Right" ]:
-
-		var hand_tracker_object = hand_tracker_left
-		if side == "Right":
-			hand_tracker_object = hand_tracker_right
-
-		for finger in [ "Index", "Middle", "Ring", "Little" ]:
-
-			var chain_finger : MediaPipeController_IKChain = \
-				MediaPipeController_IKChain.new()
-			chain_finger.skeleton = get_skeleton()
-
-			# Attempt to find finger root bone.
-			chain_finger.base_bone = side + finger + "Proximal"
-			if chain_finger.skeleton.find_bone(chain_finger.base_bone) == -1:
-				# Finger missing entirely? Bail out.
-				continue
-
-			# Attempt to find finger most-distal bone.
-			chain_finger.tip_bone = side + finger + "Distal"
-			if chain_finger.skeleton.find_bone(chain_finger.tip_bone) == -1:
-				chain_finger.tip_bone = side + finger + "Intermediate"
-			if chain_finger.skeleton.find_bone(chain_finger.tip_bone) == -1:
-				# Can't find needed bones. Bail.
-				continue
-			
-			# Keep looking and see if we can find something beyond the most
-			# distant bone.
-			while true:
-				var child_bones : PackedInt32Array = chain_finger.skeleton.get_bone_children(
-					chain_finger.skeleton.find_bone(chain_finger.tip_bone))
-				if child_bones.size() == 1:
-					chain_finger.tip_bone = chain_finger.skeleton.get_bone_name(child_bones[0])
-				else:
-					break
-			
-			chain_finger.tracker_object = hand_tracker_object.get_child(
-				fingertip_tracking_mappings[finger])
-			if side == "Left":
-				chain_finger.main_axis_of_rotation = -finger_rotation_axis
-				chain_finger.secondary_axis_of_rotation = Vector3(0.0, 1.0, 0.0)
-			else:
-				chain_finger.main_axis_of_rotation = finger_rotation_axis
-				chain_finger.secondary_axis_of_rotation = Vector3(0.0, 1.0, 0.0)
-
-			chain_finger.rotation_low = 0.05 * PI
-			chain_finger.rotation_high = 1.0 * 0.99 * PI
-			chain_finger.do_yaw = false
-			chain_finger.do_bone_roll = false
-			chain_finger.do_rotate_to_match_tracker = false
-			chain_finger.do_point_tracker = false
-			
-			chain_finger.do_pole_targets = false
-			#chain_finger.pole_direction_target = Vector3(0.0, 10.0, 0.0)
-			#chain_finger.pole_direction_rotation_object = hand_tracker_object
-			_ikchains.append(chain_finger)
-
-
-		var chain_thumb : MediaPipeController_IKChain = \
-				MediaPipeController_IKChain.new()
-		chain_thumb.skeleton = get_skeleton()
-
-		# Attempt to find finger root bone.
-		chain_thumb.base_bone = side + "ThumbMetacarpal"
-		#chain_thumb.base_bone = side + "ThumbProximal"
-		if chain_thumb.skeleton.find_bone(chain_thumb.base_bone) == -1:
-			# Finger missing entirely? Bail out.
-			continue
-
-		print(chain_thumb.skeleton.get_concatenated_bone_names())
-
-		# Attempt to find finger most-distal bone.
-		chain_thumb.tip_bone = side + "ThumbDistal"
-		if chain_thumb.skeleton.find_bone(chain_thumb.tip_bone) == -1:
-			chain_thumb.tip_bone = side + "ThumbIntermediate"
-		if chain_thumb.skeleton.find_bone(chain_thumb.tip_bone) == -1:
-			chain_thumb.tip_bone = side + "ThumbProximal"
-		if chain_thumb.skeleton.find_bone(chain_thumb.tip_bone) == -1:
-			# Can't find needed bones. Bail.
-			continue
-
-
-
-		chain_thumb.tracker_object = hand_tracker_object.get_child(
-			fingertip_tracking_mappings["Thumb"])
-		if side == "Left":
-			chain_thumb.main_axis_of_rotation = -finger_rotation_axis
-		else:
-			chain_thumb.main_axis_of_rotation = finger_rotation_axis
-
-		chain_thumb.rotation_low = 0.05 * PI
-		chain_thumb.rotation_high = 0.5 * 0.99 * PI
-		chain_thumb.do_yaw = false
-		chain_thumb.do_bone_roll = false
-		chain_thumb.do_rotate_to_match_tracker = false
-		chain_thumb.do_pole_targets = false
-		_ikchains.append(chain_thumb)
-
-
-func _update_for_new_model_if_needed():
-	_setup_ik_chains()
-	_update_arm_rest_positions()
-
-func _calibrate_face():
-	var data = {}
-	var start = Time.get_ticks_msec()
-	blendshape_calibration = {}
-
-	for key in blend_shape_last_values.keys():
-		data[key] = []
-
-	# Calibrate for 200 ms
-	while Time.get_ticks_msec() < start + 200:
-		for key in blend_shape_last_values:
-			if blend_shape_last_values[key] > 0 && key.countn("eye") == 0:
-				data[key].append(blend_shape_last_values[key])
-		await get_tree().process_frame
-
-	# Average data gathered
-	for blendshape in data.keys():
-		blendshape_calibration[blendshape] = (data[blendshape].reduce(func(accum, number): return accum + number, 0)) / 2.0
-
-# -----------------------------------------------------------------------------
-# Tracker process interop.
-
-func _scan_video_devices():
-
-	var dl = tracker_python_process.call_rpc_sync(
-		"enumerate_camera_devices", [])
-	var device_list : Array = dl if dl is Array else []
-	print(device_list)
-
-	for device in device_list:
-		var device_generated_name = "{name} ({backend}:{index})".format(device)
-		print(device_generated_name)
-		_devices_list.append(device_generated_name)
-		_devices_by_list_entry[device_generated_name] = device
-
-	# Create a fake "None" entry.
-	_devices_list.insert(0, "None")
-	_devices_by_list_entry["None"] = { "index" : -1 }
-
-func start_tracker():
-	
-	tracker_python_process.call_rpc_async(
-		"set_udp_port_number", [_udp_port])
-
-	tracker_python_process.call_rpc_async(
-		"set_hand_confidence_time_threshold", [hand_confidence_time_threshold])
-
-	var video_device_index_to_use = 0
-	
-	if len(video_device) > 0:
-		if video_device[0] in _devices_by_list_entry:
-			var actual_device_data = _devices_by_list_entry[video_device[0]]
-			video_device_index_to_use = int(actual_device_data["index"])
-	else:
-		video_device_index_to_use = -1
-
-	# FIXME: Replace this all with a single settings dict.
-	tracker_python_process.call_rpc_async(
-		"set_video_device_number", [video_device_index_to_use])
-	tracker_python_process.call_rpc_async(
-		"set_hand_count_change_time_threshold", [hand_count_change_time_threshold])
-
-	tracker_python_process.call_rpc_async(
-		"start_tracker", [])
-
-func stop_tracker():
-
-	tracker_python_process.call_rpc_sync(
-		"stop_tracker", [])
-
-	set_status("Stopped")
-
-
-
-
-func mirror_parsed_data(parsed_data : Dictionary) -> Dictionary:
+static func _mirror_parsed_data(parsed_data : Dictionary) -> Dictionary:
 
 	var new_parsed_data : Dictionary = parsed_data.duplicate(true)
 
@@ -713,7 +514,7 @@ func mirror_parsed_data(parsed_data : Dictionary) -> Dictionary:
 
 	return new_parsed_data
 
-func _process_single_packet(model : Node3D, delta : float, parsed_data : Dictionary):
+func _process_single_packet(delta : float, parsed_data : Dictionary):
 
 	if "status" in parsed_data:
 		set_status(parsed_data["status"])
@@ -728,7 +529,7 @@ func _process_single_packet(model : Node3D, delta : float, parsed_data : Diction
 
 	# -----------------
 	if mirror_mode:
-		parsed_data = mirror_parsed_data(parsed_data)
+		parsed_data = _mirror_parsed_data(parsed_data)
 
 	last_parsed_data["head_quat"] = parsed_data["head_quat"]
 	last_parsed_data["head_origin"] = parsed_data["head_origin"]
@@ -776,7 +577,7 @@ func _process_single_packet(model : Node3D, delta : float, parsed_data : Diction
 
 	_current_error_to_show = ""
 
-func process_new_packets(model, delta):
+func _process_new_packets(delta):
 	var most_recent_packet = null
 	var dropped_packets = 0
 
@@ -793,7 +594,7 @@ func process_new_packets(model, delta):
 
 		if parsed_data:
 			last_packet_received = parsed_data.duplicate(true)
-			_process_single_packet(model, delta, parsed_data)
+			_process_single_packet(delta, parsed_data)
 
 		if len(packet) > 0:
 			if most_recent_packet != null:
@@ -812,52 +613,6 @@ func process_new_packets(model, delta):
 	var blend_shapes_to_apply : Dictionary = get_global_mod_data("BlendShapes")
 	blend_shapes_to_apply.clear()
 	blend_shapes_to_apply.merge(blend_shape_last_values, true)
-
-# -----------------------------------------------------------------------------
-# Actual update code.
-
-
-func rotate_bone_in_global_space(
-	skel : Skeleton3D,
-	bone_index : int,
-	axis : Vector3,
-	angle : float,
-	relative : bool = false):
-
-	if axis.length() <= 0.0001:
-		return
-
-	var parent_bone_index = skel.get_bone_parent(bone_index)	
-	var gs_rotation = Basis(axis.normalized(),  angle).get_rotation_quaternion()
-	var gs_rotation_parent = skel.get_bone_global_rest(parent_bone_index).basis.get_rotation_quaternion()
-	var gs_rotation_rest = skel.get_bone_global_rest(bone_index).basis.get_rotation_quaternion()
-	var bs_rotation = gs_rotation_parent.inverse() * gs_rotation * gs_rotation_rest
-	
-	if relative:
-		skel.set_bone_pose_rotation(
-			bone_index,
-			skel.get_bone_pose_rotation(bone_index) * bs_rotation)
-	else:
-		skel.set_bone_pose_rotation(
-			bone_index,
-			bs_rotation)
-
-func handle_lean(skel : Skeleton3D, angle : float):
-
-	var current_bone : int = skel.find_bone("Head")
-	var hips_bone : int = skel.find_bone("Hips")
-	var bone_count : int = 0
-	
-	while current_bone != hips_bone and current_bone != -1:
-		bone_count += 1
-		current_bone = skel.get_bone_parent(current_bone)
-	
-	angle /= float(bone_count)
-	
-	current_bone = skel.find_bone("Head")
-	while current_bone != hips_bone and current_bone != -1:
-		rotate_bone_in_global_space(skel, current_bone, Vector3(0.0, 0.0, 1.0), angle, true)
-		current_bone = skel.get_bone_parent(current_bone)
 
 func _start_process():
 	tracker_python_process.start_process(false)
@@ -886,37 +641,16 @@ func _process(delta):
 
 	# FIXME: Remove this. OffKai hack.
 	if tracking_pause:
+
+		# We still need to write out blendshapes for this.
+		var blend_shapes_to_apply : Dictionary = get_global_mod_data("BlendShapes")
+		blend_shapes_to_apply.clear()
+		blend_shapes_to_apply.merge(blend_shape_last_values, true)
+
+		# Bail out early.
 		return
 
-	# Hack to fix hips drift.
-	if hack_reset_hips_every_frame:
-		var hips_index : int = skel.find_bone("Hips")
-		if hips_index != -1:
-			skel.reset_bone_pose(hips_index)
-
-	# FIXME: Hack.
-	# This just moves the body based on the head position.
-	var head_pos = $Head.transform.origin
-	var model_pos = model_root.transform.origin
-	
-	if true:
-		model_root.transform.origin = model_pos.lerp(head_pos, delta * hip_adjustment_speed)
-		#model_root.transform.origin = head_pos
-		#model_root.transform.origin.y = model_y 
-		#model_root.transform.origin.y = lerp(model_pos.y, head_pos.y - 1.9, 0.01)
-		
-		# FIXME: Another hack!
-		var head_rest_transform = get_skeleton().get_bone_global_rest(
-			get_skeleton().find_bone("Head"))
-		#print(head_rest_transform.origin.y)
-		
-		# FIXME: Hard-coded fudge factor.
-		# FIXME: Why can't we just map this directly again? It looks like we're shrugging when the arms get set up wrong or something.
-		model_root.transform.origin.y = lerp(
-			model_pos.y, head_pos.y - head_rest_transform.origin.y + head_vertical_offset,
-			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
-
-	process_new_packets(model_root, delta)
+	_process_new_packets(delta)
 
 	var delta_scale = delta * 60.0
 	if delta_scale > 1.0:
@@ -990,7 +724,7 @@ func _process(delta):
 					head_origin_array[0],
 					head_origin_array[1],
 					head_origin_array[2]) * head_origin_multiplier),
-					delta_scale * 0.5) # FIXME: Hardcoded smoothing.
+					delta_scale * (1.0 / head_position_smoothing))
 			var head_quat_array = parsed_data["head_quat"]
 			var head_euler = Basis(Quaternion(
 				head_quat_array[0] * head_quat_multiplier[0],
@@ -999,7 +733,7 @@ func _process(delta):
 				head_quat_array[3] * head_quat_multiplier[3])).get_euler()
 			$Head.transform.basis = $Head.transform.basis.slerp(
 				Basis.from_euler(head_euler * head_rotation_scale),
-				delta_scale * 0.5) # FIXME: Hardcoded smoothing.
+				delta_scale * (1.0 / head_rotation_smoothing))
 		else:
 
 			# Haven't had face tracker data in a while? Just blend us back to a
@@ -1010,117 +744,81 @@ func _process(delta):
 				$Head.global_transform.basis.get_rotation_quaternion().slerp(
 					rest_global.basis.get_rotation_quaternion(), blend_to_rest_speed * delta))
 
-		# ---------------------------------------------------------------------
-		# IK stuff starts here
 
-		# Arm IK.
-		
-		var x_pole_dist = 10.0
-		var z_pole_dist = 10.0
-		var y_pole_dist = 5.0
+		var hands = [ \
+			[ "Left", hand_landmarks_left, $Hand_Left, Basis() ], # FIXME: Remove the last value.
+			[ "Right", hand_landmarks_right, $Hand_Right, Basis() ]]  # FIXME: Remove the last value.
+		for hand in hands:
+			_update_hand(hand, parsed_data, skel)
 
-		# FIXME: MIRRORING MESS
-		var tracker_to_use_right = tracker_right
-		var tracker_to_use_left = tracker_left
-		
-		# FIXME: Hack hack hack hack hack hack
-		for k in range(1, 3):
+	# ---------------------------------------------------------------------------------------------
+	# Send tracker data down the pipe.
 
-			var tracker_to_use = tracker_to_use_left
-			var compensation_alpha_scale = 1.0
-			var pole_target_x = x_pole_dist
-			if k == 2: # FIXME: Hack.
-				tracker_to_use = tracker_to_use_right
-				compensation_alpha_scale *= -1.0
-				pole_target_x = -x_pole_dist
-		
-			var tracker_local_position = \
-				skel.get_global_transform().inverse() * tracker_to_use.get_global_transform()
-			var base_bone_position = skel.get_bone_global_pose(
-				skel.find_bone(_ikchains[k].base_bone)).origin
-			#print(tracker_local_position.origin.x - bone_position.x)
-			
-			# See if we can raise the shoulders for when arms go too far up.
-			if k == 1 or k == 2:
-				var chest_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
+	var trackers : Dictionary = get_global_mod_data("trackers")
+	trackers["head"] = {
+		"transform" : $Head.global_transform,
+		"active" : true
+	}
 
-				# FIXME: We really need to parameterize this all in a less
-				# silly way.
-				var rotation_scale = 1.0
-				var shoulder_bone = "LeftShoulder"
-				if tracker_to_use == tracker_right:
-					shoulder_bone = "RightShoulder"
-					rotation_scale = -rotation_scale
-				
-				var shoulder_bone_index = skel.find_bone(shoulder_bone)
-				var shoulder_pose = skel.get_bone_global_pose(shoulder_bone_index)
-				var chest_pose_inv = chest_pose.inverse()
-				var shoulder_y = (chest_pose_inv * shoulder_pose).origin.y
-				var tracker_local_chest = chest_pose_inv * tracker_local_position
-				if tracker_local_chest.origin.y > shoulder_y:
-					#print(tracker_local_chest.origin.y - shoulder_y)
-					skel.set_bone_pose_rotation(shoulder_bone_index, 
-						Quaternion(Vector3(0.0, 0.0, 1.0), (tracker_local_chest.origin.y - shoulder_y) * 2.0 * rotation_scale) *
-						skel.get_bone_rest(shoulder_bone_index).basis.get_rotation_quaternion())
-				
-			
-			
-			
-			var pole_target_y = -y_pole_dist
-			var pole_target_z = -z_pole_dist
+	trackers["hand_left"] = {
+		"transform" : $Hand_Left.global_transform,
+		"active" : hand_time_since_last_update[0] <= arm_reset_time
+	}
 
-			# Rotate pole target upwards when the arm reaches across the
-			# chest.
-			if (tracker_local_position.origin.x - base_bone_position.x) * compensation_alpha_scale < 0:
-				var alpha = -(tracker_local_position.origin.x - base_bone_position.x) * 3.0 * compensation_alpha_scale
-				#print(alpha)
-				pole_target_y = lerp(-y_pole_dist, 0.0, alpha)
-				pole_target_z = lerp(-z_pole_dist, 0.0, alpha)
-			
-			# Move pole target backwards when the arm is lowered.
-			#
-			# FIXME: Hardcoded values.
-			var arm_below_factor = (tracker_local_position.origin.y - base_bone_position.y) + 0.25
-			arm_below_factor *= 1.0
-			if arm_below_factor < 0.0:
-				var alpha = arm_below_factor
-				# FIXME: Hardcoded values.
-				pole_target_z = lerp(pole_target_z, 100.0, alpha)
-				pole_target_x = lerp(pole_target_x, 100.0 * compensation_alpha_scale, alpha)
+	trackers["hand_right"] = {
+		"transform" : $Hand_Right.global_transform,
+		"active" : hand_time_since_last_update[1] <= arm_reset_time
+	}
 
-			
-			_ikchains[k].pole_direction_target = Vector3(
-				pole_target_x, pole_target_y, pole_target_z)
+	# https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker
+	var mediapipe_hand_landmark_names : Array = [
+		"wrist",
 
+		"thumb_cmc", # carpometacarpal
+		"thumb_mcp", # metacarpal
+		"thumb_ip", # interphalangeal
+		"thumb_tip", # tip
 
-		# Do hand stuff.
-		if do_hands:
-	
-			var hands = [ \
-				[ "Left", hand_landmarks_left, tracker_left, Basis() ], # FIXME: Remove the last value.
-				[ "Right", hand_landmarks_right, tracker_right, Basis() ]]  # FIXME: Remove the last value.
+		"index_finger_mcp",
+		"index_finger_pip", # proximal something something
+		"index_finger_dip", # distal something something
+		"index_finger_tip",
 
-			for hand in hands:
-				update_hand(hand, parsed_data, skel)
+		"middle_finger_mcp",
+		"middle_finger_pip",
+		"middle_finger_dip",
+		"middle_finger_tip",
 
+		"ring_finger_mcp",
+		"ring_finger_pip",
+		"ring_finger_dip",
+		"ring_finger_tip",
 
+		"pinky_finger_mcp",
+		"pinky_finger_pip",
+		"pinky_finger_dip",
+		"pinky_finger_tip",
+	]
 
+	trackers["finger_positions"] = {}
 
-	# Solve all IK chains.
-	for chain in _ikchains:
-		chain.do_ik_chain()
+	for side : String in [ "left", "right" ]:
 
+		var tracker : Node3D;
+		if side == "left":
+			tracker = $Hand_Left
+		else:
+			tracker = $Hand_Right
 
+		for landmark_index : int in range(0, len(mediapipe_hand_landmark_names)):
+			if tracker.get_child_count() > landmark_index:
+				var finger_tracker : Node3D = tracker.get_child(landmark_index)
+				var landmark_name : String = side + "_" + mediapipe_hand_landmark_names[landmark_index]
+				trackers["finger_positions"][landmark_name] = finger_tracker.global_transform.origin
 
-	# Lean!
-	var lean_check_axis : Vector3 = (skel.transform * skel.get_bone_global_pose(skel.find_bone("Hips"))).basis * Vector3(1.0, 0.0, 0.0)
-	#print(lean_check_axis)
-	lean_check_axis = lean_check_axis.normalized()
-	#var head_offset : Vector3 = $Head.transform.origin - (skel.transform * skel.get_bone_global_pose(skel.find_bone("Head"))).origin
-	var head_offset : Vector3 = $Head.transform.origin - model_root.transform.origin
-	var lean_amount : float = sin(lean_check_axis.dot(head_offset))
-	handle_lean(skel, lean_amount * lean_scale)
+#endregion
 
+#region Hands
 
 func _reset_hand_landmarks():
 
@@ -1150,8 +848,7 @@ func _reset_hand_landmarks():
 	assert(len(hand_landmarks_left) == 21)
 	assert(len(hand_landmarks_right) == 21)
 
-
-func update_hand(hand, parsed_data, skel : Skeleton3D):
+func _update_hand(hand, parsed_data, skel : Skeleton3D):
 	var mark_counter = 0
 
 	var which_hand = hand[0].to_lower()
@@ -1160,14 +857,7 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 	var hand_landmarks = hand[1]
 
 	for mark in parsed_data["hand_landmarks_" + which_hand]:
-		
-		# FIXME: Remove this.
-		## Add any missing landmarks
-		#if len(hand_landmarks) < mark_counter + 1:
-			#var new_mesh_instance = MeshInstance3D.new()
-			#hand[2].add_child(new_mesh_instance)
-			#hand_landmarks.append(new_mesh_instance)
-		
+
 		# Update debug visibility.
 		for landmark in hand_landmarks:
 			if landmark.mesh == null and debug_visible_hand_trackers:
@@ -1178,11 +868,9 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 					"MediaPipeTrackerMaterial.tres")
 			elif landmark.mesh != null and (not debug_visible_hand_trackers):
 				landmark.mesh = null
-		
+
 		var marker = hand_landmarks[mark_counter]
-		
 		var marker_old_worldspace = marker.global_transform.origin
-		
 		var marker_original_local = Vector3(mark[0], mark[1], mark[2]) # FIXME: Add a scaling value.
 
 		# FIXME: WHY THE HECK DO WE HAVE TO DO DO THIS!?!?!?!?!?!?!?!?!?!?!?!?!!!??!?!?!?!?!?!
@@ -1205,124 +893,125 @@ func update_hand(hand, parsed_data, skel : Skeleton3D):
 		
 		mark_counter += 1
 
-
-
-#					# First, we need to offset the metacarpal. We can't effectively change the
-#					# origin of this through rotations without affecting other bones as well.
-#					# Thankfully, we can just set it to the length of the rest offset times the 
-#					# direction of the tracker.
-#					var metacarpal_index = skel.find_bone(hand[0] + "ThumbMetacarpal")
-#					var metacarpal_rest_origin = skel.get_bone_rest(metacarpal_index).origin
-#					var metacarpal_tracker_delta_world = hand[1][1].global_transform.origin - hand[1][0].global_transform.origin
-#					var metacarpal_tracker_delta_global = skel.transform.basis.inverse() * metacarpal_tracker_delta_world
-#					var metacarpal_tracker_delta_bone = skel.get_bone_global_pose(metacarpal_index).basis.inverse() * metacarpal_tracker_delta_global
-#					print(metacarpal_tracker_delta_bone)
-#					skel.set_bone_pose_position( \
-#						metacarpal_index,
-#						metacarpal_rest_origin.length() * metacarpal_tracker_delta_bone.normalized())
-
-
-	#return
-
 	# FIXME: I have no idea what these columns mean anymore.
-	var finger_bone_array = [
-		[ "IndexProximal",      5,  6, "IndexIntermediate", "IndexProximal" ],
-		[ "IndexIntermediate",  6,  7, "IndexDistal",       "IndexIntermediate" ],
-		[ "IndexDistal",        7,  8, "IndexDistal",       "IndexIntermediate" ],
-		
-		[ "MiddleProximal",     9,  10, "MiddleIntermediate", "MiddleProximal" ],
-		[ "MiddleIntermediate", 10, 11, "MiddleDistal", "MiddleIntermediate" ],
-		[ "MiddleDistal",       11, 12, "MiddleDistal", "MiddleIntermediate" ],
-
-		[ "RingProximal",       13, 14, "RingIntermediate", "RingProximal" ],
-		[ "RingIntermediate",   14, 15, "RingDistal", "RingIntermediate" ],
-		[ "RingDistal",         15, 16, "RingDistal", "RingIntermediate" ],
-
-		[ "LittleProximal",     17, 18, "LittleIntermediate", "LittleProximal" ],
-		[ "LittleIntermediate", 18, 19, "LittleDistal", "LittleIntermediate" ],
-		[ "LittleDistal",       19, 20, "LittleDistal", "LittleIntermediate" ],
-
-		# FIXME: Metacarpal *origin* needs to change relative to hand as well.
-		[ "ThumbMetacarpal",    1,  2,  "ThumbProximal", "ThumbMetacarpal" ],
-		[ "ThumbProximal",      2,  3,  "ThumbDistal", "ThumbProximal" ],
-		[ "ThumbDistal",        3,  4,  "ThumbDistal", "ThumbProximal" ],
+	var finger_bone_array_array = [
+		[
+			{
+				"bone_name_current" : "IndexProximal",
+				"landmark_index_start" : 5,
+				"landmark_index_end"  : 6,
+				"bone_name_next" : "IndexIntermediate",
+				"bone_name_parent_of_next" : "IndexProximal"
+			},
+			{
+				"bone_name_current" : "IndexIntermediate",
+				"landmark_index_start" : 6,
+				"landmark_index_end"  : 7,
+				"bone_name_next" : "IndexDistal",
+				"bone_name_parent_of_next" : "IndexIntermediate"
+			},
+			{
+				"bone_name_current" : "IndexDistal",
+				"landmark_index_start" : 7,
+				"landmark_index_end"  : 8,
+				"bone_name_next" : "IndexDistal",
+				"bone_name_parent_of_next" : "IndexIntermediate"
+			}
+		],
+		[
+			{
+				"bone_name_current" : "MiddleProximal",
+				"landmark_index_start" : 9,
+				"landmark_index_end"  : 10,
+				"bone_name_next" : "MiddleIntermediate",
+				"bone_name_parent_of_next" : "MiddleProximal"
+			},
+			{
+				"bone_name_current" : "MiddleIntermediate",
+				"landmark_index_start" : 10,
+				"landmark_index_end"  : 11,
+				"bone_name_next" : "MiddleDistal",
+				"bone_name_parent_of_next" : "MiddleIntermediate"
+			},
+			{
+				"bone_name_current" : "MiddleDistal",
+				"landmark_index_start" : 11,
+				"landmark_index_end"  : 12,
+				"bone_name_next" : "MiddleDistal",
+				"bone_name_parent_of_next" : "MiddleIntermediate"
+			}
+		],
+		[
+			{
+				"bone_name_current" : "RingProximal",
+				"landmark_index_start" : 13,
+				"landmark_index_end"  : 14,
+				"bone_name_next" : "RingIntermediate",
+				"bone_name_parent_of_next" : "RingProximal"
+			},
+			{
+				"bone_name_current" : "RingIntermediate",
+				"landmark_index_start" : 14,
+				"landmark_index_end"  : 15,
+				"bone_name_next" : "RingDistal",
+				"bone_name_parent_of_next" : "RingIntermediate"
+			},
+			{
+				"bone_name_current" : "RingDistal",
+				"landmark_index_start" : 15,
+				"landmark_index_end"  : 16,
+				"bone_name_next" : "RingDistal",
+				"bone_name_parent_of_next" : "RingIntermediate"
+			}
+		],
+		[
+			{
+				"bone_name_current" : "LittleProximal",
+				"landmark_index_start" : 17,
+				"landmark_index_end"  : 18,
+				"bone_name_next" : "LittleIntermediate",
+				"bone_name_parent_of_next" : "LittleProximal"
+			},
+			{
+				"bone_name_current" : "LittleIntermediate",
+				"landmark_index_start" : 18,
+				"landmark_index_end"  : 19,
+				"bone_name_next" : "LittleDistal",
+				"bone_name_parent_of_next" : "LittleIntermediate"
+			},
+			{
+				"bone_name_current" : "LittleDistal",
+				"landmark_index_start" : 19,
+				"landmark_index_end"  : 20,
+				"bone_name_next" : "LittleDistal",
+				"bone_name_parent_of_next" : "LittleIntermediate"
+			}
+		],
+		[
+			# FIXME: Metacarpal *origin* needs to change relative to hand as well.
+			{
+				"bone_name_current" : "ThumbMetacarpal",
+				"landmark_index_start" : 1,
+				"landmark_index_end"  : 2,
+				"bone_name_next" : "ThumbProximal",
+				"bone_name_parent_of_next" : "ThumbMetacarpal"
+			},
+			{
+				"bone_name_current" : "ThumbProximal",
+				"landmark_index_start" : 2,
+				"landmark_index_end"  : 3,
+				"bone_name_next" : "ThumbDistal",
+				"bone_name_parent_of_next" : "ThumbProximal"
+			},
+			{
+				"bone_name_current" : "ThumbDistal",
+				"landmark_index_start" : 3,
+				"landmark_index_end"  : 4,
+				"bone_name_next" : "ThumbDistal",
+				"bone_name_parent_of_next" : "ThumbProximal"
+			},
+		]
 	]
-
-	if len(hand_landmarks) < 21:
-		return
-	
-	#var hand_basis = skel.get_bone_global_pose(skel.find_bone("LeftHand")).basis
-	for finger_bone in finger_bone_array:
-
-		var finger_bone_to_modify = hand[0] + finger_bone[0]
-		var finger_bone_reference_1 = hand[0] + finger_bone[3]
-		var finger_bone_reference_2 = hand[0] + finger_bone[4]
-	
-		var test_bone_name = finger_bone_to_modify
-		var test_bone_index = skel.find_bone(test_bone_name)
-
-		if test_bone_index == -1:
-			continue
-		if skel.find_bone(finger_bone_reference_2) == -1:
-			continue
-
-		# Try to find missing "tip" bones like on Exo's model.
-		if skel.find_bone(finger_bone_reference_1) == -1:
-			var bone_index_before_missing : int = skel.find_bone(finger_bone_reference_2)
-			var bone_children : PackedInt32Array = skel.get_bone_children(bone_index_before_missing)
-			if len(bone_children) == 1:
-				finger_bone_reference_1 = skel.get_bone_name(bone_children[0])
-			else:
-				continue
-
-
-
-		skel.reset_bone_pose(test_bone_index)
-			
-		var test_bone_pt_2 = hand_landmarks[finger_bone[2]].global_transform.origin
-		var test_bone_pt_1 = hand_landmarks[finger_bone[1]].global_transform.origin
-		
-		
-		var skel_inverse = skel.transform.inverse()
-		var test_bone_vec_global = (skel_inverse * test_bone_pt_2 - skel_inverse * test_bone_pt_1).normalized()
-
-		var current_finger_vec_global = \
-			(skel.get_bone_global_pose(skel.find_bone(finger_bone_reference_1)).origin -
-			skel.get_bone_global_pose(skel.find_bone(finger_bone_reference_2)).origin).normalized()
-		
-		var angle_between = acos(test_bone_vec_global.dot(current_finger_vec_global))
-		var rotation_axis_global = test_bone_vec_global.cross(current_finger_vec_global).normalized()
-		
-		var rotation_axis_local = \
-			skel.get_bone_global_pose(skel.get_bone_parent(test_bone_index)).basis.inverse() * \
-			rotation_axis_global
-
-		var global_rotation_from_rest = skel.get_bone_global_rest(test_bone_index).basis * rotation_axis_local
-		
-		var hand_index = 1
-		if which_hand == "left":
-			hand_index = 0
-
-		if hand_time_since_last_update[hand_index] > arm_reset_time:
-			#skel.set_bone_pose_rotation(test_bone_index,
-			#	skel.get_bone_pose(test_bone_index).basis.slerp(Basis(), arm_reset_speed))
-			skel.set_bone_pose_rotation(test_bone_index, Basis())
-		else:
-			rotate_bone_in_global_space(skel, test_bone_index, global_rotation_from_rest, -angle_between)
-
-func check_configuration() -> PackedStringArray:
-	var errors : PackedStringArray = []
-
-	if video_device == ["None"] or len(video_device) == 0:
-		errors.append("No camera is currently selected.")
-
-	if len(_current_error_to_show):
-		errors.append(_current_error_to_show)
-
-	if not check_mod_dependency("Mod_AnimationApplier", true):
-		errors.append("No AnimationApplier detected, or detected before MediaPipeController. Blend shapes will not function as expected.")
-
-	return errors
 
 func _update_hand_tracker(
 	delta, hand_data, parsed_data, score_threshold, score_exponent,
@@ -1481,3 +1170,5 @@ func _update_hand_tracker(
 		#tracker_ob.transform.basis = new_rotation
 		if tracker_ob.mesh:
 			tracker_ob.mesh.material.albedo_color.a = 0.25 + hand_score * 0.75
+
+#endregion

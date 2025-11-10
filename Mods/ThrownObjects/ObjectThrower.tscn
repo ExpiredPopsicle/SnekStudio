@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" uid="uid://30owalomuxiq" path="res://Mods/ThrownObjects/ObjectThrower.gd" id="1_exhux"]
 
-[node name="ObjectThrower" type="Node"]
+[node name="ObjectThrower" type="Node3D"]
 script = ExtResource("1_exhux")

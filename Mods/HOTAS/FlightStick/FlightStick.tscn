@@ -1,0 +1,143 @@
+[gd_scene load_steps=9 format=3 uid="uid://bnbngqpgx2ir"]
+
+[ext_resource type="Script" uid="uid://b124xhwos54nl" path="res://Mods/HOTAS/FlightStick/FlightStick.gd" id="1_a63km"]
+[ext_resource type="PackedScene" uid="uid://k1sd3c53yegr" path="res://Mods/HOTAS/FlightStick/Model/flightstick6.glb" id="2_byey2"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_a63km"]
+radius = 0.01
+height = 0.02
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_a63km"]
+animation = &"Forward"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_byey2"]
+animation = &"Backward"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_3wg8b"]
+animation = &"Left"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_xbnoc"]
+animation = &"Right"
+
+[sub_resource type="AnimationNodeBlendSpace2D" id="AnimationNodeBlendSpace2D_jv6m7"]
+blend_point_0/node = SubResource("AnimationNodeAnimation_a63km")
+blend_point_0/pos = Vector2(0, 1)
+blend_point_1/node = SubResource("AnimationNodeAnimation_byey2")
+blend_point_1/pos = Vector2(0, -1)
+blend_point_2/node = SubResource("AnimationNodeAnimation_3wg8b")
+blend_point_2/pos = Vector2(-1, 0)
+blend_point_3/node = SubResource("AnimationNodeAnimation_xbnoc")
+blend_point_3/pos = Vector2(1, 0)
+
+[node name="FlightStick" type="Node3D"]
+script = ExtResource("1_a63km")
+
+[node name="flightstick6" parent="." instance=ExtResource("2_byey2")]
+
+[node name="Skeleton3D" parent="flightstick6/Stick_Armature" index="0"]
+bones/1/rotation = Quaternion(0, -2.63167e-18, 2.40296e-17, 1)
+
+[node name="BoneAttachment3D" type="BoneAttachment3D" parent="flightstick6/Stick_Armature/Skeleton3D" index="1"]
+transform = Transform3D(1, -4.80592e-17, -5.26335e-18, 4.80592e-17, 1, -1.26476e-34, 5.26335e-18, -1.26476e-34, 1, 0, -0.1, 0)
+visible = false
+bone_name = "stick"
+bone_idx = 1
+
+[node name="wrist" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 8.66751e-11, 0.909787, -0.415074, 3.9544e-11, 0.415074, 0.909787, -0.0174701, 0.284933, -0.0562037)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="hand_right" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(-4.37114e-08, -1, -4.37114e-08, 0.415074, -5.79116e-08, 0.909787, -0.909787, 2.16246e-08, 0.415074, -0.00943872, 0.28493, -0.0567619)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="thumb_cmc" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.52696e-11, 1, 5.58794e-09, 0, 0, 1, 0.0276395, 0.314314, -0.0439979)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="thumb_mcp" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.864327, -1.12491e-09, -0.502929, 9.52696e-11, 1, 5.58794e-09, 0.502929, -6.54556e-10, 0.864327, 0.0301331, 0.339332, -0.0281427)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="thumb_ip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.52696e-11, 1, 5.58794e-09, 0, 0, 1, 0.0363085, 0.327671, -0.00102563)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="thumb_tip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.52696e-11, 1, 5.58794e-09, 0, 0, 1, 0.0679747, 0.327049, 0.0441577)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="index_finger_mcp" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.52696e-11, 1, 5.58794e-09, 0, 0, 1, -0.0339669, 0.292414, 0.0356155)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="index_finger_pip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.52696e-11, 1, 5.58794e-09, 0, 0, 1, -0.0477154, 0.292414, 0.0686585)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="index_finger_dip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.52696e-11, 1, 5.58794e-09, 0, 0, 1, -0.0295231, 0.292414, 0.096084)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="index_finger_tip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.52696e-11, 1, 5.58794e-09, 0, 0, 1, 0.0209983, 0.292414, 0.0831074)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="middle_finger_mcp" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.3552e-11, 0.981972, -0.189027, 1.80085e-11, 0.189027, 0.981972, -0.0339669, 0.270624, 0.0482554)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="middle_finger_pip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.3552e-11, 0.981972, -0.189027, 1.80085e-11, 0.189027, 0.981972, -0.0190438, 0.251849, 0.0745523)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="middle_finger_dip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.3552e-11, 0.981972, -0.189027, 1.80085e-11, 0.189027, 0.981972, 0.0129333, 0.259061, 0.0675262)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="middle_finger_tip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.3552e-11, 0.981972, -0.189027, 1.80085e-11, 0.189027, 0.981972, 0.0260713, 0.261514, 0.0516705)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="ring_finger_mcp" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.3552e-11, 0.981972, -0.189027, 1.80085e-11, 0.189027, 0.981972, -0.0339669, 0.245503, 0.0344235)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="ring_finger_pip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.3552e-11, 0.981972, -0.189027, 1.80085e-11, 0.189027, 0.981972, -0.0190438, 0.226728, 0.0607204)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="ring_finger_dip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.3552e-11, 0.981972, -0.189027, 1.80085e-11, 0.189027, 0.981972, 0.0129333, 0.23394, 0.0536944)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="ring_finger_tip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.3552e-11, 0.981972, -0.189027, 1.80085e-11, 0.189027, 0.981972, 0.0188343, 0.236393, 0.0378387)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="pinky_finger_mcp" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.3552e-11, 0.981972, -0.189027, 1.80085e-11, 0.189027, 0.981972, -0.0339669, 0.222526, 0.0187842)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="pinky_finger_pip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.3552e-11, 0.981972, -0.189027, 1.80085e-11, 0.189027, 0.981972, -0.0453001, 0.214576, 0.0446347)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="pinky_finger_dip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(0.999996, 0.000501468, 0.00260507, 9.3552e-11, 0.981972, -0.189027, -0.0026529, 0.189026, 0.981968, -0.0442861, 0.206804, 0.0620648)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="pinky_finger_tip" type="MeshInstance3D" parent="flightstick6/Stick_Armature/Skeleton3D/BoneAttachment3D"]
+transform = Transform3D(1, -1.30149e-09, 1.45519e-11, 9.3552e-11, 0.981972, -0.189027, 1.80085e-11, 0.189027, 0.981972, -0.00322594, 0.210701, 0.0832283)
+mesh = SubResource("SphereMesh_a63km")
+
+[node name="AnimationTree" type="AnimationTree" parent="."]
+root_node = NodePath("../flightstick6")
+tree_root = SubResource("AnimationNodeBlendSpace2D_jv6m7")
+anim_player = NodePath("../flightstick6/AnimationPlayer")
+parameters/blend_position = Vector2(0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.935493, 0.353344, 0, -0.353344, 0.935493, 0, 0.350226, 0.656678)
+
+[editable path="flightstick6"]

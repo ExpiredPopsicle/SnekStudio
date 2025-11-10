@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" uid="uid://bmq8glvhm7wdr" path="res://Mods/CameraPositions/camera_positions.gd" id="1_7ofvo"]
 
-[node name="CameraPositions" type="Node"]
+[node name="CameraPositions" type="Node3D"]
 script = ExtResource("1_7ofvo")

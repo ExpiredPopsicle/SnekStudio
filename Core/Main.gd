@@ -254,7 +254,8 @@ func reset_settings_to_default() -> void:
 	colliders_by_model_name = {}
 
 	# Reset model to default.
-	load_vrm("res://SampleModels/VRM/samplesnek_mediapipe_16.vrm")
+	var location = get_sample_location().path_join("VRM/samplesnek_mediapipe_16.vrm")
+	load_vrm(location)
 
 	# Clear mods list.
 	var mods_to_delete = $Mods.get_children()
@@ -267,7 +268,7 @@ func reset_settings_to_default() -> void:
 	$CameraBoom.reset_to_default()
 
 	# Reset transparency.	
-	set_background_transparency(false)
+	set_background_transparency(true)
 
 	# Reset background color.
 	set_background_color(Color(1.0, 0.0, 1.0, 1.0))
@@ -601,7 +602,12 @@ func load_settings(path : String = ""):
 				"name": "AnimationApplier",
 				"scene_path": "res://Mods/AnimationApplier/AnimationApplier.tscn",
 				"settings": { }
-			}
+			},
+			{
+				"name": "PoseIk",
+				"scene_path": "res://Mods/PoseIK/PoseIK.tscn",
+				"settings": { }
+			},
 		]}
 
 	if file:
@@ -742,6 +748,13 @@ static func get_config_location() -> String:
 	if env_path != "":
 		return ProjectSettings.localize_path(env_path)
 	return get_saved_location()
+
+
+static func get_sample_location() -> String:
+	var env_path : String = OS.get_environment("SNEKSTUDIO_SAMPLE_PATH")
+	if env_path != "":
+		return ProjectSettings.localize_path(env_path)
+	return "res://SampleModels"
 
 ## Get the cache location. Mainly this is where Python gets unpacked to.
 ## Defaults to saved user data directory unless overridden.

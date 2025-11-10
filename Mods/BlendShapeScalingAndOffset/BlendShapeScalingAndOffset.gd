@@ -152,10 +152,10 @@ func _process(delta: float) -> void:
 		blendshape_progressbar_update_index %= len(shape_keys)
 
 	# Apply smoothing.
-	
 	var smoothed_shapes = apply_smoothing(
-		output_blendshape_data_last_frame, blend_shapes_to_convert,
-		delta, blendshape_smoothing_scale, blendshape_smoothing)
+		output_blendshape_data_last_frame,
+		blend_shapes_to_convert,
+		delta)
 
 	blend_shapes_to_convert.merge(smoothed_shapes, true)
 	output_blendshape_data_last_frame = blend_shapes_to_convert.duplicate()
@@ -276,9 +276,10 @@ static func apply_blendshape_scale_offset_dict(
 		# FIXME: Should we be doing this here? Where's it normally done?
 		shape_dict[shape] = clampf(shape_dict[shape], 0.0, 1.0)
 
-static func apply_smoothing(
-	shape_dict_last_frame : Dictionary, shape_dict_from_tracker : Dictionary, delta : float,
-	blendshape_smoothing_scale : float, blendshape_smoothing : Dictionary):
+func apply_smoothing(
+	shape_dict_last_frame : Dictionary,
+	shape_dict_from_tracker : Dictionary,
+	delta : float):
 
 	var shape_dict_new = shape_dict_last_frame.duplicate()
 

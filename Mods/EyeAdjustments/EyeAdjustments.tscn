@@ -2,6 +2,5 @@
 
 [ext_resource type="Script" uid="uid://bdsvdpghcc0p7" path="res://Mods/EyeAdjustments/EyeAdjustments.gd" id="1_6e4ob"]
 
-[node name="EyeAdjustments" type="Node"]
+[node name="EyeAdjustments" type="Node3D"]
 script = ExtResource("1_6e4ob")
-metadata/_custom_type_script = "uid://bsjotf2wtnmeq"

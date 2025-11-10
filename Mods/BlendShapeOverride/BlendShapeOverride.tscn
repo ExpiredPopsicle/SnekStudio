@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" uid="uid://b64bsderf7s1r" path="res://Mods/BlendShapeOverride/BlendShapeOverride.gd" id="1_8wc52"]
 
-[node name="BlendShapeOverride" type="Node"]
+[node name="BlendShapeOverride" type="Node3D"]
 script = ExtResource("1_8wc52")
