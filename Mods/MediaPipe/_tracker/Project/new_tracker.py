@@ -797,6 +797,11 @@ def enumerate_camera_devices():
     if sys.platform == "linux":
         capture_api_preference = cv2.CAP_V4L2
 
+    # CAP_ANY provides a Direct Show(DSHOW) backend and a Media Foundation(MSMF) backend
+    # MSMF is more modern and DSHOW maybe removed in any future version of windows so filter by MSMF
+    if sys.platform == "win32":
+        capture_api_preference = cv2.CAP_MSMF
+
     # On Linux, we sometimes see stuff showing up as just "video#", so
     # let's at least try to correlate paths and IDs from
     # /dev/v4l/by-id .
