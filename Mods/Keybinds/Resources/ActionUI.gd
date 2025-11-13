@@ -25,16 +25,15 @@ func _set_key_bind_display(item : Dictionary):
 	var alt_pressed = item.get("modifier_alt", false)
 	var ctrl_pressed = item.get("modifier_ctrl", false)
 	var meta_pressed = item.get("modifier_meta", false)
+	var shift_pressed = item.get("modifier_shift", false)
 	
 	var input_event = InputEventKey.new()
 	input_event.physical_keycode = key_code
 	input_event.alt_pressed = alt_pressed
 	input_event.ctrl_pressed = ctrl_pressed
 	input_event.meta_pressed = meta_pressed
-	#input_event.get_modifiers_mask()
-	#if has_mod:
-		#if mod_mask & KeyModifierMask.KEY_CODE_MASK:
-			#pass
+	input_event.shift_pressed = shift_pressed
+
 	var display_bind = OS.get_keycode_string(
 		DisplayServer.keyboard_get_label_from_physical(
 			input_event.get_physical_keycode_with_modifiers()))
@@ -48,6 +47,7 @@ func blank_item() -> void:
 		"modifier_alt": false,
 		"modifier_ctrl": false,
 		"modifier_meta": false,
+		"modifier_shift": false,
 		"action_name": ""
 	}
 
@@ -71,6 +71,7 @@ func _input(event : InputEvent):
 		var key_event : InputEventKey = event
 		if key_event.physical_keycode == KEY_CTRL \
 			or key_event.physical_keycode == KEY_ALT \
+			or key_event.physical_keycode == KEY_SHIFT \
 			or key_event.physical_keycode == KEY_META:
 			# Default, probably only has modifier applied.
 			return
@@ -80,6 +81,7 @@ func _input(event : InputEvent):
 		ui_item["modifier_alt"] = event.alt_pressed
 		ui_item["modifier_ctrl"] = event.ctrl_pressed
 		ui_item["modifier_meta"] = event.meta_pressed
+		ui_item["modifier_shift"] = event.shift_pressed
 		%SetBtn.text = "Set"
 		emit_signal("on_change_item", ChangeAction.KEY_BIND, ui_item, old_item)
 		_set_key_bind_display(ui_item)

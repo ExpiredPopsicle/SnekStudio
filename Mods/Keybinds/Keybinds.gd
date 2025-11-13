@@ -88,6 +88,7 @@ func _create_key_event(item : Dictionary) -> InputEventKey:
 	var alt_pressed : bool = item.get("modifier_alt", false)
 	var ctrl_pressed : bool = item.get("modifier_ctrl", false)
 	var meta_pressed : bool = item.get("modifier_meta", false)
+	var shift_pressed : bool = item.get("modifier_shift", false)
 	if key == -1:
 		return null
 	var new_key_event = InputEventKey.new()
@@ -95,6 +96,7 @@ func _create_key_event(item : Dictionary) -> InputEventKey:
 	new_key_event.alt_pressed = alt_pressed
 	new_key_event.ctrl_pressed = ctrl_pressed
 	new_key_event.meta_pressed = meta_pressed
+	new_key_event.shift_pressed = shift_pressed
 	return new_key_event
 
 func _create_action(item : Dictionary) -> void:
@@ -128,8 +130,10 @@ func _update_action(new_item : Dictionary, old_item : Dictionary) -> void:
 		if old_action != "" and len(existing_events) < 1:
 			InputMap.erase_action(KEYBIND_PREFIX + old_action)
 		_create_action(new_item)
-	elif new_key != old_key or new_item["modifier_alt"] != old_item["modifier_alt"] \
+	elif new_key != old_key \
+		 or new_item["modifier_alt"] != old_item["modifier_alt"] \
 		 or new_item["modifier_ctrl"] != old_item["modifier_ctrl"] \
+		 or new_item["modifier_shift"] != old_item["modifier_shift"] \
 		 or new_item["modifier_meta"] != old_item["modifier_meta"]:
 		print_log("New item key is not the same as the old key.")
 		if old_key != -1:
@@ -163,19 +167,17 @@ func _input(event : InputEvent) -> void:
 				"action": action.replace(KEYBIND_PREFIX, ""),
 				 "event": event
 			})
-
+	# This is one way to do actions. The other is with global mod data.
 	if InputMap.has_action(KEYBIND_PREFIX + "ping") \
 		and event.is_action_pressed(KEYBIND_PREFIX + "ping", false, true):
-		print_log("pong!")
+		print_log("Input map pong!")
 		set_status("Pong!")
 
-	#if event is InputEventKey:
-		#print_log("Key pressed")
-		##if event.physical_keycode in key_actions:
-		#var value = _get_key_action_by_input(event.physical_keycode)
-		#if value == null:
-			#return
-		#print_log(value["action_name"])
+	# The alternative approach is commented below.
+	#func _handle_global_mod_message(key : String, values : Dictionary):
+		#if key == "KeybindsActionPressed" and values["action"] == "ping":
+			#print_log("Global mod message pong!")
+			#set_status("Pong!")
 
 func _get_key_action_by_item(item : Dictionary):
 	for i in key_actions:
@@ -209,14 +211,16 @@ func _create_initial_actions() -> void:
 			"action_name": "ping",
 			"modifier_alt": false,
 			"modifier_ctrl": false,
-			"modifier_meta": false
+			"modifier_meta": false,
+			"modifier_shift": false
 		},
 		{ 
 			"key": KEY_Y,
 			"action_name": "ping",
 			"modifier_alt": false,
 			"modifier_ctrl": true,
-			"modifier_meta": false
+			"modifier_meta": false,
+			"modifier_shift": false
 		},
 	]
 
