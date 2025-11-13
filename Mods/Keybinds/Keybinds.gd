@@ -87,7 +87,7 @@ func _create_key_event(item : Dictionary) -> InputEventKey:
 	var key : int = item["key"]
 	var alt_pressed : bool = item.get("modifier_alt", false)
 	var ctrl_pressed : bool = item.get("modifier_ctrl", false)
-	var meta_pressed : bool = item.get("difier_meta", false)
+	var meta_pressed : bool = item.get("modifier_meta", false)
 	if key == -1:
 		return null
 	var new_key_event = InputEventKey.new()
