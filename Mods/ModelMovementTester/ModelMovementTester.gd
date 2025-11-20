@@ -31,11 +31,11 @@ func test_model_movement(delta: float) -> void:
 	var controller := get_model_controller()
 
 	t += delta
-	controller.global_transform.origin = Vector3(sin(t),
-												cos(t),
-												sin(t))
+	controller.global_transform.origin = Vector3(sin(t) * 0.5,
+												cos(t) * 0.5,
+												sin(t) * 0.5)
 	controller.global_transform.basis = Basis.IDENTITY.rotated(
-											Vector3(sin(t),
-													cos(t),
-													sin(t)).normalized(),
+											Vector3(sin(t) * 2.0,
+													cos(t) * 2.0,
+													sin(t) * 2.0).normalized(),
 											PI/4.0)

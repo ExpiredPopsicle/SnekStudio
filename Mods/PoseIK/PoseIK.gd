@@ -218,11 +218,11 @@ func _update_local_trackers() -> void:
 	
 	# This takes the tracker_dict data and transforms the ik targets
 	# to be relative to the model node's global transform.
-	var new_head_basis: Basis = tracker_dict["head"].transform.basis * model.global_basis
+	var new_head_basis: Basis = model.global_basis * tracker_dict["head"].transform.basis
 	var new_head_pos: Vector3 = (model.global_basis * tracker_dict["head"].transform.origin) + model.global_position
-	var new_hand_l_basis: Basis = tracker_dict["hand_left"].transform.basis * model.global_basis
+	var new_hand_l_basis: Basis = model.global_basis * tracker_dict["hand_left"].transform.basis
 	var new_hand_l_pos: Vector3 = (model.global_basis * tracker_dict["hand_left"].transform.origin) + model.global_position
-	var new_hand_r_basis: Basis = tracker_dict["hand_right"].transform.basis * model.global_basis
+	var new_hand_r_basis: Basis = model.global_basis * tracker_dict["hand_right"].transform.basis
 	var new_hand_r_pos: Vector3 = (model.global_basis * tracker_dict["hand_right"].transform.origin) + model.global_position
 
 	$Head.global_transform = Transform3D(new_head_basis, new_head_pos)
