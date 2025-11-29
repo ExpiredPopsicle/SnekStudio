@@ -3,6 +3,11 @@
 import mediapipe
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+import os
+# this has to be set before cv2 is imported
+# https://github.com/opencv/opencv/issues/17687
+os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
+
 import cv2
 import time
 import json
@@ -14,7 +19,6 @@ import kiri_math
 from kiri_math import lerp
 
 import socket
-import os
 import sys
 
 import psutil
