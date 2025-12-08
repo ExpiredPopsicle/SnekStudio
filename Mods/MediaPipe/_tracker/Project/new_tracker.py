@@ -821,9 +821,11 @@ def enumerate_camera_devices():
             pass
 
     all_camera_data = []
-
-    for camera_info in enumerate_cameras(apiPreference=capture_api_preference):
-
+    cameras = enumerate_cameras(apiPreference=capture_api_preference)
+    if sys.platform == "win32" and len(cameras) == 0:
+        capture_api_preference = cv2.CAP_DSHOW
+        cameras = enumerate_cameras(apiPreference=capture_api_preference)
+    for camera_info in cameras:
         camera_name = camera_info.name
 
         if re.match("video[0-9]+", camera_info.name):
