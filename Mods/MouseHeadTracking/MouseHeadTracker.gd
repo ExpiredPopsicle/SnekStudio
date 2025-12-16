@@ -24,62 +24,60 @@ func _ready():
 		var s_size: Vector2i = DisplayServer.screen_get_size(i)
 		screens_list.append({ "index": i, "x": s_pos.x, "pos": s_pos, "size": s_size })
 
-	# Sort screens by X position (Left -> Right) to make UI ordering intuitive
+	# Sort screens by X position (Left -> Right)
 	screens_list.sort_custom(func(a, b): return a["x"] < b["x"])
-	
+
 	for s in screens_list:
-		# Creating a unique string key for the array
 		screen_info.append("%s %s" % [s["pos"], s["size"]])
-		
+
 	add_tracked_setting("selected_screen_index", "Screens to track (left to right, choose multiple)", 
 		{ 
 			"allow_multiple": true,
 			"values": screen_info
 		})
-		
+
 	var widget : ItemList = _settings_widgets_by_setting_name["selected_screen_index"]
 	widget.custom_minimum_size.y = 100.0
 	update_settings_ui()
 
 func _change_screens(screen_info_texts: Array):
-	var min_x : int = 2147483647
-	var min_y : int = 2147483647
-	var max_x : int = -2147483647
-	var max_y : int = -2147483647
+	# godot... Why not consts for these? #2411
+	var min_x : int = (1 << 31) - 1
+	var min_y : int = (1 << 31) - 1
+	var max_x : int = -(1 << 31)
+	var max_y : int = -(1 << 31)
 
-	# Loop through every string selected by the user
 	for text_id in screen_info_texts:
 		var idx = screen_info.find(text_id)
 		var s = screens_list[idx]
-		
+
 		# Update Minimums (Top-Left origin)
 		if s["pos"].x < min_x: min_x = s["pos"].x
 		if s["pos"].y < min_y: min_y = s["pos"].y
-		
+
 		# Update Maximums (Bottom-Right edge)
 		var right_edge = s["pos"].x + s["size"].x
 		var bottom_edge = s["pos"].y + s["size"].y
-		
+
 		if right_edge > max_x: max_x = right_edge
 		if bottom_edge > max_y: max_y = bottom_edge
-
-	_target_screen_origin = Vector2(min_x, min_y)
+		
 	# Total size is the difference between the furthest point and the origin
+	_target_screen_origin = Vector2(min_x, min_y)
 	_target_screen_size = Vector2(max_x - min_x, max_y - min_y)
 
 func _change_screen_center():
 	if screens_list.is_empty(): return
 	var center_array_index: int = floor(screens_list.size() / 2.0)
 	var screen_info_text = screen_info[center_array_index]
-	
+
 	selected_screen_index = [screen_info_text]
 	prev_selected_screen_index = selected_screen_index
-	
+
 	_change_screens(selected_screen_index)
 	update_settings_ui()
 	
 func _process(delta: float) -> void:
-	# Handle initialization and settings changes
 	if len(selected_screen_index) == 0:
 		_change_screen_center()
 	elif selected_screen_index != prev_selected_screen_index and len(selected_screen_index) > 0:
@@ -93,28 +91,28 @@ func _process(delta: float) -> void:
 	# Calculate position relative to the Bounding Box of all selected screens
 	var relative_pos: Vector2 = global_pos - _target_screen_origin
 
-	# Normalize -0.5 to 0.5 based on the Total Size of valid screens
+	# Normalize based on the Total Size of valid screens
 	var pos_normalized: Vector2 = Vector2(
 		-(relative_pos.x / _target_screen_size.x - 0.5),
 		-(relative_pos.y / _target_screen_size.y - 0.5)
 	)
 	pos_normalized.x = clamp(pos_normalized.x, -0.5, 0.5)
 	pos_normalized.y = clamp(pos_normalized.y, -0.5, 0.5)
-	
+
 	if mirror_yaw:
 		pos_normalized.x = -pos_normalized.x
 	if mirror_pitch:
 		pos_normalized.y = -pos_normalized.y
-	
+
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
 	var head = tracker_dict["head"]
 	if not head["active"]:
 		return
-	
+
 	var trans : Transform3D = head["transform"]
 
-	var angle_yaw : float = pos_normalized.x * 2.0 * deg_to_rad(max_yaw)
-	var angle_pitch : float = -pos_normalized.y * 2.0 * deg_to_rad(max_pitch)
+	var angle_yaw : float = pos_normalized.x * 2 * deg_to_rad(max_yaw)
+	var angle_pitch : float = -pos_normalized.y * 2 * deg_to_rad(max_pitch)
 
 	trans.basis = Basis.from_euler(Vector3(angle_pitch, angle_yaw, 0.0), 2)
 	tracker_dict["head"]["transform"] = trans
