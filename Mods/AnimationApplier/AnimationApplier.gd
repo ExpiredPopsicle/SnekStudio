@@ -64,7 +64,7 @@ static func apply_animations(model, shape_dict):
 					full_anim_name = possible_anim_name
 					found_animation_in_list = true
 					break
-			
+
 			if not found_animation_in_list:
 				continue
 
@@ -72,12 +72,24 @@ static func apply_animations(model, shape_dict):
 
 			if not anim:
 				continue
-				
+
 			# Iterate through every track on the animation.
 			for track_index in range(0, anim.get_track_count()):
 
 				var anim_path : NodePath = anim.track_get_path(track_index)
-			
+
+				var alpha : float = combined_blend_shape_last_values[anim_name]
+
+				# Modify the "alpha" value for boolean "blends", where we just
+				# want the maximum value past a given threshold.
+				var interpolation_type : Animation.InterpolationType = \
+					anim.track_get_interpolation_type(track_index)
+				if interpolation_type == Animation.INTERPOLATION_NEAREST:
+					if alpha >= 0.5: # Is this defined somewhere per-bind?
+						alpha = 1.0
+					else:
+						alpha = 0.0
+
 				if anim.track_get_type(track_index) == Animation.TYPE_ROTATION_3D:
 
 					# These tracks typically apply to eye direction stuff. The
@@ -94,8 +106,7 @@ static func apply_animations(model, shape_dict):
 					var rest_orientation = Quaternion()
 					if bone_index != -1:
 						rest_orientation = node_to_modify.get_bone_rest(bone_index).basis.get_rotation_quaternion()
-					
-					var alpha = combined_blend_shape_last_values[anim_name]
+
 					#alpha /= 10
 					var kt = anim.track_get_key_time(track_index, 0)
 					var q = anim.rotation_track_interpolate(
@@ -103,11 +114,9 @@ static func apply_animations(model, shape_dict):
 						#combined_blend_shape_last_values[anim_name]) # FIXME: Do we need this here if there's on the one key?
 					
 					q = rest_orientation.inverse() * q
-					
-					#print(alpha, " - ", kt)
+
 					q = Quaternion().slerp(q, alpha / kt)
-					
-					#if anim_name == "lookLeft":
+
 					total_bone_rotations[anim_path] *= q #total_bone_rotations[anim_path].slerp(q, kt)
 		
 				if anim.track_get_type(track_index) == Animation.TYPE_BLEND_SHAPE:
@@ -119,7 +128,7 @@ static func apply_animations(model, shape_dict):
 					# Record max value.
 					blend_shape_maximums[anim_path] = max(
 						blend_shape_maximums[anim_path],
-						combined_blend_shape_last_values[anim_name] * anim.track_get_key_value(track_index, 0))
+						alpha * anim.track_get_key_value(track_index, 0))
 
 				if anim.track_get_type(track_index) == Animation.TYPE_VALUE:
 
@@ -127,24 +136,24 @@ static func apply_animations(model, shape_dict):
 					if not value_average_totals.has(anim_path):
 						value_average_totals[anim_path] = \
 							anim.track_get_key_value(track_index, 0) * combined_blend_shape_last_values[anim_name]
-						value_average_weights[anim_path] = \
-							combined_blend_shape_last_values[anim_name]
+						value_average_weights[anim_path] = alpha
 					else:
 						value_average_totals[anim_path] += \
 							anim.track_get_key_value(track_index, 0) * combined_blend_shape_last_values[anim_name]
-						value_average_weights[anim_path] += \
-							combined_blend_shape_last_values[anim_name]
+						value_average_weights[anim_path] += alpha
 
 		# Iterate through every max animation value and set it on the
 		# appropriate blend shape on the object.
 		if anim_root:
 
 			for anim_path_max_value_key in blend_shape_maximums.keys():
+
+				var value_to_use : float = blend_shape_maximums[anim_path_max_value_key]
 				var object_to_animate : Node = anim_root.get_node(anim_path_max_value_key)
 				if object_to_animate:
 					object_to_animate.set(
 						"blend_shapes/" + anim_path_max_value_key.get_subname(0),
-						blend_shape_maximums[anim_path_max_value_key])
+						value_to_use)
 
 			# Handle "value" track types. Typically material properties.
 			for value_key in value_average_totals.keys():
