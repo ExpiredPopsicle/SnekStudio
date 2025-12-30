@@ -1,0 +1,5 @@
+Implements sending of VRCFT-compatible parameters based on tracking to a locally running VRChat instance.
+
+Your VRChat avatar will need compatible parameters implemented prior to using this mod (i.e. /FT/v2/...).
+
+This mod also adds support for head tracking, specifically sending HeadRotationX, Y, Z as float parameters.
