@@ -26,6 +26,7 @@ var _init_complete = false
 
 var frames_missing_before_spine_reset = 6.0
 var blend_to_rest_speed = 4.5
+var head_pitch_offset: float = 0.0
 
 # FIXME: Prune unused settings.
 
@@ -140,6 +141,10 @@ func _ready():
 	add_tracked_setting(
 		"head_rotation_smoothing", "Head Rotation Smoothing",
 		{ "min" : 1.0, "max" : 10.0 },
+		"advanced")
+	add_tracked_setting(
+		"head_pitch_offset", "Head pitch offset",
+		{ "min" : -1.0, "max" : 1.0 },
 		"advanced")
 
 
@@ -731,8 +736,11 @@ func _process(delta):
 				head_quat_array[1] * head_quat_multiplier[1],
 				head_quat_array[2] * head_quat_multiplier[2],
 				head_quat_array[3] * head_quat_multiplier[3])).get_euler()
+			var head_basis_target := Basis.from_euler(head_euler * head_rotation_scale)
+			# Rotating the head by the x axis to allow for pitch offset
+			head_basis_target = head_basis_target.rotated(head_basis_target.x, head_pitch_offset)
 			$Head.transform.basis = $Head.transform.basis.slerp(
-				Basis.from_euler(head_euler * head_rotation_scale),
+				head_basis_target,
 				delta_scale * (1.0 / head_rotation_smoothing))
 		else:
 
