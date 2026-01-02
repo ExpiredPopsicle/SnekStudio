@@ -1,0 +1,1 @@
+Moves and rotates the model for debugging purposes.
