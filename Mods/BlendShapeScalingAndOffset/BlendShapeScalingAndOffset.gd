@@ -229,7 +229,7 @@ func _set(property: StringName, value: Variant) -> bool:
 	if property.begins_with("blendshape_smoothing_"):
 		var blendshape_name : String = property.substr(len("blendshape_smoothing_"))
 		if blendshape_name in blendshape_names_all:
-			if value == 1.0:
+			if value == 0.0:
 				blendshape_smoothing.erase(blendshape_name)
 			else:
 				blendshape_smoothing[blendshape_name] = value
