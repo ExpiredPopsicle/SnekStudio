@@ -1,9 +1,9 @@
-extends Node3D
+extends Node2D
 
 var _mods_running = false
 var colliders_by_model_name = {}
 
-var hide_window_decorations_with_ui : bool = false
+var hide_window_elements : int = 0
 
 # TODO (multiplayer): Make this dictionary per-model.
 var module_global_data : Dictionary = {}
@@ -39,30 +39,28 @@ func set_background_color(c : Color):
 	var current_style : StyleBoxFlat = %BackgroundPanel.get("theme_override_styles/panel")
 	current_style.bg_color = c
 
-func set_background_transparency(transparent : bool):
-	if transparent:
+func set_background_transparency(hide_window_elements : int):
+	if hide_window_elements > 1:
 		var env = get_node("WorldEnvironment")
 		var env2 : Environment = env.environment
 		env2.background_mode = Environment.BG_CLEAR_COLOR
 		get_node("BackgroundLayer").visible = false
-		get_tree().get_root().set_transparent_background(true) # Needed for compatibility mode.
-		
-#		get_viewport().transparent_bg = true
-#		DisplayServer.window_set_flag(
-#			DisplayServer.WINDOW_FLAG_TRANSPARENT, true,
-#			DisplayServer.MAIN_WINDOW_ID)
-#		get_tree().root.transparent_bg = true
-		
 	else:
 		var env = get_node("WorldEnvironment")
 		var env2 : Environment = env.environment
 		env2.background_mode = Environment.BG_CANVAS
 		#env2.background_color = Color(1.0, 1.0, 1.0, 1.0)
 		get_node("BackgroundLayer").visible = true
-		get_tree().get_root().set_transparent_background(false) # Needed for compatibility mode.
 
-func get_background_transparency() -> bool:
-	return not get_node("BackgroundLayer").visible
+func set_window_transparency(hide_window_elements: int):
+	get_tree().get_root().set_flag(Window.FLAG_TRANSPARENT, hide_window_elements > 1)
+	if (ProjectSettings.get_setting("rendering/renderer/rendering_method") == "compatibility"):
+		# Newer renderer automatically sets the Viewport's transparent_bg property
+		# if the windows transparent flag is set.
+		get_tree().get_root().set_transparent_background(hide_window_elements > 1)
+
+func set_window_decorations(hide_window_elements: int):
+	get_viewport().borderless = hide_window_elements > 0
 
 ## Load the mods at runtime. This function just adds the zip files to the
 ## project tree.
@@ -144,7 +142,6 @@ func _input(event):
 		if event.pressed:
 			if event.keycode == KEY_ESCAPE:
 				%UI_Root.set_visible(not %UI_Root.visible)
-				_update_window_decorations()
 
 func _get_default_settings_path():
 	return get_config_location().path_join("settings.json")
@@ -307,9 +304,8 @@ func serialize_settings(do_settings=true, do_mods=true):
 		settings_to_save["last_vrm_path"] = last_vrm_path
 
 		# Save window settings
-		settings_to_save["transparent_window"] = get_background_transparency()
+		settings_to_save["hide_window_elements"] = hide_window_elements
 		settings_to_save["background_color"] = get_background_color().to_html()
-		settings_to_save["hide_window_decorations"] = hide_window_decorations_with_ui
 		settings_to_save["vsync_mode"] = DisplayServer.window_get_vsync_mode()
 
 		# Save sound stuff.
@@ -400,11 +396,6 @@ func _setting_changed(key, old, new):
 	# No new key.
 	return false
 
-func _update_window_decorations():
-	if hide_window_decorations_with_ui:
-		get_viewport().borderless = not %UI_Root.visible
-	else:
-		get_viewport().borderless = false
 
 func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 	
@@ -428,12 +419,11 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 		if "camera" in settings_dict:
 			$CameraBoom.load_settings(settings_dict["camera"])
 
-		# Load transparency.
-		if "transparent_window" in settings_dict:
-			set_background_transparency(settings_dict["transparent_window"])
-
-		if "hide_window_decorations" in settings_dict:
-			hide_window_decorations_with_ui = settings_dict["hide_window_decorations"]
+		if "hide_window_elements" in settings_dict:
+			hide_window_elements = settings_dict["hide_window_elements"]
+			set_background_transparency(hide_window_elements)
+			set_window_transparency(hide_window_elements)
+			set_window_decorations(hide_window_elements)
 
 		# Load VSync mode
 		if "vsync_mode" in settings_dict:
@@ -490,7 +480,6 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 			else:
 				get_viewport().mode &= ~Window.MODE_MAXIMIZED
 
-	_update_window_decorations()
 
 	# Load mods list.
 	if do_mods:

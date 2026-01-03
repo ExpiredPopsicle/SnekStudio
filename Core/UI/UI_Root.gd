@@ -36,6 +36,10 @@ func _ready():
 
 	get_viewport().files_dropped.connect(_on_files_dropped)
 
+	if %MenuBar.is_native_menu():
+		%UI_Root.remove_child(%ColorRect)
+
+
 func _on_vrm_load_file_dialog_file_selected(path):
 	_get_root().load_vrm(path)
 
