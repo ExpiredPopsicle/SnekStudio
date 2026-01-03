@@ -1,7 +1,40 @@
 extends Mod_Base
 
+var min_x: int = 0
+var min_y: int = 0
+var max_x: int = 1920
+var max_y: int = 1080
+var maintain_z_offset: bool = true
+var z_offset: float = 0.4
+var maintain_y_offset: bool = false
+var y_offset: float = 1.0
+var maintain_x_offset: bool = false
+var x_offset: float = 0.0
+
+func _ready() -> void:
+	add_tracked_setting("min_x", "Left pixel position")
+	add_tracked_setting("min_y", "Top pixel position")
+	add_tracked_setting("max_x", "Right pixel position")
+	add_tracked_setting("max_y", "Bottom pixel position")
+
+	add_tracked_setting("maintain_z_offset", "Maintain Z offset from model")
+	add_tracked_setting("z_offset", "Z offset", {"min" : -10, "max": 10, "step": 0.02})
+	add_tracked_setting("maintain_y_offset", "Maintain Y offset from model")
+	add_tracked_setting("y_offset", "Y offset", {"min" : -10, "max": 10, "step": 0.02})
+	add_tracked_setting("maintain_x_offset", "Maintain X offset from model")
+	add_tracked_setting("x_offset", "X offset", {"min" : -10, "max": 10, "step": 0.02})
+
 
 func _process(delta: float) -> void:
+
+	var model: Node3D = get_app().get_model()
+
+	if maintain_z_offset:
+		$Tablet.transform.origin.z = model.transform.origin.z + z_offset
+	if maintain_y_offset:
+		$Tablet.transform.origin.y = model.transform.origin.y + y_offset
+	if maintain_x_offset:
+		$Tablet.transform.origin.x = model.transform.origin.x + x_offset
 
 	var mouse_pos_in_window : Vector2 = get_viewport().get_mouse_position()
 	var window_position : Vector2 = get_viewport().get_window().position
@@ -10,8 +43,8 @@ func _process(delta: float) -> void:
 
 	# FIXME: Add mapping values.
 	var pos_normalized : Vector2 = Vector2(
-		-(pos.x / 1920.0 - 0.5),
-		-(pos.y / 1080.0 - 0.5))
+		-((pos.x - min_x) / (max_x - min_x) - 0.5),
+		-((pos.y - min_y) / (max_y - min_y) - 0.5))
 
 	pos_normalized.x = clamp(pos_normalized.x, -0.5, 0.5)
 	pos_normalized.y = clamp(pos_normalized.y, -0.5, 0.5)
@@ -50,8 +83,6 @@ func _process(delta: float) -> void:
 		"pinky_finger_dip",
 		"pinky_finger_tip",
 	]
-
-
 
 	for side in ["right"]:
 		if not tracker_dict["hand_" + side]["active"]:
