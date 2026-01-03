@@ -18,7 +18,7 @@ func _ready() -> void:
 				break
 
 	for mod_file : String in mod_scene_files:
-		var mod_entry = {}
+		var mod_entry: Dictionary = {}
 		mod_entry["name"] = mod_file.get_file().get_basename()
 		mod_entry["path"] = mod_file
 		mod_entry["description"] = "A SnekStudio module."
@@ -39,6 +39,10 @@ func _ready() -> void:
 				break
 
 		_mods_list.append(mod_entry)
+
+	_mods_list.sort_custom(func(a, b): return a["name"].to_lower() < b["name"].to_lower() )
+
+	for mod_entry: Dictionary in _mods_list:
 		%Mods_List.add_item(mod_entry["name"])
 
 func _get_mods_node():
