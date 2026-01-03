@@ -26,148 +26,289 @@ transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74227e-08, 0, -1, 0, 0, 
 [node name="Pen_Transform" type="Node3D" parent="Tablet"]
 unique_name_in_owner = true
 
-[node name="pen" parent="Tablet/Pen_Transform" instance=ExtResource("3_dexwa")]
+[node name="pen_right" parent="Tablet/Pen_Transform" instance=ExtResource("3_dexwa")]
+unique_name_in_owner = true
 transform = Transform3D(-1.33784, -0.719442, -0.253355, -0.539345, 1.25399, -0.712894, 0.539346, -0.530579, -1.34134, 0.0198989, 0.00914109, -0.000160575)
 
-[node name="Pen" type="MeshInstance3D" parent="Tablet/Pen_Transform"]
+[node name="pen_left" parent="Tablet/Pen_Transform" instance=ExtResource("3_dexwa")]
+unique_name_in_owner = true
+transform = Transform3D(-1.28997, 0.562412, 0.625519, 0.209442, 1.32386, -0.758378, -0.814688, -0.550178, -1.18541, 0.0198989, 0.00914109, -0.000160575)
+
+[node name="Pen_unused2" type="MeshInstance3D" parent="Tablet/Pen_Transform"]
 unique_name_in_owner = true
 transform = Transform3D(0.868727, -0.467182, 0.164485, 0.350224, 0.814246, 0.462976, -0.350225, -0.344593, 0.870977, -0.0381701, 0.0863823, -0.0268427)
 visible = false
 mesh = SubResource("CylinderMesh_2rf4b")
 skeleton = NodePath("../..")
 
-[node name="Hand" type="Node3D" parent="Tablet/Pen_Transform"]
+[node name="Hand_right" type="Node3D" parent="Tablet/Pen_Transform"]
 unique_name_in_owner = true
 transform = Transform3D(-0.52517, -0.765143, 0.372496, 0.0991924, 0.379694, 0.919779, -0.845198, 0.519988, -0.123508, -0.113458, 0.0519544, -0.0985326)
 
-[node name="wrist" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="wrist" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, -0.372928, -0.919336, -0.713835, 0.677476, -0.177386, 0.68898, 0.633996, -0.351219, 0.0699557, 0.202337, 0.19702)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="hand_right" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="hand_right" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(0.919336, 0.125481, -0.372928, 0.177386, 0.713835, 0.677476, 0.351219, -0.688981, 0.633995, 0.069501, 0.196535, 0.202583)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="thumb_cmc" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="thumb_cmc" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, 0.0423073, -0.991193, -0.713835, 0.689988, 0.119819, 0.68898, 0.722584, -0.0563796, 0.05344, 0.191871, 0.248642)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="thumb_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="thumb_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.606956, 0.0423073, -0.793608, -0.556726, 0.689986, 0.462571, 0.567148, 0.722582, -0.395239, -0.00106132, 0.161066, 0.305275)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="thumb_ip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="thumb_ip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, 0.0423073, -0.991194, -0.713835, 0.689986, 0.119819, 0.68898, 0.722582, -0.0563796, -0.0209717, 0.150865, 0.300043)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="thumb_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="thumb_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, 0.0423073, -0.991194, -0.713835, 0.689986, 0.119819, 0.68898, 0.722582, -0.0563796, -0.0697569, 0.133245, 0.318864)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="index_finger_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="index_finger_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, 0.0423073, -0.991193, -0.713835, 0.689988, 0.119819, 0.68898, 0.722584, -0.0563796, -0.0186684, 0.230277, 0.185883)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="index_finger_pip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="index_finger_pip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, 0.0423073, -0.991194, -0.713835, 0.689987, 0.119819, 0.68898, 0.722583, -0.0563796, -0.0800361, 0.200216, 0.181293)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="index_finger_dip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="index_finger_dip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, 0.0423073, -0.991194, -0.713835, 0.689984, 0.119819, 0.68898, 0.72258, -0.0563796, -0.11549, 0.193618, 0.188866)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="index_finger_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="index_finger_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, 0.0423073, -0.991194, -0.713835, 0.689984, 0.119819, 0.68898, 0.72258, -0.0563796, -0.151569, 0.173785, 0.196685)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="middle_finger_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="middle_finger_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, -0.0321189, 0.216756, 0.169426)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="middle_finger_pip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="middle_finger_pip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, -0.0608511, 0.1963, 0.164658)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="middle_finger_dip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="middle_finger_dip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, -0.0575942, 0.177608, 0.192297)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="middle_finger_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="middle_finger_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, -0.0434229, 0.168022, 0.204015)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="ring_finger_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="ring_finger_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, -0.0194716, 0.197766, 0.152053)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="ring_finger_pip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="ring_finger_pip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, -0.0482038, 0.177309, 0.147286)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="ring_finger_dip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="ring_finger_dip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, -0.044947, 0.158617, 0.174925)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="ring_finger_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="ring_finger_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, -0.0298676, 0.154198, 0.181657)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="pinky_finger_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="pinky_finger_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(0.742266, 0.375846, -0.55478, -0.39858, -0.417899, -0.816392, -0.538679, 0.827105, -0.160388, -0.0203637, 0.204336, 0.138341)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="pinky_finger_pip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="pinky_finger_pip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(0.742266, 0.375846, -0.55478, -0.39858, -0.417899, -0.816392, -0.538679, 0.827105, -0.160388, -0.0447898, 0.188123, 0.137718)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="pinky_finger_dip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="pinky_finger_dip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(0.74352, 0.376218, -0.552845, -0.396242, -0.418098, -0.817427, -0.538674, 0.826835, -0.161791, -0.0559778, 0.174359, 0.130603)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
 
-[node name="pinky_finger_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand"]
+[node name="pinky_finger_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_right"]
 transform = Transform3D(0.742266, 0.375846, -0.55478, -0.39858, -0.417899, -0.816392, -0.538679, 0.827105, -0.160388, -0.0336793, 0.138357, 0.111745)
 visible = false
 mesh = SubResource("SphereMesh_tq632")
-skeleton = NodePath("../../Pen")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="Hand_left" type="Node3D" parent="Tablet/Pen_Transform"]
+unique_name_in_owner = true
+transform = Transform3D(-0.614098, 0.491084, -0.617835, -0.426047, 0.4527, 0.783295, 0.664359, 0.744248, -0.0687769, 0.139583, 0.0875273, -0.0775954)
+
+[node name="wrist" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, -0.372928, -0.919336, -0.713835, 0.677476, -0.177386, 0.68898, 0.633996, -0.351219, -0.07, 0.202, 0.197)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="hand_left" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(0.919336, 0.125481, -0.372928, 0.177386, 0.713835, 0.677476, 0.351219, -0.688981, 0.633995, -0.07, 0.197, 0.203)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="thumb_cmc" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, 0.0423073, -0.991193, -0.713835, 0.689988, 0.119819, 0.68898, 0.722584, -0.0563796, -0.053, 0.192, 0.249)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="thumb_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.606956, 0.0423073, -0.793608, -0.556726, 0.689986, 0.462571, 0.567148, 0.722582, -0.395239, 0.001, 0.161, 0.305)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="thumb_ip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, 0.0423073, -0.991194, -0.713835, 0.689986, 0.119819, 0.68898, 0.722582, -0.0563796, 0.021, 0.151, 0.3)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="thumb_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, 0.0423073, -0.991194, -0.713835, 0.689986, 0.119819, 0.68898, 0.722582, -0.0563796, 0.07, 0.133, 0.319)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="index_finger_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, 0.0423073, -0.991193, -0.713835, 0.689988, 0.119819, 0.68898, 0.722584, -0.0563796, 0.019, 0.23, 0.186)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="index_finger_pip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, 0.0423073, -0.991194, -0.713835, 0.689987, 0.119819, 0.68898, 0.722583, -0.0563796, 0.08, 0.2, 0.181)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="index_finger_dip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, 0.0423073, -0.991194, -0.713835, 0.689984, 0.119819, 0.68898, 0.72258, -0.0563796, 0.115, 0.194, 0.189)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="index_finger_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, 0.0423073, -0.991194, -0.713835, 0.689984, 0.119819, 0.68898, 0.72258, -0.0563796, 0.152, 0.174, 0.197)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="middle_finger_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, 0.032, 0.217, 0.169)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="middle_finger_pip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, 0.061, 0.196, 0.165)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="middle_finger_dip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, 0.058, 0.178, 0.192)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="middle_finger_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, 0.043, 0.168, 0.204)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="ring_finger_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, 0.019, 0.198, 0.152)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="ring_finger_pip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, 0.048, 0.177, 0.147)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="ring_finger_dip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, 0.045, 0.159, 0.175)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="ring_finger_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(-0.125481, -0.145818, -0.981322, -0.713835, 0.700198, -0.0127672, 0.68898, 0.6989, -0.191951, 0.03, 0.154, 0.182)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="pinky_finger_mcp" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(0.742266, 0.375846, -0.55478, -0.39858, -0.417899, -0.816392, -0.538679, 0.827105, -0.160388, 0.02, 0.204, 0.138)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="pinky_finger_pip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(0.742266, 0.375846, -0.55478, -0.39858, -0.417899, -0.816392, -0.538679, 0.827105, -0.160388, 0.045, 0.188, 0.138)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="pinky_finger_dip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(0.74352, 0.376218, -0.552845, -0.396242, -0.418098, -0.817427, -0.538674, 0.826835, -0.161791, 0.056, 0.174, 0.131)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")
+
+[node name="pinky_finger_tip" type="MeshInstance3D" parent="Tablet/Pen_Transform/Hand_left"]
+transform = Transform3D(0.742266, 0.375846, -0.55478, -0.39858, -0.417899, -0.816392, -0.538679, 0.827105, -0.160388, 0.034, 0.138, 0.112)
+visible = false
+mesh = SubResource("SphereMesh_tq632")
+skeleton = NodePath("../../Pen_unused2")

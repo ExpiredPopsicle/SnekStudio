@@ -11,11 +11,17 @@ var y_offset: float = 1.0
 var maintain_x_offset: bool = false
 var x_offset: float = 0.0
 
+var use_right_hand: bool = true
+var use_left_hand: bool = false
+
 func _ready() -> void:
 	add_tracked_setting("min_x", "Left pixel position")
 	add_tracked_setting("min_y", "Top pixel position")
 	add_tracked_setting("max_x", "Right pixel position")
 	add_tracked_setting("max_y", "Bottom pixel position")
+
+	add_tracked_setting("use_right_hand", "Right hand")
+	add_tracked_setting("use_left_hand", "Left hand")
 
 	add_tracked_setting("maintain_z_offset", "Maintain Z offset from model")
 	add_tracked_setting("z_offset", "Z offset", {"min" : -10, "max": 10, "step": 0.02})
@@ -23,7 +29,6 @@ func _ready() -> void:
 	add_tracked_setting("y_offset", "Y offset", {"min" : -10, "max": 10, "step": 0.02})
 	add_tracked_setting("maintain_x_offset", "Maintain X offset from model")
 	add_tracked_setting("x_offset", "X offset", {"min" : -10, "max": 10, "step": 0.02})
-
 
 func _process(delta: float) -> void:
 
@@ -54,6 +59,15 @@ func _process(delta: float) -> void:
 
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
 
+	%pen_left.visible = use_left_hand and tracker_dict["hand_left"]["active"] == false
+	if use_left_hand:
+		update_tracker("left", %Hand_left, tracker_dict)
+
+	%pen_right.visible = use_right_hand and tracker_dict["hand_right"]["active"] == false
+	if use_right_hand:
+		update_tracker("right", %Hand_right, tracker_dict)
+
+func update_tracker(side: String, hand_tracker: Node3D, tracker_dict: Dictionary):
 
 	var mediapipe_hand_landmark_names : Array = [
 		"wrist",
@@ -84,15 +98,12 @@ func _process(delta: float) -> void:
 		"pinky_finger_tip",
 	]
 
-	for side in ["right"]:
-		if not tracker_dict["hand_" + side]["active"]:
+	if not tracker_dict["hand_" + side]["active"]:
 
-			var hand_tracker : Node3D = %Hand
+		tracker_dict["hand_" + side]["active"] = true
+		tracker_dict["hand_" + side]["transform"] = hand_tracker.global_transform
 
-			tracker_dict["hand_" + side]["active"] = true
-			tracker_dict["hand_" + side]["transform"] = hand_tracker.global_transform
-
-			for tracker_name in mediapipe_hand_landmark_names:
-				var tracker_node : Node3D = hand_tracker.find_child(tracker_name)
-				if tracker_node:
-					tracker_dict["finger_positions"][side + "_" + tracker_name] = tracker_node.global_transform.origin
+		for tracker_name in mediapipe_hand_landmark_names:
+			var tracker_node : Node3D = hand_tracker.find_child(tracker_name)
+			if tracker_node:
+				tracker_dict["finger_positions"][side + "_" + tracker_name] = tracker_node.global_transform.origin
