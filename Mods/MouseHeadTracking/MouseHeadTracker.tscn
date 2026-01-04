@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c20c5pfdt7prs"]
+
+[ext_resource type="Script" uid="uid://b2tq2o2wsiipv" path="res://Mods/MouseHeadTracking/MouseHeadTracker.gd" id="1_1fb23"]
+
+[node name="MouseHeadTracker" type="Node3D"]
+script = ExtResource("1_1fb23")
