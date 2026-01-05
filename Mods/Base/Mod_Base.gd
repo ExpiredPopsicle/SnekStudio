@@ -384,10 +384,14 @@ func get_skeleton() -> Skeleton3D:
 	#   applies to.
 	return get_app().get_skeleton()
 
+## Get the ModelController node.
+func get_model_controller() -> ModelController:
+	return get_app().get_controller()
+
 ## Get the VTuber model in the scene.
 func get_model() -> Node3D:
 	# FIXME (multiplayer): Return the specific model this applies to.
-	var controller = get_app().get_node("ModelController")
+	var controller = get_model_controller()
 	return controller.get_node_or_null("Model")
 
 func get_bone_transform(bone_name) -> Transform3D:
