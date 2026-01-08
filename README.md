@@ -14,70 +14,34 @@ you look too closely into my code crimes.
 
 <3
 
-## Getting started (Linux + Windows)
+## Download
 
-Builds are coming very soon, but for now here are the steps to get it running
-using a copy of the Godot editor.
+Binary releases are available [on GitHub](https://github.com/ExpiredPopsicle/SnekStudio/releases) for Linux and Windows.
 
-1. Clone the repo.
+## Community
 
-   ```
-   git clone --recursive https://github.com/ExpiredPopsicle/SnekStudio.git
-   ```
-   If you didn't do the `--recursive` parameter, then you'll have to do
-   `git submodule init` and `git submodule update` inside the repo.
+SnekStudio is still in early development, so is lacking in documentation and might be not be as straight-forward to use as it could be. If you need help or want to help out, join the [community](https://snekstudio.com/#community) through Discord or Matrix.
 
-2. Open the project up in Godot 4.4.
+## Run from source
 
-3. Download the latest Python Standalone Build.
+If you're on a platform for which there is no release yet (MacOS), want to tinker with SnekStudio, or write your own modules, here's how to go about that:
 
-	1. Click on the "Python Builds" tab in the bottom of the Godot editor. Note
-	   that you will only see this tab if the KiriPythonRPCWrapper addon is
-	   enabled, which it should be.
+1. Clone the repository **recursively**.
+    ```
+    git clone --recursive https://github.com/ExpiredPopsicle/SnekStudio.git
+    ```
+    1. If you forget to clone recursively, run `git submodule init` and `git submodule update`.
+    2. When pulling the newest changes from SnekStudio, use `git pull --recurse-submodules` to ensure submodules (like TwitchGD4) get updated too.
 
-	2. Click the "Download" button next to the platform(s) you want to build
-	   for.
+2. Open the project in Godot 4.4.
 
-	3. Click the other "Download" button in the column for the dependencies.
-	   Wait a bit because it'll look like it's frozen, but it's just downloading
-	   files.
+3. Set up Python Standalone + its dependencies by clicking the "Python Builds" tab in the bottom panel, and clicking both "Download" buttons for your platform. This can freeze the editor while downloading, so give it some time.
 
-4. Run it from the editor.
+4. Run SnekStudio from the editor with the "Run Project" button in the top right. On first launch, this can also take some time to download the needed Python modules. (Visual feedback will be added later.)
 
-   First-time startup will take a long time and appear to freeze at first! This
-   is because it's downloading Python modules it needs. (Visual feedback for
-   this will be added later.)
+5. (optionally) Load up your own model. Note that **only VRM 0.x models are currently supported**. VRM 1.x will have serious issues.
 
-5. Load up a model.
-
-   Note: Only VRM 0.0 models are currently supported. VRM 1.x will have serious issues.
-
-   File -> Open VRM...
-
-6. Configure the MediaPipe Tracker.
-
-   Mods -> Mod List...
-
-   Select MediaPipeController.
-
-7. Select a video device from the Video Device list.
-
-   Sometimes there will be duplicate devices. If the one you want doesn't
-   work, try the duplicate.
-
-8. Set arm rest angle.
-
-   After this, you can close the Mods settings.
-
-9. Set the window to transparent, if desired.
-
-	Settings -> Window... -> Transparent background
-
-	Should work with OBS Xcomposite capture.
-
-10. (Optional) Set up colliders and then thrown object redeems.
-
-	Note: Thrown objects will not work without colliders.
+6. Configure "MediaPipeController" (`Esc` -> "Modules" -> "Mod list...") and select your video device. If there's similar entries, be sure to check the others if the first doesn't work.
 
 ## Project Goals
 
