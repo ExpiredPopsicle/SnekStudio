@@ -9,6 +9,9 @@ offset_bottom = 189.0
 script = ExtResource("2_v2kbv")
 label_text = "Window Settings"
 
+[node name="WindowBorder" parent="." index="0"]
+offset_right = 13.0
+
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
 text = "Window Settings"
 
@@ -17,6 +20,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_right = 4.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/h_separation = 16
@@ -25,39 +29,40 @@ columns = 2
 
 [node name="Label3" type="Label" parent="GridContainer" index="0"]
 layout_mode = 2
-text = "Transparent background"
+text = "Hide window elements"
 
-[node name="CheckBox_TransparentBackground" type="CheckBox" parent="GridContainer" index="1"]
+[node name="OptionButton_HideWindowElements" type="OptionButton" parent="GridContainer" index="1"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+selected = 2
+item_count = 3
+popup/item_0/text = "Show All"
+popup/item_0/id = 0
+popup/item_1/text = "Window Decorations"
+popup/item_1/id = 1
+popup/item_2/text = "Decoration and Scene"
+popup/item_2/id = 2
 
-[node name="Label" type="Label" parent="GridContainer" index="2"]
-layout_mode = 2
-text = "Hide window decorations with UI"
-
-[node name="CheckBox_HideWindowDecorations" type="CheckBox" parent="GridContainer" index="3"]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="Label6" type="Label" parent="GridContainer" index="4"]
+[node name="Label6" type="Label" parent="GridContainer" index="2"]
 layout_mode = 2
 text = "Background color"
 
-[node name="ColorPickerButton_BackgroundColor" type="ColorPickerButton" parent="GridContainer" index="5"]
+[node name="ColorPickerButton_BackgroundColor" type="ColorPickerButton" parent="GridContainer" index="3"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Label7" type="Label" parent="GridContainer" index="6"]
+[node name="Label7" type="Label" parent="GridContainer" index="4"]
 layout_mode = 2
 text = "VSync Mode"
 
-[node name="OptionButton_VSyncMode" type="OptionButton" parent="GridContainer" index="7"]
+[node name="OptionButton_VSyncMode" type="OptionButton" parent="GridContainer" index="5"]
 unique_name_in_owner = true
 layout_mode = 2
 selected = 0
 item_count = 4
 popup/item_0/text = "Disabled"
+popup/item_0/id = 0
 popup/item_1/text = "Enabled"
 popup/item_1/id = 1
 popup/item_2/text = "Adaptive"
@@ -65,7 +70,6 @@ popup/item_2/id = 2
 popup/item_3/text = "Mailbox"
 popup/item_3/id = 3
 
-[connection signal="toggled" from="GridContainer/CheckBox_TransparentBackground" to="." method="_any_value_changed"]
-[connection signal="toggled" from="GridContainer/CheckBox_HideWindowDecorations" to="." method="_any_value_changed"]
+[connection signal="item_selected" from="GridContainer/OptionButton_HideWindowElements" to="." method="_any_value_changed"]
 [connection signal="color_changed" from="GridContainer/ColorPickerButton_BackgroundColor" to="." method="_any_value_changed"]
 [connection signal="item_selected" from="GridContainer/OptionButton_VSyncMode" to="." method="_any_value_changed"]

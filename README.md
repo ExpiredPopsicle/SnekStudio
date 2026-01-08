@@ -14,7 +14,7 @@ you look too closely into my code crimes.
 
 <3
 
-## Getting started (Linux + Windows)
+## Getting started (Linux, Windows, macOS)
 
 Builds are coming very soon, but for now here are the steps to get it running
 using a copy of the Godot editor.
@@ -56,7 +56,7 @@ using a copy of the Godot editor.
 
 6. Configure the MediaPipe Tracker.
 
-   Mods -> Mod List...
+   Modules -> Mod List...
 
    Select MediaPipeController.
 
@@ -73,7 +73,7 @@ using a copy of the Godot editor.
 
 	Settings -> Window... -> Transparent background
 
-	Should work with OBS Xcomposite capture.
+	Should work with OBS (Linux Xcomposite/macOS Screen Capture/...) capture.
 
 10. (Optional) Set up colliders and then thrown object redeems.
 
