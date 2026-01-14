@@ -1,0 +1,29 @@
+[gd_scene load_steps=3 format=3 uid="uid://cr7g3ca1hcanw"]
+
+[ext_resource type="Script" uid="uid://cnvcb51sor64n" path="res://Mods/Anaglyph3D/Anaglyph3D.gd" id="1_vndqm"]
+[ext_resource type="Material" uid="uid://djolrxmgodwnn" path="res://Test3D/RedBlue3D.tres" id="2_ccb7u"]
+
+[node name="Anaglyph3d" type="Node3D"]
+script = ExtResource("1_vndqm")
+metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
+
+[node name="SubViewport_Left" type="SubViewport" parent="."]
+transparent_bg = true
+
+[node name="Camera3D" type="Camera3D" parent="SubViewport_Left"]
+current = true
+
+[node name="SubViewport_Right" type="SubViewport" parent="."]
+transparent_bg = true
+
+[node name="Camera3D" type="Camera3D" parent="SubViewport_Right"]
+transform = Transform3D(0.993441, 0, -0.114348, 0, 1, 0, 0.114348, 0, 0.993441, -1.49779, 1.19209e-07, 0.00703812)
+current = true
+
+[node name="ColorRect" type="ColorRect" parent="."]
+material = ExtResource("2_ccb7u")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
