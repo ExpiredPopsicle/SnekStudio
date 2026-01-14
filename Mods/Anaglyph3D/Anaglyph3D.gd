@@ -4,7 +4,7 @@ var subviewport_left: SubViewport
 var subviewport_right: SubViewport
 
 ## Inter-pupillary distance
-var ipd: float = 0.0064
+var ipd: float = 0.0287 # realistic: 0.0064
 
 ## Blend between a grayscale version and version with color.
 var luminance_vs_color: float = 0.5
@@ -18,6 +18,8 @@ var always_active: bool = false
 var redeem_name: String
 var seconds_active_per_redeem: float = 60.0
 var seconds_left: float = 0.0
+
+var eye_inward_rotation: float = -2.1
 
 func _get_enabled() -> bool:
 	if always_active:
@@ -39,6 +41,7 @@ func handle_channel_point_redeem(_redeemer_username, _redeemer_display_name, _re
 func _ready() -> void:
 	
 	add_tracked_setting("ipd", "Inter Pupillary Distance (meters)", { "min" : -1.0, "max" : 1.0, "step" : 0.0001 })
+	add_tracked_setting("eye_inward_rotation", "Eye inward rotation (degrees)", { "min" : -180.0, "max" : 180.0, "step" : 0.1 })
 	add_tracked_setting("luminance_vs_color", "Luminance vs Color", { "min" : 0.0, "max" : 1.0, "step" : 0.01 })
 	add_tracked_setting("color_left", "Left color")
 	add_tracked_setting("color_right", "Right color")
@@ -89,6 +92,9 @@ func _process(delta: float) -> void:
 	var left: Vector3 = original_cam_transform.basis * Vector3(1.0, 0.0, 0.0)
 	cam_left.transform.origin -= left * ipd/2.0
 	cam_right.transform.origin += left * ipd/2.0
+
+	cam_left.transform.basis = cam_left.transform.basis.rotated(up, eye_inward_rotation * PI/180.0)
+	cam_right.transform.basis = cam_left.transform.basis.rotated(up, -eye_inward_rotation * PI/180.0)
 
 	# Copy over other camera settings.
 	cam_left.fov = original_cam.fov
