@@ -38,14 +38,15 @@ func handle_channel_point_redeem(_redeemer_username, _redeemer_display_name, _re
 
 func _ready() -> void:
 	
-	add_tracked_setting("ipd", "Inter Pupillary Distance", { "min" : -1.0, "max" : 1.0, "step" : 0.0001 })
+	add_tracked_setting("ipd", "Inter Pupillary Distance (meters)", { "min" : -1.0, "max" : 1.0, "step" : 0.0001 })
 	add_tracked_setting("luminance_vs_color", "Luminance vs Color", { "min" : 0.0, "max" : 1.0, "step" : 0.01 })
 	add_tracked_setting("color_left", "Left color")
 	add_tracked_setting("color_right", "Right color")
 	add_tracked_setting("always_active", "Always active")
 	add_tracked_setting("redeem_name", "Redeem Name", {"is_redeem" : true})
 	add_tracked_setting("seconds_active_per_redeem", "Seconds active", { "min" : 0.0, "max" : 3600.0 * 24.0 })
-	
+	update_settings_ui()
+
 	subviewport_left = $SubViewport_Left
 	subviewport_right = $SubViewport_Right
 
