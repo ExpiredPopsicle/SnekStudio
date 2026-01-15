@@ -809,7 +809,7 @@ func settings_window_add_selector(
 						selection_widget.select(idx, single)
 
 		selection_widget.multi_selected.connect(
-			(func(_index, widget): callback.call(widget)).bind(selection_widget))
+			(func(_index, selected, widget): callback.call(widget)).bind(selection_widget))
 
 	reset_default.pressed.connect(
 		reset_default_action.bind(default_value)
