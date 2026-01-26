@@ -3,6 +3,11 @@
 import mediapipe
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+import os
+# this has to be set before cv2 is imported
+# https://github.com/opencv/opencv/issues/17687
+os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
+
 import cv2
 import time
 import json
@@ -14,7 +19,6 @@ import kiri_math
 from kiri_math import lerp
 
 import socket
-import os
 import sys
 
 import psutil
@@ -797,6 +801,11 @@ def enumerate_camera_devices():
     if sys.platform == "linux":
         capture_api_preference = cv2.CAP_V4L2
 
+    # CAP_ANY provides a Direct Show(DSHOW) backend and a Media Foundation(MSMF) backend
+    # MSMF is more modern and DSHOW maybe removed in any future version of windows so filter by MSMF
+    if sys.platform == "win32":
+        capture_api_preference = cv2.CAP_MSMF
+
     # On Linux, we sometimes see stuff showing up as just "video#", so
     # let's at least try to correlate paths and IDs from
     # /dev/v4l/by-id .
@@ -812,9 +821,11 @@ def enumerate_camera_devices():
             pass
 
     all_camera_data = []
-
-    for camera_info in enumerate_cameras(apiPreference=capture_api_preference):
-
+    cameras = enumerate_cameras(apiPreference=capture_api_preference)
+    if sys.platform == "win32" and len(cameras) == 0:
+        capture_api_preference = cv2.CAP_DSHOW
+        cameras = enumerate_cameras(apiPreference=capture_api_preference)
+    for camera_info in cameras:
         camera_name = camera_info.name
 
         if re.match("video[0-9]+", camera_info.name):
@@ -836,6 +847,27 @@ def enumerate_camera_devices():
             "index" : camera_info.index
         }
 
-        all_camera_data.append(camera_data)
+        if sys.platform == "linux":
+            from linuxpy.video.device import Device, VideoCapture
+
+            cap = cv2.VideoCapture(camera_info.index, capture_api_preference)
+            works = False
+            if cap.isOpened():
+                ret, frame = cap.read()
+                if ret and frame is not None:
+                    works = True
+            else:
+                with Device(camera_info.path) as camera:
+                    try:
+                        for frame in camera:
+                            pass
+                    except OSError as e:
+                        if e.errno == 16:
+                            works = True
+            cap.release()
+            if works:
+                all_camera_data.append(camera_data)
+        else:
+            all_camera_data.append(camera_data)
 
     return all_camera_data

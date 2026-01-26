@@ -3,33 +3,33 @@
     "Linux-arm64": {
       "complete_filename": "cpython-3.12.7+20241016-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz",
       "download_url": "https://github.com/indygreg/python-build-standalone/releases/download/20241016/cpython-3.12.7%2B20241016-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz",
-      "file_size": 17865102,
+      "file_size": 17865102.0,
       "sort": "cpython-00000003-00000012-00000007-20241016-aarch64-unknown-linux-gnu-install_only_stripped-tar-gz"
     },
     "Linux-x86_64": {
       "complete_filename": "cpython-3.12.5+20240814-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
       "download_url": "https://github.com/indygreg/python-build-standalone/releases/download/20240814/cpython-3.12.5%2B20240814-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz",
-      "file_size": 21984711,
+      "file_size": 21984711.0,
       "sort": "cpython-00000003-00000012-00000005-20240814-x86_64-unknown-linux-gnu-install_only_stripped-tar-gz"
     },
     "Windows-x86_64": {
       "complete_filename": "cpython-3.12.5+20240814-x86_64-pc-windows-msvc-shared-install_only_stripped.tar.gz",
       "download_url": "https://github.com/indygreg/python-build-standalone/releases/download/20240814/cpython-3.12.5%2B20240814-x86_64-pc-windows-msvc-shared-install_only_stripped.tar.gz",
-      "file_size": 23569213,
+      "file_size": 23569213.0,
       "sort": "cpython-00000003-00000012-00000005-20240814-x86_64-pc-windows-msvc-shared-install_only_stripped-tar-gz"
-    },
-    "macOS-x86_64": {
-      "complete_filename": "cpython-3.12.5+20240814-x86_64-apple-darwin-install_only_stripped.tar.gz",
-      "download_url": "https://github.com/indygreg/python-build-standalone/releases/download/20240814/cpython-3.12.5%2B20240814-x86_64-apple-darwin-install_only_stripped.tar.gz",
-      "file_size": 16564547,
-      "sort": "cpython-00000003-00000012-00000005-20240814-x86_64-apple-darwin-install_only_stripped-tar-gz"
     },
     "macOS-arm64": {
       "complete_filename": "cpython-3.12.5+20240814-aarch64-apple-darwin-install_only_stripped.tar.gz",
       "download_url": "https://github.com/indygreg/python-build-standalone/releases/download/20240814/cpython-3.12.5%2B20240814-aarch64-apple-darwin-install_only_stripped.tar.gz",
-      "file_size": 16223961,
+      "file_size": 16223961.0,
       "sort": "cpython-00000003-00000012-00000005-20240814-aarch64-apple-darwin-install_only_stripped-tar-gz"
+    },
+    "macOS-x86_64": {
+      "complete_filename": "cpython-3.12.5+20240814-x86_64-apple-darwin-install_only_stripped.tar.gz",
+      "download_url": "https://github.com/indygreg/python-build-standalone/releases/download/20240814/cpython-3.12.5%2B20240814-x86_64-apple-darwin-install_only_stripped.tar.gz",
+      "file_size": 16564547.0,
+      "sort": "cpython-00000003-00000012-00000005-20240814-x86_64-apple-darwin-install_only_stripped-tar-gz"
     }
   },
-  "requirements": "mediapipe==0.10.14\npsutil==6.0.0\ncv2-enumerate-cameras==1.1.18.2\nnumpy==1.26.0\n\n"
+  "requirements": "mediapipe==0.10.14\npsutil==6.0.0\ncv2-enumerate-cameras==1.1.18.2\nnumpy==1.26.0\nlinuxpy==0.23.0; sys_platform == \"linux\"\n"
 }
