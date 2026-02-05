@@ -33,18 +33,15 @@ func get_background_color():
 	return current_style.bg_color
 
 func set_background_color(c : Color):
-	var env = get_node("WorldEnvironment")
-	var env2 : Environment = env.environment
-	env2.background_color = c
+	# var env = get_node("WorldEnvironment")
+	# var env2 : Environment = env.environment
+	# env2.background_color = c
 	
 	var current_style : StyleBoxFlat = %BackgroundPanel.get("theme_override_styles/panel")
 	current_style.bg_color = c
 
 func set_background_transparency(transparent : bool):
 	if transparent:
-		var env = get_node("WorldEnvironment")
-		var env2 : Environment = env.environment
-		env2.background_mode = Environment.BG_CLEAR_COLOR
 		get_node("BackgroundLayer").visible = false
 		get_tree().get_root().set_transparent_background(true) # Needed for compatibility mode.
 		
@@ -55,10 +52,7 @@ func set_background_transparency(transparent : bool):
 #		get_tree().root.transparent_bg = true
 		
 	else:
-		var env = get_node("WorldEnvironment")
-		var env2 : Environment = env.environment
-		env2.background_mode = Environment.BG_CANVAS
-		#env2.background_color = Color(1.0, 1.0, 1.0, 1.0)
+		# env2.background_color = Color(1.0, 1.0, 1.0, 1.0)
 		get_node("BackgroundLayer").visible = true
 		get_tree().get_root().set_transparent_background(false) # Needed for compatibility mode.
 
@@ -99,7 +93,8 @@ func _load_mods() -> void:
 	_mods_loaded = true
 
 func _ready():
-	
+	%CameraBoom/Camera3D.environment = Environment.new()
+
 	_load_mods()
 
 	set_background_transparency(true)
@@ -266,7 +261,7 @@ func reset_settings_to_default() -> void:
 		child.queue_free()
 
 	# Reset camera.
-	$CameraBoom.reset_to_default()
+	%CameraBoom.reset_to_default()
 
 	# Reset transparency.	
 	set_background_transparency(true)
@@ -298,7 +293,7 @@ func serialize_settings(do_settings=true, do_mods=true):
 	if do_settings:
 		
 		# Save camera.
-		settings_to_save["camera"] = $CameraBoom.save_settings()
+		settings_to_save["camera"] = %CameraBoom.save_settings()
 
 		# Save UI visibility.
 		settings_to_save["ui_visible"] = %UI_Root.visible
@@ -427,7 +422,7 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 
 		# Load camera.
 		if "camera" in settings_dict:
-			$CameraBoom.load_settings(settings_dict["camera"])
+			%CameraBoom.load_settings(settings_dict["camera"])
 
 		# Load transparency.
 		if "transparent_window" in settings_dict:
