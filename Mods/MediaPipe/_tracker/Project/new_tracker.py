@@ -699,9 +699,8 @@ class MediaPipeTracker:
             self._open_video_device()
 
     def update_settings(self, new_settings_dict):
-        # TODO: use mutex here
         if "video_device_number" in new_settings_dict:
-            set_video_device_number(new_settings_dict["video_device_number"])
+            self.set_video_device_number(new_settings_dict["video_device_number"])
 
         if "udp_port_number" in new_settings_dict:
             with self.the_big_ugly_mutex:
@@ -781,28 +780,6 @@ def start_tracker():
 def stop_tracker():
     global mediapipe_controller
     mediapipe_controller.stop_tracker()
-
-# Set to -1 to just release all devices.
-#
-# FIXME: Merge into update_settings.
-def set_video_device_number(new_number):
-    global mediapipe_controller
-    mediapipe_controller.set_video_device_number(new_number)
-
-# FIXME: Merge into update_settings.
-def set_udp_port_number(new_number):
-    global mediapipe_controller
-    mediapipe_controller.set_udp_port_number(new_number)
-
-# FIXME: Merge into update_settings.
-def set_hand_confidence_time_threshold(new_number):
-    global mediapipe_controller
-    mediapipe_controller.set_hand_confidence_time_threshold(new_number)
-
-# FIXME: Merge into update_settings.
-def set_hand_count_change_time_threshold(new_number):
-    global mediapipe_controller
-    mediapipe_controller.set_hand_count_change_time_threshold(new_number)
 
 def update_settings(new_settings_dict):
     global mediapipe_controller
