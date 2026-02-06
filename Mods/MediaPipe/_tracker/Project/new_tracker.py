@@ -690,7 +690,6 @@ class MediaPipeTracker:
 
     # Set to -1 to just release all devices.
     #
-    # FIXME: Merge into update_settings.
     def set_video_device_number(self, new_number):
 
         if self.video_device_index != new_number:
@@ -699,41 +698,50 @@ class MediaPipeTracker:
             self._close_video_device()
             self._open_video_device()
 
-    # FIXME: Merge into update_settings.
-    def set_udp_port_number(self, new_number):
-        with self.the_big_ugly_mutex:
-            self.udp_port_number = new_number
-
-    # FIXME: Merge into update_settings.
-    def set_hand_confidence_time_threshold(self, new_number):
-        with self.the_big_ugly_mutex:
-            self.confidence_time_threshold = new_number
-
-    def set_hand_detection_confidence(self, new_number):
-        with self.the_big_ugly_mutex:
-            self.hand_detection_confidence = new_number
-
-    def set_hand_tracking_confidence(self, new_number):
-        with self.the_big_ugly_mutex:
-            self.hand_tracking_confidence = new_number
-
-    def set_hand_presence_confidence(self, new_number):
-        with self.the_big_ugly_mutex:
-            self.hand_presence_confidence = new_number
-
-    # FIXME: Merge into update_settings.
-    def set_hand_count_change_time_threshold(self, new_number):
-        with self.the_big_ugly_mutex:
-            self.time_since_hand_count_changed_threshold = new_number
-
     def update_settings(self, new_settings_dict):
+        # TODO: use mutex here
+        if "video_device_number" in new_settings_dict:
+            set_video_device_number(new_settings_dict["video_device_number"])
+
+        if "udp_port_number" in new_settings_dict:
+            with self.the_big_ugly_mutex:
+                self.udp_port_number = new_settings_dict["udp_port_number"]
+
+        if "video_device_number" in new_settings_dict:
+            with self.the_big_ugly_mutex:
+                self.video_device_index = new_settings_dict["video_device_number"]
+
+        if "set_hand_confidence_time_threshold" in new_settings_dict:
+            with self.the_big_ugly_mutex:
+                self.hand_detection_confidence = new_settings_dict["set_hand_confidence_time_threshold"]
+
+        if  "hand_count_change_time_threshold" in new_settings_dict:
+            with self.the_big_ugly_mutex:
+                self.time_since_hand_count_changed_threshold = new_settings_dict["hand_count_change_time_threshold"]
 
         if "hand_position_scale" in new_settings_dict:
-            self.hand_position_scale = new_settings_dict["hand_position_scale"]
+            with self.the_big_ugly_mutex:
+                self.hand_position_scale = new_settings_dict["hand_position_scale"]
+
         if "hand_position_offset" in new_settings_dict:
-            self.hand_position_offset = new_settings_dict["hand_position_offset"]
+            with self.the_big_ugly_mutex:
+                self.hand_position_offset = new_settings_dict["hand_position_offset"]
+
         if "hand_to_head_scale" in new_settings_dict:
-            self.hand_to_head_scale = new_settings_dict["hand_to_head_scale"]
+            with self.the_big_ugly_mutex:
+                self.hand_to_head_scale = new_settings_dict["hand_to_head_scale"]
+
+        if "hand_detection_confidence" in new_settings_dict:
+            with self.the_big_ugly_mutex:
+                self.hand_detection_confidence = new_settings_dict["hand_detection_confidence"]
+
+        if "hand_tracking_confidence" in new_settings_dict:
+            with self.the_big_ugly_mutex:
+                self.hand_tracking_confidence = new_settings_dict["hand_tracking_confidence"]
+
+        if "hand_presence_confidence" in new_settings_dict:
+            with self.the_big_ugly_mutex:
+                self.hand_tracking_confidence = new_settings_dict["hand_presence_confidence"]
 
     def _shutdown_mediapipe(self):
 
