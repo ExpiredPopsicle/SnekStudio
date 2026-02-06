@@ -63,6 +63,9 @@ var head_position_smoothing : float = 2.0
 
 var hand_confidence_time_threshold = 1.0
 var hand_count_change_time_threshold = 1.0
+var min_hand_detection_confidence = 0.5
+var min_hand_tracking_confidence = 0.5
+var min_hand_presence_confidence = 0.5
 
 var hand_rotation_smoothing : float = 2.0
 var hand_position_smoothing : float = 4.0
@@ -113,15 +116,38 @@ func _ready():
 
 	add_setting_group("advanced", "Advanced")
 
-
+	# It should probably be called "confidence time before hand tracking starts"
 	add_tracked_setting(
-		"hand_confidence_time_threshold", "Hand confidence time",
+		"hand_confidence_time_threshold", "Confidence time before hand tracking starts",
 		{ "min" : 0.0, "max" : 20.0 },
 		"advanced")
+	# "Time to wait before registering hands after we detected that the number of hands has changed."
+	# This seems to be connected to the freeze on exit described in issue 78
+	# https://github.com/ExpiredPopsicle/SnekStudio/issues/78
 	add_tracked_setting(
-		"hand_count_change_time_threshold", "Hand count change time",
+		"hand_count_change_time_threshold", "Confidence time before hand count changes",
 		{ "min" : 0.0, "max" : 20.0 },
 		"advanced")
+		
+	# Connects to min_hand_detection_confidence, min_tracking_confidence, and
+	# min_hand_presence_confidence respectively in new_tracker.py
+	add_tracked_setting(
+		"min_hand_detection_confidence", "Minimum hand detection confidence level (%)",
+		{ "min" : 0.0, "max" : 1.0 },
+		"advanced"
+	)
+	
+	add_tracked_setting(
+		"min_hand_tracking_confidence", "Minimum hand tracking confidence level (%)",
+		{ "min" : 0.0, "max" : 1.0 },
+		"advanced"
+	)
+	
+	add_tracked_setting(
+		"min_hand_presence_confidence", "Minimum hand presence confidence level (%)",
+		{ "min" : 0.0, "max" : 1.0 },
+		"advanced"
+	)
 
 	add_tracked_setting(
 		"frames_missing_before_spine_reset", "Untracked frames before reset",
@@ -378,6 +404,15 @@ func _start_tracker():
 
 	tracker_python_process.call_rpc_async(
 		"set_hand_confidence_time_threshold", [hand_confidence_time_threshold])
+		
+	tracker_python_process.call_rpc_async(
+		"set_hand_detection_confidence", [min_hand_detection_confidence])
+		
+	tracker_python_process.call_rpc_async(
+		"set_hand_tracking_confidence", [min_hand_tracking_confidence])
+		
+	tracker_python_process.call_rpc_async(
+		"set_hand_presence_confidence", [min_hand_presence_confidence])
 
 	var video_device_index_to_use = 0
 	
@@ -432,6 +467,15 @@ func _send_settings_to_tracker():
 		
 	tracker_python_process.call_rpc_async(
 		"set_hand_count_change_time_threshold", [hand_count_change_time_threshold])
+		
+	tracker_python_process.call_rpc_async(
+		"set_hand_detection_confidence", [min_hand_detection_confidence])
+		
+	tracker_python_process.call_rpc_async(
+		"set_hand_tracking_confidence", [min_hand_tracking_confidence])
+		
+	tracker_python_process.call_rpc_async(
+		"set_hand_presence_confidence", [min_hand_presence_confidence])
 
 	# FIXME: Replace all of the above with this one call.
 	tracker_python_process.call_rpc_async(
