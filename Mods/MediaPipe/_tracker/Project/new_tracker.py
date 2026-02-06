@@ -96,6 +96,10 @@ class MediaPipeTracker:
         # the number of hands has changed.
         self.time_since_hand_count_changed_threshold = 1.0
 
+        self.hand_detection_confidence = 0.5
+        self.hand_tracking_confidence = 0.5
+        self.hand_presence_confidence = 0.5
+
         self.hand_position_scale = numpy.array([7.0, 7.0, 3.5])
         self.hand_position_offset = numpy.array([0.0, -0.14, 0.0])
         self.hand_to_head_scale = 2.0
@@ -174,11 +178,9 @@ class MediaPipeTracker:
             running_mode = VisionRunningMode.LIVE_STREAM,
             num_hands = 2,
 
-            # FIXME: Make these adjustable.
-            # Were working in the 4.1 version.
-            min_hand_detection_confidence = 0.75,
-            min_tracking_confidence = 0.75,
-            min_hand_presence_confidence = 0.9,
+            min_hand_detection_confidence = self.hand_detection_confidence,
+            min_tracking_confidence = self.hand_tracking_confidence,
+            min_hand_presence_confidence = self.hand_presence_confidence,
 
             result_callback = self._handle_result_hands)
 
@@ -706,6 +708,18 @@ class MediaPipeTracker:
     def set_hand_confidence_time_threshold(self, new_number):
         with self.the_big_ugly_mutex:
             self.confidence_time_threshold = new_number
+
+    def set_hand_detection_confidence(self, new_number):
+        with self.the_big_ugly_mutex:
+            self.hand_detection_confidence = new_number
+
+    def set_hand_tracking_confidence(self, new_number):
+        with self.the_big_ugly_mutex:
+            self.hand_tracking_confidence = new_number
+
+    def set_hand_presence_confidence(self, new_number):
+        with self.the_big_ugly_mutex:
+            self.hand_presence_confidence = new_number
 
     # FIXME: Merge into update_settings.
     def set_hand_count_change_time_threshold(self, new_number):
