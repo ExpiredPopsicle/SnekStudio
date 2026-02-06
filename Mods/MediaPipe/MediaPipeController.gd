@@ -432,8 +432,7 @@ func _start_tracker():
 
 func _stop_tracker():
 
-	tracker_python_process.call_rpc_sync(
-		"stop_tracker", [])
+	tracker_python_process.stop_process()
 
 	set_status("Stopped")
 
