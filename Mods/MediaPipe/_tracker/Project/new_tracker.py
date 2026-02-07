@@ -96,9 +96,10 @@ class MediaPipeTracker:
         # the number of hands has changed.
         self.time_since_hand_count_changed_threshold = 1.0
 
-        self.hand_detection_confidence = 0.5
-        self.hand_tracking_confidence = 0.5
-        self.hand_presence_confidence = 0.5
+        # Were working in the 4.1 version.
+        self.hand_detection_confidence = 0.75
+        self.hand_tracking_confidence = 0.75
+        self.hand_presence_confidence = 0.9
 
         self.hand_position_scale = numpy.array([7.0, 7.0, 3.5])
         self.hand_position_offset = numpy.array([0.0, -0.14, 0.0])
