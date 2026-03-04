@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://br24fa3ct4n62" path="res://Core/CameraBoom/CameraBoom.gd" id="1_dxg52"]
 
-[node name="CameraBoom" type="Node3D"]
+[node name="CameraBoom" type="Node3D" unique_id=827507908]
 script = ExtResource("1_dxg52")
 
 [node name="Camera3D" type="Camera3D" parent="."]
