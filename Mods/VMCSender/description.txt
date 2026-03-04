@@ -1,3 +1,1 @@
 A module to send VMC data to another application.
-
-DO NOT USE. NOT WORKING YET UNLESS YOU LIKE BODY HORROR.
