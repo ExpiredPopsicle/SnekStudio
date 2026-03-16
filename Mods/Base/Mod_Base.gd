@@ -183,7 +183,8 @@ func add_tracked_setting(
 		new_widget = settings_window_add_lineedit(
 			new_setting_prop["label"], new_setting_prop["name"],
 			new_setting_prop["args"].get("is_redeem", false),
-			new_setting_prop["args"].get("is_fileaccess", false))
+			new_setting_prop["args"].get("is_fileaccess", false),
+			new_setting_prop["args"].get("file_filters", []))
 
 	elif prop_val is bool:
 		new_widget = settings_window_add_boolean(new_setting_prop["label"], new_setting_prop["name"])
