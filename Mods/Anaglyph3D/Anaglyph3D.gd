@@ -79,8 +79,8 @@ func _process(delta: float) -> void:
 	subviewport_right.size = get_viewport().size
 
 	# Position cameras, initially copying main camera.
-	var boom: Node3D = get_app().get_node("CameraBoom")
-	var original_cam: Camera3D = boom.get_node("Camera3D")
+	var boom: Node3D = get_app().get_node("%CameraBoom")
+	var original_cam: Camera3D = boom.get_node("%CameraBoom/Camera3D")
 	var original_cam_transform: Transform3D = original_cam.global_transform
 	var cam_left: Camera3D = subviewport_left.get_node("Camera3D")
 	cam_left.global_transform = original_cam_transform
@@ -111,14 +111,14 @@ func scene_init() -> void:
 	# Move subviewports from this object to the camera boom in the main scene.
 	remove_child(subviewport_left)
 	remove_child(subviewport_right)
-	var boom: Node3D = get_app().get_node("CameraBoom")
+	var boom: Node3D = get_app().get_node("%CameraBoom")
 	boom.add_child(subviewport_left)
 	boom.add_child(subviewport_right)
 
 func scene_shutdown() -> void:
 
 	# Move subviewports back into this scene.
-	var boom: Node3D = get_app().get_node("CameraBoom")
+	var boom: Node3D = get_app().get_node("%CameraBoom")
 	boom.remove_child(subviewport_left)
 	boom.remove_child(subviewport_right)
 	add_child(subviewport_left)
