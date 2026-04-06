@@ -1,8 +1,8 @@
 #!/bin/bash
 
-GODOT_RELEASE_URL="https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_linux.x86_64.zip"
-GODOT_EXPORT_TEMPLATE_URL="https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_export_templates.tpz"
-GODOT_EXPORT_TEMPLATE_VERSION="4.6.stable"
+GODOT_RELEASE_URL="https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_linux.x86_64.zip"
+GODOT_EXPORT_TEMPLATE_URL="https://github.com/godotengine/godot/releases/download/4.6.2-stable/Godot_v4.6.2-stable_export_templates.tpz"
+GODOT_EXPORT_TEMPLATE_VERSION="4.6.2.stable"
 
 set -e
 
