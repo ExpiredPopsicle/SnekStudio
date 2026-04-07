@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="SnekStudio"
-config/version="0.1.5"
+config/version="0.1.6"
 run/main_scene="res://Core/Main.tscn"
 config/use_custom_user_dir=true
 config/features=PackedStringArray("4.6", "Forward Plus")
@@ -26,7 +26,7 @@ config/icon="res://Core/UI/Images/kiri_smug.png"
 
 [audio]
 
-buses/default_bus_layout="res://Core/AudioInput/default_bus_layout.tres"
+buses/default_bus_layout="uid://o8d811r80yx5"
 driver/enable_input=true
 
 [debug]
