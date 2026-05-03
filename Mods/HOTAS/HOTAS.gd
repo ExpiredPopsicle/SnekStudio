@@ -1,7 +1,13 @@
 extends Mod_Base
 
-var last_input_stick : Vector3 = Vector3(0.0, 0.0, 0.0)
-var last_input_throttle : float = 0.0
+
+
+# HOTAS.gd handles the position of the Devices and passes Properties from the Settings to the Mod
+# DeviceSlot.gd keeps track of the device, and animates the device. Kept as separate action as the smoothing may happen in HOTAS.gd
+# tickDriver.gd simply keeps track of the AnimationBlendTree and passes parameters to it when its functions are called
+#region props
+var last_input_left : Vector3 = Vector3(0.0, 0.0, 0.0)
+var last_input_right : Vector3 = Vector3(0.0, 0.0, 0.0)
 
 ## Distance between the two models.
 var model_distance : float = 0.5
@@ -15,16 +21,112 @@ var model_xoffset : float = 0.0
 ## Depth shift.
 var model_zoffset : float = 0.0
 
-var _device_list : Array = []
-var joystick_device : Array = [""]
-var throttle_device : Array = [""]
+var right_device : Array = [""]
+var right_device_model : Array = [""]
 
-var stick_x_axis : int = JoyAxis.JOY_AXIS_LEFT_X
-var stick_y_axis : int = JoyAxis.JOY_AXIS_LEFT_Y
-var throttle_axis : int = JoyAxis.JOY_AXIS_RIGHT_Y
+var left_device : Array = [""]
+var left_device_model : Array = [""]
+
+var right_device_axis_x : int = JoyAxis.JOY_AXIS_LEFT_X
+var right_device_axis_x_invert: bool = false
+var right_device_axis_y : int = JoyAxis.JOY_AXIS_LEFT_Y
+var right_device_axis_y_invert: bool = false
+var right_device_axis_z : int = -1
+var right_device_axis_z_invert: bool = false
+
+var left_device_axis_y : int = JoyAxis.JOY_AXIS_RIGHT_Y
+var left_device_axis_y_invert: bool = false
+
+var left_device_axis_x : int = JoyAxis.JOY_AXIS_RIGHT_X
+var left_device_axis_x_invert: bool = false
+
+var left_device_axis_z : int = -1
+var left_device_axis_z_invert: bool = false
+
+#endregion
+#region constants and privates
+
+var _device_list : Array = []
+
+const _device_model_type_str : Array = [
+	"None",
+	"Right Joystick",
+	"Right Omnistick",
+	"Right Throttle",
+	"Left Joystick",
+	"Left Omnistick",
+	"Left Throttle"
+]
+const _device_model_type_res : Array = [
+	"",
+	"res://Mods/HOTAS/FlightStick/RightStick.tscn",
+	"res://Mods/HOTAS/FlightStick/RightOmniStick.tscn",
+	"res://Mods/HOTAS/FlightStick/RightThrottle.tscn",
+	"res://Mods/HOTAS/FlightStick/LeftStick.tscn",
+	"res://Mods/HOTAS/FlightStick/LeftOmniStick.tscn",
+	"res://Mods/HOTAS/FlightStick/LeftThrottle.tscn",
+]
+
+#endregion
+
+@onready
+var _left_slot: DeviceSlot = %LeftDeviceSlot
+@onready
+var _right_slot: DeviceSlot = %RightDeviceSlot
+
+func _on_settings_update() -> void:
+	# Update a device slot with the new parameters
+	_left_slot.device_index = _device_list.find(left_device[0])
+	_left_slot.axis_x = left_device_axis_x
+	_left_slot.axis_y = left_device_axis_y 
+	_left_slot.axis_z = left_device_axis_z
+	_left_slot.invert_x = left_device_axis_x_invert
+	_left_slot.invert_y = left_device_axis_y_invert
+	_left_slot.invert_z = left_device_axis_z_invert
+	
+	# Update the right device slot with the new parameters
+	_right_slot.device_index = _device_list.find(right_device[0])
+	_right_slot.axis_x = right_device_axis_x
+	_right_slot.axis_y = right_device_axis_y 
+	_right_slot.axis_z = right_device_axis_z
+	_right_slot.invert_x = right_device_axis_x_invert
+	_right_slot.invert_y = right_device_axis_y_invert
+	_right_slot.invert_z = right_device_axis_z_invert
+	# Set devices as default if any are found.
+	
+	var left_model_index = _device_model_type_str.find(left_device_model[0])
+	var right_model_index = _device_model_type_str.find(right_device_model[0])
+	
+	if left_model_index <= 0:
+		_left_slot.remove_device()
+	else:
+		var Model: PackedScene = load(_device_model_type_res[left_model_index])
+		_left_slot.replace_device(Model.instantiate())
+
+	if right_model_index <= 0:
+		_right_slot.remove_device()
+	else:
+		var Model: PackedScene = load(_device_model_type_res[right_model_index])
+		_right_slot.replace_device(Model.instantiate())
+
+func side_filter(side: String) -> Callable:
+	var comparitor: Callable = func(val: Variant):
+		return val.contains(side)
+	return comparitor
 
 func _ready() -> void:
-
+	if len(_device_list):
+		right_device = [_device_list[0]]
+		left_device = [_device_list[0]]
+	
+	var _left_device_models = _device_model_type_str.filter(side_filter("Left"))
+	_left_device_models.push_front("")
+	var _right_device_models = _device_model_type_str.filter(side_filter("Right"))
+	_right_device_models.push_front("")
+	# Connect setting updates to a separate event 
+	on_settings_update.connect(_on_settings_update)
+	
+	# TODO : compress settings in UI
 	add_tracked_setting(
 		"model_distance", "Distance between throttle and stick",
 		{ "min" : 0.0, "max" : 5.0, "step" : 0.01 })
@@ -37,123 +139,85 @@ func _ready() -> void:
 	add_tracked_setting(
 		"model_zoffset", "Model Z offset (forward/backward)",
 		{ "min" : -10.0, "max" : 10.0, "step" : 0.01 })
-
+ 
 	# Enumerate attached joystick devices.
 	var connected_device_indices : Array = Input.get_connected_joypads()
 	for device_index : int in connected_device_indices:
 		_device_list.push_back(Input.get_joy_name(device_index))
 
-	# Set devices as default if any are found.
-	if len(_device_list):
-		joystick_device = [_device_list[0]]
-		throttle_device = [_device_list[0]]
-
+	# Todo, compressing UI
 	add_tracked_setting(
-		"joystick_device", "Joystick Device",
-		{"values" : _device_list,
-		 "combobox" : true})
-
+		"right_device_model", "Right Device Model", {
+			"values": _right_device_models,
+			"combobox" : true,
+		}
+	)
 	add_tracked_setting(
-		"throttle_device", "Throttle Device",
-		{"values" : _device_list,
-		 "combobox" : true})
-
-	add_tracked_setting("stick_x_axis", "Stick X axis")
-	add_tracked_setting("stick_y_axis", "Stick Y axis")
-	add_tracked_setting("throttle_axis", "Throttle axis")
+		"right_device", "Right Device", { 
+		 	"values" : _device_list,
+		 	"combobox" : true,
+		}
+	)
+	
+	add_tracked_setting(
+		"left_device_model", "Left Device Model", {
+			"values": _left_device_models,
+			"combobox" : true,
+		})
+	
+	add_tracked_setting(
+		"left_device", "Left Device", {
+			"values" : _device_list,
+			"combobox" : true,
+		})
+	
+	add_tracked_setting("left_device_axis_y", "LeftDevice Y axis.  -1 to disable", { "min" : -1, "max" : 10, "step" : 1 })
+	add_tracked_setting("left_device_axis_y_invert", " Invert Throttle Y Axis")
+	
+	add_tracked_setting("left_device_axis_x", "LeftDevice X axis. -1 to disable", { "min" : -1, "max" : 10, "step" : 1})
+	add_tracked_setting("left_device_axis_x_invert", "Invert Throttle X Axis")
+	
+	add_tracked_setting("left_device_axis_z", "LeftDevice Twist Axis, -1 to disable", { "min" : -1, "max" : 10, "step" : 1})
+	add_tracked_setting("left_device_axis_z_invert", "Invert Throttle Z Axis")
+	
+	add_tracked_setting("right_device_axis_y", "RightDevice Y axis (usually throttle). -1 to disable", { "min" : -1, "max" : 10, "step" : 1})
+	add_tracked_setting("right_device_axis_y_invert", "Invert Stick Y Axis")
+	
+	add_tracked_setting("right_device_axis_x", "RightDevice X axis. -1 to disable", { "min" : -1, "max" : 10, "step" : 1})
+	add_tracked_setting("right_device_axis_x_invert", "Invert Stick X Axis")
+	
+	add_tracked_setting("right_device_axis_z", "RightDevice Twist. -1 to disable", { "min" : -1, "max" : 10, "step" : 1})
+	add_tracked_setting("right_device_axis_z_invert", "Invert Stick Z Axis")
 
 func _process(delta: float) -> void:
 
-	$FlightStick.transform.origin.x = -model_distance / 2.0
-	$Throttle2.transform.origin.x = model_distance / 2.0
+	%RightDeviceSlot.transform.origin.x = -model_distance / 2.0
+	%LeftDeviceSlot.transform.origin.x = model_distance / 2.0
 
-	$FlightStick.transform.origin.y = model_height / 2.0
-	$Throttle2.transform.origin.y = model_height / 2.0
+	%RightDeviceSlot.transform.origin.y = model_height / 2.0
+	%LeftDeviceSlot.transform.origin.y = model_height / 2.0
 
-	$FlightStick.transform.origin.x += model_xoffset
-	$Throttle2.transform.origin.x += model_xoffset
+	%RightDeviceSlot.transform.origin.x += model_xoffset
+	%LeftDeviceSlot.transform.origin.x += model_xoffset
 
-	$FlightStick.transform.origin.z = model_zoffset
-	$Throttle2.transform.origin.z = model_zoffset
+	%RightDeviceSlot.transform.origin.z = model_zoffset
+	%LeftDeviceSlot.transform.origin.z = model_zoffset
 
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
-	var time = Time.get_unix_time_from_system() * 3;
 
-	var device_index : int = _device_list.find(joystick_device[0])
+	var device_index : int = _device_list.find(right_device[0])
 
 	if device_index != -1:
+		var current_input_left: Vector3 = last_input_left
+		current_input_left = lerp(current_input_left, _left_slot.get_device_vector(), 0.5) 
 
-		var new_input_throttle = -Input.get_joy_axis(device_index, throttle_axis)
-		var current_input_throttle : float = lerp(last_input_throttle, new_input_throttle, 0.5)
-
-		last_input_throttle = current_input_throttle
-
-		$Throttle.transform.basis = Basis.from_euler(Vector3(current_input_throttle, 0.0, 0.0))
-
-		var new_input_stick : Vector3 = Vector3(\
-			-Input.get_joy_axis(device_index, stick_y_axis),\
-			Input.get_joy_axis(device_index, stick_x_axis), 0.0)
+		last_input_left = current_input_left
+		_left_slot.animate(current_input_left, %Hand_Left, tracker_dict)
+		
+		var new_input_stick : Vector3 = _right_slot.get_device_vector()
 
 		# FIXME: Hardcoded blend speed.
-		var current_input_stick : Vector3 = lerp(last_input_stick, new_input_stick, 0.5)
+		var current_input_right : Vector3 = lerp(last_input_right, new_input_stick, 0.5)
 
-		last_input_stick = current_input_stick
-
-		$FlightStick/AnimationTree.set(
-			"parameters/blend_position",
-			Vector2(current_input_stick.y, current_input_stick.x))
-
-		$Throttle2/AnimationTree.set(
-			"parameters/throttle_amount/blend_position",
-			last_input_throttle);
-
-		var hand_right : Node3D = $FlightStick.find_child("hand_right")
-		var hand_left : Node3D = $Throttle2.find_child("hand_left")
-
-		# FIXME: De-duplicate this array from all over the place.
-		var mediapipe_hand_landmark_names : Array = [
-			"wrist",
-
-			"thumb_cmc", # carpometacarpal
-			"thumb_mcp", # metacarpal
-			"thumb_ip", # interphalangeal
-			"thumb_tip", # tip
-
-			"index_finger_mcp",
-			"index_finger_pip", # proximal something something
-			"index_finger_dip", # distal something something
-			"index_finger_tip",
-
-			"middle_finger_mcp",
-			"middle_finger_pip",
-			"middle_finger_dip",
-			"middle_finger_tip",
-
-			"ring_finger_mcp",
-			"ring_finger_pip",
-			"ring_finger_dip",
-			"ring_finger_tip",
-
-			"pinky_finger_mcp",
-			"pinky_finger_pip",
-			"pinky_finger_dip",
-			"pinky_finger_tip",
-		]
-
-		for side in ["left", "right"]:
-			if not tracker_dict["hand_" + side]["active"]:
-				
-				var hand_tracker : Node3D = hand_right
-				if side == "left":
-					hand_tracker = hand_left
-				
-				tracker_dict["hand_" + side]["active"] = true
-				tracker_dict["hand_" + side]["transform"] = hand_tracker.global_transform
-
-				for tracker_name in mediapipe_hand_landmark_names:
-					var controller_node : Node3D = $FlightStick
-					if side == "left":
-						controller_node = $Throttle2
-					var tracker_node : Node3D = controller_node.find_child(tracker_name)
-					if tracker_node:
-						tracker_dict["finger_positions"][side + "_" + tracker_name] = tracker_node.global_transform.origin
+		last_input_right = current_input_right
+		_right_slot.animate(current_input_right, %Hand_Right, tracker_dict)
