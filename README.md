@@ -108,3 +108,9 @@ using a copy of the Godot editor.
 ## Known Issues
 
 So many. Please please please use the bug reporting tools on Github.
+
+## AI Policy
+
+We do not accept AI-genreted pull requests, and issues that are suspected to be written by AI are likely to be closed without comment.
+
+All code used in SnekStudio must be written by a person.
