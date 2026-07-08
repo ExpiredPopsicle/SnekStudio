@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://ixbpqyxh3wjq"]
+[gd_scene format=3 uid="uid://ixbpqyxh3wjq"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_m4xge"]
 [ext_resource type="Script" uid="uid://dmtwvshpmxx1q" path="res://Core/UI/ModAddWindow.gd" id="2_aj25v"]
 
-[node name="ModAddWindow" instance=ExtResource("1_m4xge")]
+[node name="ModAddWindow" unique_id=994519901 instance=ExtResource("1_m4xge")]
 offset_right = 389.0
 offset_bottom = 251.0
 script = ExtResource("2_aj25v")
@@ -12,7 +12,7 @@ label_text = "Add Mod"
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
 offset_right = 357.0
 
-[node name="HSplitContainer" type="HSplitContainer" parent="." index="2"]
+[node name="HSplitContainer" type="HSplitContainer" parent="." index="2" unique_id=1743629833]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,35 +20,41 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer" index="0"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer" index="0" unique_id=1015677085]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Mods_List" type="ItemList" parent="HSplitContainer/VBoxContainer" index="0"]
+[node name="FilterSearch" type="LineEdit" parent="HSplitContainer/VBoxContainer" index="0" unique_id=319797653]
+layout_mode = 2
+placeholder_text = "Filter"
+clear_button_enabled = true
+
+[node name="Mods_List" type="ItemList" parent="HSplitContainer/VBoxContainer" index="1" unique_id=973486629]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/VBoxContainer" index="1"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/VBoxContainer" index="2" unique_id=1537960345]
 layout_mode = 2
 size_flags_vertical = 8
 
-[node name="Button_AddMod" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="0"]
+[node name="Button_AddMod" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="0" unique_id=138357152]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Add"
 
-[node name="Button_Cancel" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="1"]
+[node name="Button_Cancel" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="1" unique_id=465678799]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Cancel"
 
-[node name="ModDescription" type="RichTextLabel" parent="HSplitContainer" index="1"]
+[node name="ModDescription" type="RichTextLabel" parent="HSplitContainer" index="1" unique_id=1239189026]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 bbcode_enabled = true
 
+[connection signal="text_changed" from="HSplitContainer/VBoxContainer/FilterSearch" to="." method="_on_filter_search_text_changed"]
 [connection signal="item_selected" from="HSplitContainer/VBoxContainer/Mods_List" to="." method="_on_mods_list_item_selected"]
 [connection signal="pressed" from="HSplitContainer/VBoxContainer/HBoxContainer/Button_AddMod" to="." method="_on_button_add_mod_pressed"]
 [connection signal="pressed" from="HSplitContainer/VBoxContainer/HBoxContainer/Button_Cancel" to="." method="_on_button_cancel_pressed"]
