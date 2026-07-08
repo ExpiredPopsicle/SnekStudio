@@ -80,7 +80,8 @@ func _on_button_add_mod_pressed() -> void:
 
 	var selected_index : PackedInt32Array = %Mods_List.get_selected_items()
 	if len(selected_index) > 0:
-		var mod_script = load(_mods_list[selected_index[0]]["path"])
+		var selected_mod = _mods_list.filter(func(item): return item["name"].to_lower().contains(_filter_text))[selected_index[0]]
+		var mod_script = load(selected_mod["path"])
 		var mod = mod_script.instantiate()
 		_get_mods_node().add_child(mod)
 		mod.scene_init()
