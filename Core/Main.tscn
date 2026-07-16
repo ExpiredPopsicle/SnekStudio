@@ -10,20 +10,6 @@
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nh3ai"]
 bg_color = Color(1, 0.164706, 0.776471, 1)
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_jmxhl"]
-sky_energy_multiplier = 7.83
-
-[sub_resource type="Sky" id="Sky_1idd5"]
-sky_material = SubResource("ProceduralSkyMaterial_jmxhl")
-
-[sub_resource type="Environment" id="Environment_w4pqy"]
-background_mode = 3
-background_color = Color(0.952941, 0, 0.835294, 1)
-sky = SubResource("Sky_1idd5")
-ambient_light_source = 2
-ambient_light_color = Color(1, 1, 1, 1)
-reflected_light_source = 1
-
 [sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_djr57"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fauey"]
@@ -38,10 +24,27 @@ script = ExtResource("1_88riu")
 [node name="CanvasLayer2" type="CanvasLayer" parent="." unique_id=599508500]
 layer = 2
 
+[node name="SubViewportContainer" type="SubViewportContainer" parent="CanvasLayer2"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="CanvasLayer2/SubViewportContainer"]
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(1152, 648)
+
+[node name="CameraBoom" parent="CanvasLayer2/SubViewportContainer/SubViewport" instance=ExtResource("3_ur4kn")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.994522, 0.104528, 0, -0.104528, 0.994522, 0, 1.45, 0)
+
 [node name="UI_Root" parent="CanvasLayer2" unique_id=539242864 node_paths=PackedStringArray("controller", "camera_boom") instance=ExtResource("2_a0eek")]
 unique_name_in_owner = true
 controller = NodePath("../../ModelController")
-camera_boom = NodePath("../../CameraBoom")
+camera_boom = NodePath("../SubViewportContainer/SubViewport/CameraBoom")
 
 [node name="BackgroundLayer" type="CanvasLayer" parent="." unique_id=1279483787]
 layer = -1
@@ -55,9 +58,6 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_nh3ai")
 
-[node name="CameraBoom" parent="." unique_id=827507908 instance=ExtResource("3_ur4kn")]
-transform = Transform3D(1, 0, 0, 0, 0.994522, 0.104528, 0, -0.104528, 0.994522, 0, 1.45, 0)
-
 [node name="Mods" type="Node" parent="." unique_id=2137161948]
 unique_name_in_owner = true
 
@@ -65,10 +65,8 @@ unique_name_in_owner = true
 transform = Transform3D(1, 0, 3.49691e-07, 0, 1, 0, -3.49691e-07, 0, 1, 0, 0, 0)
 script = ExtResource("5_upw4c")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1477399033]
-environment = SubResource("Environment_w4pqy")
-
 [node name="AudioStreamRecord" type="AudioStreamPlayer" parent="." unique_id=2117267123]
+
 stream = SubResource("AudioStreamMicrophone_djr57")
 bus = &"Record"
 script = ExtResource("10_dpnxj")

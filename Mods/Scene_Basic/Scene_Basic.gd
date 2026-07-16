@@ -11,13 +11,15 @@ var tonemaps = {
 	"Linear": Environment.ToneMapper.TONE_MAPPER_LINEAR,
 	"Reinhardt": Environment.ToneMapper.TONE_MAPPER_REINHARDT,
 	"Filmic": Environment.ToneMapper.TONE_MAPPER_FILMIC,
-	"ACES": Environment.ToneMapper.TONE_MAPPER_ACES
+	"ACES": Environment.ToneMapper.TONE_MAPPER_ACES,
+	"AgX": Environment.ToneMapper.TONE_MAPPER_AGX
 }
 
 var exposure = 1.0
 
 var light_ambient_source = ["Disabled"]
 var ambient_sources = {
+	"Background": Environment.AmbientSource.AMBIENT_SOURCE_BG,
 	"Disabled": Environment.AmbientSource.AMBIENT_SOURCE_DISABLED,
 	"Color": Environment.AmbientSource.AMBIENT_SOURCE_COLOR,
 	"Sky": Environment.AmbientSource.AMBIENT_SOURCE_SKY
@@ -25,8 +27,9 @@ var ambient_sources = {
 
 var light_reflection_source = ["Disabled"]
 var reflection_sources = {
+	"Background": Environment.AmbientSource.AMBIENT_SOURCE_BG,
 	"Disabled": Environment.ReflectionSource.REFLECTION_SOURCE_DISABLED,
-	"Sky": Environment.ReflectionSource.REFLECTION_SOURCE_SKY,
+	"Sky": Environment.ReflectionSource.REFLECTION_SOURCE_SKY
 }
 
 var light_ambient_color = Color(1.0, 1.0, 1.0, 1.0)
@@ -39,15 +42,16 @@ var light_directional_yaw = 1.0
 
 var draw_ground_plane = true
 
-func _read_settings_from_scene():
+func _read_settings_from_scene(env: Environment):
 	
-	tonemapper[0] = tonemaps.find_key($WorldEnvironment.environment.get_tonemapper())
-	exposure = $WorldEnvironment.environment.get_tonemap_exposure()
+	tonemapper[0] = tonemaps.find_key(env.get_tonemapper())
+	exposure = env.get_tonemap_exposure()
+	env.sky = Sky.new()	
 
-	light_ambient_source[0] = ambient_sources.find_key($WorldEnvironment.environment.get_ambient_source())
-	light_reflection_source[0] = reflection_sources.find_key($WorldEnvironment.environment.get_reflection_source())
-	light_ambient_color = $WorldEnvironment.environment.ambient_light_color
-	light_ambient_multiplier = $WorldEnvironment.environment.ambient_light_energy
+	light_ambient_source[0] = ambient_sources.find_key(env.get_ambient_source())
+	light_reflection_source[0] = reflection_sources.find_key(env.get_reflection_source())
+	light_ambient_color = env.ambient_light_color
+	light_ambient_multiplier = env.ambient_light_energy
 	light_directional_color = $DirectionalLight3D.light_color
 	light_directional_multiplier = $DirectionalLight3D.light_energy
 
@@ -57,18 +61,18 @@ func _read_settings_from_scene():
 
 	draw_ground_plane = $GroundPlane.visible
 
-func _save_settings_to_scene():
+func _save_settings_to_scene(env: Environment):
 		
 	$GroundPlane.visible = draw_ground_plane
 
 	# Load lighting settings.
-	$WorldEnvironment.environment.set_tonemapper(tonemaps.get(tonemapper[0]))
-	$WorldEnvironment.environment.set_tonemap_exposure(exposure)
+	env.set_tonemapper(tonemaps.get(tonemapper[0]))
+	env.set_tonemap_exposure(exposure)
 	
-	$WorldEnvironment.environment.set_ambient_source(ambient_sources.get(light_ambient_source[0]))
-	$WorldEnvironment.environment.set_reflection_source(reflection_sources.get(light_reflection_source[0]))
-	$WorldEnvironment.environment.ambient_light_color = light_ambient_color
-	$WorldEnvironment.environment.ambient_light_energy = light_ambient_multiplier
+	env.set_ambient_source(ambient_sources.get(light_ambient_source[0]))
+	env.set_reflection_source(reflection_sources.get(light_reflection_source[0]))
+	env.ambient_light_color = light_ambient_color
+	env.ambient_light_energy = light_ambient_multiplier
 	$DirectionalLight3D.light_color = light_directional_color
 	$DirectionalLight3D.light_energy = light_directional_multiplier
 	
@@ -80,7 +84,7 @@ func _save_settings_to_scene():
 
 func _ready():
 
-	_read_settings_from_scene()
+	_read_settings_from_scene(get_app().get_node("%CameraBoom/Camera3D").environment)
 	
 	add_tracked_setting("tonemapper", "Tonemapper", {"values" : tonemaps.keys(), "combobox" : true})
 	add_tracked_setting("exposure", "Tonemap Exposure", {"min": 0.1, "max": 10.0})
@@ -98,6 +102,7 @@ func _ready():
 	update_settings_ui()
 
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary) -> void:
+	var env: Environment = get_app().get_node("%CameraBoom/Camera3D").environment
 
 	if _settings_old["image_path"] != _settings_new["image_path"] or \
 		_settings_old["light_reflection_source"] != _settings_new["light_reflection_source"] or \
@@ -109,10 +114,10 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary) -> void:
 			# Fallback to procedural sky if image is invalid
 			image = Image.load_from_file(ProjectSettings.localize_path(image_path))
 			if !image:
-				$WorldEnvironment.environment.sky.set_material(proceduralSky)
+				env.sky.set_material(proceduralSky)
 			else:
-				$WorldEnvironment.environment.sky.set_material(panoramicSky)
-				$WorldEnvironment.environment.sky.sky_material.set_panorama(ImageTexture.create_from_image(image))
-				$WorldEnvironment.environment.sky.sky_material.energy_multiplier = light_ambient_multiplier
+				env.sky.set_material(panoramicSky)
+				env.sky.sky_material.set_panorama(ImageTexture.create_from_image(image))
+				env.sky.sky_material.energy_multiplier = light_ambient_multiplier
 
-	_save_settings_to_scene()
+	_save_settings_to_scene(env)
