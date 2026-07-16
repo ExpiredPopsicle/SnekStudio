@@ -1,0 +1,31 @@
+diff --git a/export_presets.cfg b/export_presets.cfg
+index 1755037..83510c7 100644
+--- a/export_presets.cfg
++++ b/export_presets.cfg
+@@ -21,7 +21,7 @@ script_export_mode=2
+ custom_template/debug=""
+ custom_template/release=""
+ debug/export_console_wrapper=1
+-binary_format/embed_pck=false
++binary_format/embed_pck=true
+ texture_format/s3tc_bptc=true
+ texture_format/etc2_astc=false
+ binary_format/architecture="x86_64"
+@@ -66,7 +66,7 @@ script_export_mode=2
+ custom_template/debug=""
+ custom_template/release=""
+ debug/export_console_wrapper=1
+-binary_format/embed_pck=false
++binary_format/embed_pck=true
+ texture_format/s3tc_bptc=true
+ texture_format/etc2_astc=true
+ binary_format/architecture="arm64"
+@@ -106,7 +106,7 @@ script_export_mode=2
+ custom_template/debug=""
+ custom_template/release=""
+ debug/export_console_wrapper=1
+-binary_format/embed_pck=false
++binary_format/embed_pck=true
+ texture_format/s3tc_bptc=true
+ texture_format/etc2_astc=false
+ binary_format/architecture="x86_64"

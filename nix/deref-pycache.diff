@@ -1,0 +1,106 @@
+diff --git a/addons/KiriPythonRPCWrapper/KiriPythonWrapperInstance.gd b/addons/KiriPythonRPCWrapper/KiriPythonWrapperInstance.gd
+index 4f7943c..082648f 100644
+--- a/addons/KiriPythonRPCWrapper/KiriPythonWrapperInstance.gd
++++ b/addons/KiriPythonRPCWrapper/KiriPythonWrapperInstance.gd
+@@ -66,18 +66,9 @@ func setup_python(force_unpack_extras : bool = false):
+ 	# Determine if we need to purge the cache based on what we're expecting to
+ 	# see version-wise vs what's actually represented there.
+ 	var needs_purge : bool = false
+-	var platform_status = _build_wrangler._get_platform_status()
++	# var platform_status = _build_wrangler._get_platform_status()
+ 	var cache_status = _build_wrangler.get_cache_status()
+ 	if cache_status.has("requirements_installed"):
+-		if cache_status["requirements_installed"] != platform_status["requirements"]:
+-			# Has the requirements field, and it's changed since we installed
+-			# last.
+-			needs_purge = true
+-		else:
+-			pass # No purge. Everything matches.
+-	else:
+-		# Doesn't have the requirements field. Possible indicator of a partial
+-		# install.
+ 		needs_purge = true
+ 
+ 	# If we're running a build, let's see if the build's packaged version
+@@ -94,22 +85,12 @@ func setup_python(force_unpack_extras : bool = false):
+ 			# No hash marker at all? Purge it just to be safe.
+ 			needs_purge = true
+ 
+-	# Purge it if needed.
+-	if needs_purge:
+-		_build_wrangler.purge_cached_python()
+-
+-	# Unpack base Python build.
+-	if _build_wrangler.unpack_python() == false:
+-		OS.alert("Unpacking Python failed!")
+-		return false
+-
+ 	# Determine if we need to install whl files and unpack wrapper scripts.
+ 	var needs_setup = true
+-	platform_status = _build_wrangler._get_platform_status()
++	# platform_status = _build_wrangler._get_platform_status()
+ 	cache_status = _build_wrangler.get_cache_status()
+ 	if cache_status.has("requirements_installed"):
+-		if cache_status["requirements_installed"] == platform_status["requirements"]:
+-			needs_setup = false
++		needs_setup = false
+ 
+ 	# Unpack Python wrapper, whl files, and project-specific scripts.
+ 	if needs_setup or force_unpack_extras or data_hash == null:
+@@ -132,51 +113,15 @@ func setup_python(force_unpack_extras : bool = false):
+ 			var bytes : PackedByteArray = FileAccess.get_file_as_bytes(extra_script)
+ 			FileAccess.open(extraction_path, FileAccess.WRITE).store_buffer(bytes)
+ 
+-	# Run pip to install packages from .whl files.
+-	var successfully_ran_pip_setup : bool = false
+-	if needs_setup:
+-		
+-		# Get a list of all the wheel files.
+-		var wheels_path : String = _build_wrangler._get_cache_path_godot().path_join("packaged_scripts/addons/KiriPythonRPCWrapper/Wheels")
+-		if DirAccess.dir_exists_absolute(wheels_path):
+-			var platform_wheels_path = wheels_path.path_join(KiriPythonBuildWrangler.get_host_os_name())
+-			var wheel_list : PackedStringArray = DirAccess.get_files_at(platform_wheels_path)
+-
+-			if len(wheel_list):
+-
+-				var pip_args : PackedStringArray = [
+-					"-m", "pip", "install",
+-				]
+-
+-				# Add every wheel file in the directory as an argument.
+-				for wheel in wheel_list:
+-					if wheel.ends_with(".whl"):
+-						pip_args.append(ProjectSettings.globalize_path(platform_wheels_path.path_join(wheel)))
+-
+-				# Run pip.
+-				var output : Array = []
+-				var pip_result = execute_python(pip_args, output, true, false)
+-				if pip_result != 0:
+-					OS.alert("Pip installation failed!\n" + "\n".join(output))
+-					return false
+-
+-				successfully_ran_pip_setup = true
+-
+-			else:
+-				print("No wheel files detected. Skipping pip install.")
+-		else:
+-			print("Wheel directory does not exist. Skipping pip install.")
+-
+ 	# FIXME: Delete wheel files? I don't think we need them anymore. If we made
+ 	# it this far, then we know we succeeded at the install.
+ 	
+ 	# Write success marker.
+-	if successfully_ran_pip_setup:
+-		cache_status = _build_wrangler.get_cache_status()
+-		cache_status["requirements_installed"] = platform_status["requirements"]
+-		if data_hash != null:
+-			cache_status["extra_data_hash"] = data_hash
+-		_build_wrangler.write_cache_status(cache_status)
++	cache_status = _build_wrangler.get_cache_status()
++	cache_status["requirements_installed"] = true
++	if data_hash != null:
++		cache_status["extra_data_hash"] = data_hash
++	_build_wrangler.write_cache_status(cache_status)
+ 	
+ 	return true
+ 
