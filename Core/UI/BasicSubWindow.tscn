@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://cq0bbpieyhdug"]
+[gd_scene format=3 uid="uid://cq0bbpieyhdug"]
 
 [ext_resource type="Script" uid="uid://bkxrcd77vs68q" path="res://Core/UI/BasicSubWindow.gd" id="1_f1sax"]
 
@@ -21,7 +21,7 @@ corner_radius_top_right = 4
 corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
-[node name="BasicSubWindow" type="Control"]
+[node name="BasicSubWindow" type="Control" unique_id=1045047529]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 3
 anchors_preset = 0
@@ -33,7 +33,7 @@ focus_mode = 1
 mouse_force_pass_scroll_events = false
 script = ExtResource("1_f1sax")
 
-[node name="WindowBorder" type="Panel" parent="."]
+[node name="WindowBorder" type="Panel" parent="." unique_id=1505211846]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
@@ -45,17 +45,16 @@ offset_bottom = 8.0
 focus_mode = 1
 theme_override_styles/panel = SubResource("StyleBoxFlat_uo2qt")
 
-[node name="WindowTitlePanel" type="Panel" parent="."]
+[node name="WindowTitlePanel" type="Panel" parent="." unique_id=546126327]
 clip_contents = true
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_top = -24.0
-offset_right = 278.0
 grow_horizontal = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_aj8ap")
 
-[node name="WindowTitle" type="Label" parent="WindowTitlePanel"]
+[node name="WindowTitle" type="Label" parent="WindowTitlePanel" unique_id=2090174781]
 clip_contents = true
 layout_mode = 1
 offset_left = 8.0
@@ -64,7 +63,7 @@ offset_bottom = 26.0
 text = "Window"
 clip_text = true
 
-[node name="PopoutButton" type="Button" parent="WindowTitlePanel"]
+[node name="PopoutButton" type="Button" parent="WindowTitlePanel" unique_id=1168963718]
 visible = false
 layout_mode = 1
 anchors_preset = 11
@@ -79,7 +78,7 @@ focus_mode = 0
 theme_override_font_sizes/font_size = 10
 text = "p"
 
-[node name="CloseButton" type="Button" parent="WindowTitlePanel"]
+[node name="CloseButton" type="Button" parent="WindowTitlePanel" unique_id=970561988]
 layout_mode = 1
 anchors_preset = 11
 anchor_left = 1.0
