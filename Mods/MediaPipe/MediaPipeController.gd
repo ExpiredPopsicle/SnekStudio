@@ -63,6 +63,9 @@ var head_position_smoothing : float = 2.0
 
 var hand_confidence_time_threshold = 1.0
 var hand_count_change_time_threshold = 1.0
+var min_hand_detection_confidence = 0.75
+var min_hand_tracking_confidence = 0.75
+var min_hand_presence_confidence = 0.9
 
 var hand_rotation_smoothing : float = 2.0
 var hand_position_smoothing : float = 4.0
@@ -113,15 +116,38 @@ func _ready():
 
 	add_setting_group("advanced", "Advanced")
 
-
+	# It should probably be called "confidence time before hand tracking starts"
 	add_tracked_setting(
-		"hand_confidence_time_threshold", "Hand confidence time",
+		"hand_confidence_time_threshold", "Confidence time before hand tracking starts",
 		{ "min" : 0.0, "max" : 20.0 },
 		"advanced")
+	# "Time to wait before registering hands after we detected that the number of hands has changed."
+	# This seems to be connected to the freeze on exit described in issue 78
+	# https://github.com/ExpiredPopsicle/SnekStudio/issues/78
 	add_tracked_setting(
-		"hand_count_change_time_threshold", "Hand count change time",
+		"hand_count_change_time_threshold", "Confidence time before hand count changes",
 		{ "min" : 0.0, "max" : 20.0 },
 		"advanced")
+		
+	# Connects to min_hand_detection_confidence, min_tracking_confidence, and
+	# min_hand_presence_confidence respectively in new_tracker.py
+	add_tracked_setting(
+		"min_hand_detection_confidence", "Minimum hand detection confidence level (%)",
+		{ "min" : 0.0, "max" : 1.0 },
+		"advanced"
+	)
+	
+	add_tracked_setting(
+		"min_hand_tracking_confidence", "Minimum hand tracking confidence level (%)",
+		{ "min" : 0.0, "max" : 1.0 },
+		"advanced"
+	)
+	
+	add_tracked_setting(
+		"min_hand_presence_confidence", "Minimum hand presence confidence level (%)",
+		{ "min" : 0.0, "max" : 1.0 },
+		"advanced"
+	)
 
 	add_tracked_setting(
 		"frames_missing_before_spine_reset", "Untracked frames before reset",
@@ -375,15 +401,9 @@ func _scan_video_devices():
 	# Create a fake "None" entry.
 	_devices_list.insert(0, "None")
 	_devices_by_list_entry["None"] = { "index" : -1 }
-
-func _start_tracker():
 	
-	tracker_python_process.call_rpc_async(
-		"set_udp_port_number", [_udp_port])
-
-	tracker_python_process.call_rpc_async(
-		"set_hand_confidence_time_threshold", [hand_confidence_time_threshold])
-
+	
+func _get_video_device_index():
 	var video_device_index_to_use = 0
 	
 	if len(video_device) > 0:
@@ -392,25 +412,38 @@ func _start_tracker():
 			video_device_index_to_use = int(actual_device_data["index"])
 	else:
 		video_device_index_to_use = -1
+	return video_device_index_to_use
 
-	# FIXME: Replace this all with a single settings dict.
+func _start_tracker():
+
+	var video_device_index = _get_video_device_index()
+		
 	tracker_python_process.call_rpc_async(
-		"set_video_device_number", [video_device_index_to_use])
-	tracker_python_process.call_rpc_async(
-		"set_hand_count_change_time_threshold", [hand_count_change_time_threshold])
+		"update_settings", [{
+			"video_device_number" : video_device_index,
+			"udp_port_number" : _udp_port,
+			"hand_position_scale"  : _vec3_to_array(hand_position_scale),
+			"hand_position_offset" : _vec3_to_array(hand_position_offset),
+			"hand_confidence_time_threshold" : hand_confidence_time_threshold,
+			"hand_count_change_time_threshold" : hand_count_change_time_threshold,
+			"hand_to_head_scale"   : hand_to_head_scale,
+			"hand_detection_confidence": min_hand_detection_confidence,
+			"hand_tracking_confidence": min_hand_tracking_confidence,
+			"hand_presence_confidence": min_hand_presence_confidence
+		}])
 
 	tracker_python_process.call_rpc_async(
 		"start_tracker", [])
 
 func _stop_tracker():
 
-	tracker_python_process.call_rpc_sync(
-		"stop_tracker", [])
+	tracker_python_process.stop_process()
 
 	set_status("Stopped")
 
 func _send_settings_to_tracker():
 
+	var video_device_number : int = -1;
 	# Don't send these if the tracker process isn't running. We'll send them
 	# after it starts, instead (called in _start_process).
 	if tracker_python_process.get_status() != KiriPythonWrapperInstance.KiriPythonWrapperStatus.STATUS_RUNNING:
@@ -423,27 +456,20 @@ func _send_settings_to_tracker():
 			video_device.clear()
 
 	# Set the video device.
-	if len(video_device):
-		var actual_device_data = _devices_by_list_entry[video_device[0]]
-		tracker_python_process.call_rpc_async(
-			"set_video_device_number", [actual_device_data["index"]])
-	else:
-		# If no camera selected, then select device -1.
-		tracker_python_process.call_rpc_async(
-			"set_video_device_number", [-1])
+	video_device_number = _get_video_device_index();
 
-	tracker_python_process.call_rpc_async(
-		"set_hand_confidence_time_threshold", [hand_confidence_time_threshold])
-		
-	tracker_python_process.call_rpc_async(
-		"set_hand_count_change_time_threshold", [hand_count_change_time_threshold])
-
-	# FIXME: Replace all of the above with this one call.
 	tracker_python_process.call_rpc_async(
 		"update_settings", [{
+			"video_device_number" : video_device_number,
+			#"udp_port_number" : _udp_port,
 			"hand_position_scale"  : _vec3_to_array(hand_position_scale),
 			"hand_position_offset" : _vec3_to_array(hand_position_offset),
-			"hand_to_head_scale"   : hand_to_head_scale
+			"hand_confidence_time_threshold" : hand_confidence_time_threshold,
+			"hand_count_change_time_threshold" : hand_count_change_time_threshold,
+			"hand_to_head_scale"   : hand_to_head_scale,
+			"hand_detection_confidence": min_hand_detection_confidence,
+			"hand_tracking_confidence": min_hand_tracking_confidence,
+			"hand_presence_confidence": min_hand_presence_confidence
 		}])
 
 #endregion
