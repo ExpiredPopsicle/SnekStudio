@@ -136,11 +136,11 @@ static func apply_animations(model, shape_dict):
 					# Values: Add to our weighted average.
 					if not value_average_totals.has(anim_path):
 						value_average_totals[anim_path] = \
-							anim.track_get_key_value(track_index, 0) * combined_blend_shape_last_values[anim_name]
+							anim.track_get_key_value(track_index, 0) * alpha
 						value_average_weights[anim_path] = alpha
 					else:
 						value_average_totals[anim_path] += \
-							anim.track_get_key_value(track_index, 0) * combined_blend_shape_last_values[anim_name]
+							anim.track_get_key_value(track_index, 0) * alpha
 						value_average_weights[anim_path] += alpha
 
 		# Iterate through every max animation value and set it on the
