@@ -16,6 +16,8 @@ const defaults_text_get_rid_of_me = "\u27F2"
 
 @export var icon: Texture2D = null
 
+signal on_settings_update
+
 # -----------------------------------------------------------------------------
 # Virtual functions
 
@@ -934,6 +936,7 @@ func modify_setting(setting_name, value):
 	var existing_settings = save_settings()
 	existing_settings[setting_name] = value
 	load_settings(existing_settings)
+	on_settings_update.emit()
 
 #endregion
 
