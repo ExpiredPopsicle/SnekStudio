@@ -9,28 +9,23 @@ var currently_toggled : bool = false
 var current_time_until_undo : float = 0.0
 
 func scene_init():
-	var skel = get_skeleton()
-	var model = skel.get_node_or_null(model_name)
-	if model:
-		model.visible = !start_hidden
+	if model_name:
+		for model in get_skeleton().find_children(model_name, "Node3D"):
+			model.visible = !start_hidden
 
 func _reset_visibility():
-	var skel = get_skeleton()
-	var model = skel.get_node_or_null(model_name)
-	if model:
-		model.visible = true
+	if model_name:
+		for model in get_skeleton().find_children(model_name, "Node3D"):
+			model.visible = true
 
 func scene_shutdown():
 	_reset_visibility()
-	
+
 func _update_model():
-	var skel = get_skeleton()
-	var model = skel.get_node_or_null(model_name)
-	if model:
-		if currently_toggled:
-			model.visible = start_hidden
-		else:
-			model.visible = !start_hidden
+	if model_name:
+		var model_visible := currently_toggled == start_hidden
+		for model in get_skeleton().find_children(model_name, "Node3D"):
+			model.visible = model_visible
 
 func handle_channel_point_redeem(_redeemer_username, _redeemer_display_name, _redeem_title, _user_input):
 	if _redeem_title == redeem_name:
