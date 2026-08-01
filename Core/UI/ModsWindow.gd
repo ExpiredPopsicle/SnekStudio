@@ -122,8 +122,8 @@ func _handle_selection_change():
 func _on_mods_list_item_selected(_index):
 	_handle_selection_change()
 	
-func _get_mods_node():
-	return _get_app_root().get_node("%Mods")
+func _get_mods_node() -> SnekStudioMods:
+	return _get_app_root().mods
 
 func update_mods_list():
 	var mods_node = _get_mods_node()

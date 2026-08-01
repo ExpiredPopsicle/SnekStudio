@@ -6,7 +6,6 @@ var _filter_text := "" # always lowercase
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	popout_modal = true
-	_get_app_root()._load_mods()
 
 	for mod_file : String in _get_mod_scene_files():
 		var mod_entry = _get_mod_entry_from_file(mod_file)
@@ -80,8 +79,8 @@ func _get_mod_scene_files() -> PackedStringArray:
 				
 	return mod_scene_files
 
-func _get_mods_node():
-	return _get_app_root().get_node("%Mods")
+func _get_mods_node() -> SnekStudioMods:
+	return _get_app_root().mods
 
 func _on_button_add_mod_pressed() -> void:
 	var selected_index : PackedInt32Array = %Mods_List.get_selected_items()
