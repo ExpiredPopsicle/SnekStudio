@@ -1,7 +1,7 @@
 extends BasicSubWindow
 
-var _mods_list = []
-var _filter_text: String = ""
+var _mods_list: Array[Dictionary]
+var _filter_text := "" # always lowercase
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -17,15 +17,22 @@ func _ready() -> void:
 
 	_update_mods_list()
 
+## Returns the mods that should currently be listed.
+## When filtering, mods that don't match the filter are excluded.
+func _get_mods_listed() -> Array[Dictionary]:
+	if _filter_text == "": return _mods_list
+	var result: Array[Dictionary]
+	for mod_entry in _mods_list:
+		if mod_entry["name"].to_lower().contains(_filter_text):
+			result.append(mod_entry)
+	return result
+
 func _update_mods_list() -> void:
 	%Mods_List.clear()
-	for mod_entry: Dictionary in _mods_list:
-		if _filter_text.length() > 0:
-			if !mod_entry["name"].to_lower().contains(_filter_text):
-				continue
-		
+	for mod_entry in _get_mods_listed():
 		%Mods_List.add_item(mod_entry["name"])
 		%Mods_List.set_item_icon(%Mods_List.item_count - 1, mod_entry["icon"])
+		%Mods_List.set_item_metadata(%Mods_List.item_count - 1, mod_entry)
 
 func _get_mod_entry_from_file(mod_file: String):
 	var mod_entry: Dictionary = {}
@@ -77,10 +84,9 @@ func _get_mods_node():
 	return _get_app_root().get_node("%Mods")
 
 func _on_button_add_mod_pressed() -> void:
-
 	var selected_index : PackedInt32Array = %Mods_List.get_selected_items()
 	if len(selected_index) > 0:
-		var selected_mod = _mods_list.filter(func(item): return item["name"].to_lower().contains(_filter_text))[selected_index[0]]
+		var selected_mod = %Mods_List.get_item_metadata(selected_index[0])
 		var mod_script = load(selected_mod["path"])
 		var mod = mod_script.instantiate()
 		_get_mods_node().add_child(mod)
