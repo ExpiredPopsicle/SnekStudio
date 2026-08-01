@@ -1,3 +1,4 @@
+class_name SnekStudioMain
 extends Node3D
 
 var _mods_running = false
