@@ -40,7 +40,7 @@ func _ready():
 	$WindowTitlePanel/WindowTitle.text = label_text
 
 # Used to optionally add this subwindow to the list of
-# savable subwindows in SnekStudio_Main. Dimensions,
+# savable subwindows in SnekStudioMain. Dimensions,
 # popout, and other state will be saved and restored.
 func register_serializable_subwindow():
 	_get_app_root().subwindows.push_back(self)
@@ -305,7 +305,7 @@ func show_window():
 		popout_window.visible = true
 		popout_window.grab_focus()
 
-func _get_app_root():
+func _get_app_root() -> SnekStudioMain:
 	return find_parent("SnekStudio_Main")
 
 # -----------------------------------------------------------------------------
@@ -329,7 +329,7 @@ func popout_state_changing(_pop_out: bool) -> void:
 
 #region Window state serialization
 
-# Internal serialization called by SnekStudio_Main when saving subwindows
+# Internal serialization called by SnekStudioMain when saving subwindows
 func _serialize_window() -> Dictionary:
 	_save_current_window_state()
 
@@ -347,7 +347,7 @@ func _serialize_window() -> Dictionary:
 
 	return subwindow
 
-# Internal deserialization called by SnekStudio_Main when loading subwindows
+# Internal deserialization called by SnekStudioMain when loading subwindows
 func _deserialize_window(subwindow_dict: Dictionary) -> void:
 	var pop_out = subwindow_dict.get("popped_out")
 	if pop_out is bool:
