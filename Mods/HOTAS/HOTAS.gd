@@ -69,6 +69,11 @@ const _device_model_type_res : Array = [
 
 #endregion
 
+
+func modify_setting(setting_name, value):
+	super(setting_name, value)
+	_on_settings_update()
+
 @onready
 var _left_slot: DeviceSlot = %LeftDeviceSlot
 @onready
@@ -123,8 +128,6 @@ func _ready() -> void:
 	_left_device_models.push_front("")
 	var _right_device_models = _device_model_type_str.filter(side_filter("Right"))
 	_right_device_models.push_front("")
-	# Connect setting updates to a separate event 
-	on_settings_update.connect(_on_settings_update)
 	
 	# TODO : compress settings in UI
 	add_tracked_setting(
