@@ -31,6 +31,7 @@ func remove_mod(mod: Mod_Base) -> void:
 	remove_child(mod)
 	mod.queue_free()
 
+
 ## Return an array of all currently active mods.
 func get_active_mods(include_disabled := false) -> Array[Mod_Base]:
 	var result: Array[Mod_Base]
@@ -38,6 +39,50 @@ func get_active_mods(include_disabled := false) -> Array[Mod_Base]:
 		if child is Mod_Base and (include_disabled or child is not DisabledMod):
 			result.append(child)
 	return result
+
+func enable_mod(disabled_mod: DisabledMod) -> Mod_Base:
+	assert(is_instance_valid(disabled_mod))
+	assert(disabled_mod.get_parent() == self)
+
+	var scene_path: String = disabled_mod.saved_settings["scene_path"]
+	var settings: Dictionary = disabled_mod.saved_settings["settings"]
+
+	var index := disabled_mod.get_index()
+	remove_child(disabled_mod)
+	disabled_mod.queue_free()
+
+	var mod: Mod_Base = load(scene_path).instantiate()
+	mod.name = disabled_mod.get_name()
+	add_child(mod)
+	move_child(mod, index)
+	mod.load_settings(settings)
+	mod.update_settings_ui()
+	if _mods_running: mod.scene_init()
+
+	return mod
+
+func disable_mod(mod: Mod_Base) -> DisabledMod:
+	assert(is_instance_valid(mod))
+	assert(mod.get_parent() == self)
+	if mod is DisabledMod: return # already disabled
+
+	var index := mod.get_index()
+	if _mods_running: mod.scene_shutdown()
+	remove_child(mod)
+	mod.queue_free()
+
+	const DISABLED_MOD_SCENE := preload("res://Mods/DisabledMod/DisabledMod.tscn")
+	var disabled_mod: DisabledMod = DISABLED_MOD_SCENE.instantiate()
+	disabled_mod.name = mod.name
+	disabled_mod.saved_settings = {
+		name       = mod.name,
+		scene_path = mod.scene_file_path,
+		settings   = mod.save_settings(),
+	}
+	add_child(disabled_mod)
+	move_child(disabled_mod, index)
+
+	return disabled_mod
 
 
 var _mods_loaded := false
