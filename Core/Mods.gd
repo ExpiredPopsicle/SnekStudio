@@ -11,6 +11,26 @@ class AvailableMod extends RefCounted:
 func get_available_mods() -> Array[AvailableMod]:
 	return _available_mods
 
+## Adds a fresh instance of an available mod to the active mod list.
+## You can specify the index where to insert the mod, defaulting to the end.
+func add_mod(mod: AvailableMod, index := 99999) -> Mod_Base:
+	# This should always succeed. An AvailableMod is only constructed for mods
+	# which extend Mod_Base and have been successfully instantiated before.
+	var instance: Mod_Base = load(mod.path).instantiate()
+	add_child(instance)
+	# If necessary, move mod to the desired index.
+	if index < get_child_count(): move_child(instance, maxi(0, index))
+	if _mods_running: instance.scene_init()
+	return instance
+
+## Removes an active (or disabled) mod from the active mod list.
+func remove_mod(mod: Mod_Base) -> void:
+	assert(is_instance_valid(mod))
+	assert(mod.get_parent() == self)
+	if _mods_running: mod.scene_shutdown()
+	remove_child(mod)
+	mod.queue_free()
+
 ## Return an array of all currently active mods.
 func get_active_mods(include_disabled := false) -> Array[Mod_Base]:
 	var result: Array[Mod_Base]
@@ -143,11 +163,7 @@ func _save_mods_to_settings() -> Array:
 
 func _clear_mods() -> void:
 	for mod in get_active_mods(true):
-		# If mods are not currently running (like after calling
-		# _shutdown_mods), don't call scene_shutdown a second time.
-		if _mods_running: mod.scene_shutdown()
-		remove_child(mod)
-		mod.queue_free()
+		remove_mod(mod)
 
 func _reinit_mods() -> void:
 	if _mods_running: return

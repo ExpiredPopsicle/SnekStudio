@@ -162,17 +162,9 @@ func _on_button_move_mod_down_pressed():
 	set_selected_mod(selected)
 
 func _on_button_remove_mod_pressed():
-	var mods_list_node : ItemList = %ModsList
-	var selected_item = mods_list_node.get_selected_items()
-	if len(selected_item) < 1:
-		return
-	
-	var mods_node = _get_mods_node()
-	var mod = mods_node.get_child(selected_item[0])
-	mod.scene_shutdown()
-	mods_node.remove_child(mod)
-	mod.queue_free()
-
+	var selected := get_selected_mod()
+	if not selected: return
+	_get_mods_node().remove_mod(selected)
 	update_mods_list()
 
 func _on_button_add_mod_pressed():
