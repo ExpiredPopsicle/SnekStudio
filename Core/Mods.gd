@@ -1,6 +1,10 @@
 class_name SnekStudioMods
 extends Node
 
+## Fired whenever the active mod list is changed in some way.
+## This includes mods being added, removed, enabled, disabled or reordered.
+signal mod_list_changed
+
 class AvailableMod extends RefCounted:
 	var name: String
 	var path: String
@@ -21,6 +25,7 @@ func add_mod(mod: AvailableMod, index := 99999) -> Mod_Base:
 	# If necessary, move mod to the desired index.
 	if index < get_child_count(): move_child(instance, maxi(0, index))
 	if _mods_running: instance.scene_init()
+	mod_list_changed.emit()
 	return instance
 
 ## Removes an active (or disabled) mod from the active mod list.
@@ -30,6 +35,7 @@ func remove_mod(mod: Mod_Base) -> void:
 	if _mods_running: mod.scene_shutdown()
 	remove_child(mod)
 	mod.queue_free()
+	mod_list_changed.emit()
 
 
 ## Return an array of all currently active mods.
@@ -59,6 +65,7 @@ func enable_mod(disabled_mod: DisabledMod) -> Mod_Base:
 	mod.update_settings_ui()
 	if _mods_running: mod.scene_init()
 
+	mod_list_changed.emit()
 	return mod
 
 func disable_mod(mod: Mod_Base) -> DisabledMod:
@@ -82,6 +89,7 @@ func disable_mod(mod: Mod_Base) -> DisabledMod:
 	add_child(disabled_mod)
 	move_child(disabled_mod, index)
 
+	mod_list_changed.emit()
 	return disabled_mod
 
 ## Reorders the specified mod in the active mod list.
@@ -90,6 +98,7 @@ func move_mod(mod: Mod_Base, index: int) -> void:
 	assert(mod.get_parent() == self)
 	index = clampi(index, 0, get_child_count() - 1)
 	move_child(mod, index)
+	mod_list_changed.emit()
 
 
 var _mods_loaded := false
@@ -202,6 +211,7 @@ func _load_mods_from_settings(dict: Array) -> void:
 		scene.update_settings_ui()
 
 	_reinit_mods()
+	mod_list_changed.emit()
 
 func _save_mods_to_settings() -> Array:
 	var result: Array
@@ -215,7 +225,10 @@ func _save_mods_to_settings() -> Array:
 
 func _clear_mods() -> void:
 	for mod in get_active_mods(true):
-		remove_mod(mod)
+		if _mods_running: mod.scene_shutdown()
+		remove_child(mod)
+		mod.queue_free()
+	mod_list_changed.emit()
 
 func _reinit_mods() -> void:
 	if _mods_running: return

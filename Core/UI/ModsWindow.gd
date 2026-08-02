@@ -127,6 +127,8 @@ func update_mods_list():
 	set_selected_mod(previous_selected)
 
 func _ready():
+	_get_mods_node().mod_list_changed.connect(update_mods_list)
+
 	# Save default values for both popout and embedded splitter offsets
 	popout_mod_list_offset = $VBoxContainer3/HSplitContainer.split_offset
 	popout_mod_status_offset = $VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
@@ -141,21 +143,18 @@ func _on_button_move_mod_up_pressed():
 	var selected := get_selected_mod()
 	if selected == null: return
 	_get_mods_node().move_mod(selected, selected.get_index() - 1)
-	update_mods_list()
 	set_selected_mod(selected)
 
 func _on_button_move_mod_down_pressed():
 	var selected := get_selected_mod()
 	if selected == null: return
 	_get_mods_node().move_mod(selected, selected.get_index() + 1)
-	update_mods_list()
 	set_selected_mod(selected)
 
 func _on_button_remove_mod_pressed():
 	var selected := get_selected_mod()
 	if not selected: return
 	_get_mods_node().remove_mod(selected)
-	update_mods_list()
 
 func _on_button_add_mod_pressed():
 	var add_window = _get_app_root().get_node("%UI_Root/%ModAddWindow")

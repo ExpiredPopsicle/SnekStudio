@@ -30,7 +30,6 @@ func _get_mods_node() -> SnekStudioMods:
 
 func _on_button_add_mod_pressed() -> void:
 	_get_mods_node().add_mod(get_selected_mod())
-	%ModsWindow.update_mods_list()
 
 func _on_button_cancel_pressed():
 	close_window()
