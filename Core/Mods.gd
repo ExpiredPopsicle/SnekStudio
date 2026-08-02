@@ -1,6 +1,16 @@
 class_name SnekStudioMods
 extends Node
 
+class AvailableMod extends RefCounted:
+	var name: String
+	var path: String
+	var icon: Texture2D = null
+	var description: String = "A SnekStudio module."
+
+## Returns an array of available mods that may be added to the active mod list.
+func get_available_mods() -> Array[AvailableMod]:
+	return _available_mods
+
 ## Return an array of all currently active mods.
 func get_active_mods(include_disabled := false) -> Array[Mod_Base]:
 	var result: Array[Mod_Base]
@@ -12,9 +22,16 @@ func get_active_mods(include_disabled := false) -> Array[Mod_Base]:
 
 var _mods_loaded := false
 var _mods_running := false
+var _available_mods: Array[AvailableMod]
 
-func _ready() -> void:
+# Using _enter_tree to ensure this runs earlier than other nodes' _ready functions.
+# Running this as early as possible should be fine, since we don't access other nodes.
+func _enter_tree() -> void:
+	if _mods_loaded: return
+	_mods_loaded = true
+
 	_load_mod_zips()
+	_process_available_mods()
 
 func _process(_delta: float) -> void:
 	# Force child execution order by just going through and re-assigning
@@ -28,17 +45,13 @@ func _process(_delta: float) -> void:
 ## Load the mods at runtime.
 ## This function just adds the zip files to the project tree.
 func _load_mod_zips() -> void:
-	if _mods_loaded: return
-
 	var mods_paths: PackedStringArray
-
 	# When running a release version (not running from the editor),
 	# make sure we add mods next to the binary by default.
 	if not OS.has_feature("editor"):
 		var executable_dir := OS.get_executable_path().get_base_dir()
 		var default_mods_dir := executable_dir.path_join("Mods")
 		mods_paths.append(default_mods_dir)
-
 	# Add other environment-variable-defined mod locations.
 	mods_paths.append_array(SnekStudioMain.get_added_mods_locations())
 
@@ -54,7 +67,52 @@ func _load_mod_zips() -> void:
 			print("  loading: ", mod_zip)
 			DirAccessWithMods.add_zip(mods_dir.path_join(mod_zip))
 
-	_mods_loaded = true
+func _process_available_mods() -> void:
+	# Go through potential mod directories.
+	for mod_dir: String in DirAccessWithMods.get_directory_list("res://Mods"):
+		# Go through all the files in those directories.
+		var file_list = DirAccessWithMods.get_file_list("res://Mods/" + mod_dir)
+		for filename: String in file_list:
+			# Skip anything that isn't a scene (.tscn) file.
+			if filename.get_extension() != "tscn": continue
+
+			# Attempt to load the scene at that location.
+			var scene_path := "res://Mods/" + mod_dir + "/" + filename
+			var scene      := load(scene_path) as PackedScene
+			var instance   := scene.instantiate()
+			instance.queue_free() # Gotta free to prevent leaks.
+
+			if instance is DisabledMod:
+				break # special mod, skip
+
+			# If the scene turns out to be a mod, add it to available mods.
+			if instance is Mod_Base:
+				var mod := AvailableMod.new()
+				mod.name = filename.get_basename() # strip extension
+				mod.path = scene_path
+				mod.icon = instance.icon
+				mod.description = _find_mod_description("res://Mods/" + mod_dir)
+				_available_mods.append(mod)
+				break # skip remaining files in directory
+
+	# Make sure the available mods are sorted by their names.
+	_available_mods.sort_custom(func(a, b): return a.name.to_lower() < b.name.to_lower() )
+
+func _find_mod_description(base_dir: String) -> String:
+	const POSSIBLE_DESCRIPTION_FILES := [
+		"README", "README.txt", "readme.txt",
+		"DESCRIPTION", "DESCRIPTION.txt", "description.txt",
+		"FILE_ID.DIZ", "file_id.diz" ]
+
+	for file in POSSIBLE_DESCRIPTION_FILES:
+		var path := base_dir.path_join(file)
+		if FileAccess.file_exists(path):
+			var access := FileAccess.open(path, FileAccess.READ)
+			var text := access.get_as_text()
+			access.close()
+			return text
+
+	return "A SnekStudio module."
 
 func _load_mods_from_settings(dict: Array) -> void:
 	_shutdown_mods()
