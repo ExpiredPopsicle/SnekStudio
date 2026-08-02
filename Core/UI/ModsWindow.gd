@@ -17,6 +17,7 @@ func get_selected_mod() -> Mod_Base:
 func set_selected_mod(mod: Mod_Base) -> void:
 	if is_instance_valid(mod) and (mod.get_parent() == _get_app_root().mods):
 		%ModsList.select(mod.get_index())
+		%ModsList.ensure_current_is_visible()
 	else:
 		%ModsList.deselect_all()
 	_handle_selection_change()

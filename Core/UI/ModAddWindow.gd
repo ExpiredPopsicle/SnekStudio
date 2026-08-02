@@ -29,7 +29,8 @@ func _get_mods_node() -> SnekStudioMods:
 	return _get_app_root().mods
 
 func _on_button_add_mod_pressed() -> void:
-	_get_mods_node().add_mod(get_selected_mod())
+	var mod := _get_mods_node().add_mod(get_selected_mod())
+	%ModsWindow.set_selected_mod(mod)
 
 func _on_button_cancel_pressed():
 	close_window()
