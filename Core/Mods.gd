@@ -84,6 +84,13 @@ func disable_mod(mod: Mod_Base) -> DisabledMod:
 
 	return disabled_mod
 
+## Reorders the specified mod in the active mod list.
+func move_mod(mod: Mod_Base, index: int) -> void:
+	assert(is_instance_valid(mod))
+	assert(mod.get_parent() == self)
+	index = clampi(index, 0, get_child_count() - 1)
+	move_child(mod, index)
+
 
 var _mods_loaded := false
 var _mods_running := false

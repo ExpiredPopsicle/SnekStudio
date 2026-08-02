@@ -138,26 +138,16 @@ func _ready():
 	_update_error_list()
 
 func _on_button_move_mod_up_pressed():
-	var mods_node := _get_mods_node()
 	var selected := get_selected_mod()
 	if selected == null: return
-
-	var index := selected.get_index()
-	if index == 0: return # can't move further up
-
-	mods_node.move_child(selected, index - 1)
+	_get_mods_node().move_mod(selected, selected.get_index() - 1)
 	update_mods_list()
 	set_selected_mod(selected)
 
 func _on_button_move_mod_down_pressed():
-	var mods_node := _get_mods_node()
 	var selected := get_selected_mod()
 	if selected == null: return
-
-	var index := selected.get_index()
-	if index == mods_node.get_child_count() - 1: return # can't move further down
-
-	mods_node.move_child(selected, index + 1)
+	_get_mods_node().move_mod(selected, selected.get_index() + 1)
 	update_mods_list()
 	set_selected_mod(selected)
 
