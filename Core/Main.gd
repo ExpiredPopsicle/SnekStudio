@@ -1,6 +1,9 @@
+class_name SnekStudioMain
 extends Node3D
 
-var _mods_running = false
+var mods: SnekStudioMods:
+	get: return %Mods
+
 var colliders_by_model_name = {}
 
 var hide_window_decorations_with_ui : bool = false
@@ -8,24 +11,11 @@ var hide_window_decorations_with_ui : bool = false
 # TODO (multiplayer): Make this dictionary per-model.
 var module_global_data : Dictionary = {}
 
-var _mods_loaded : bool = false
-
 # Array of all serializable BasicSubWindows
 var subwindows : Array[BasicSubWindow] = []
 
 func _process(_delta):
 	$DebugMesh.mesh.clear_surfaces()
-	_set_process_order()
-
-func _set_process_order():
-
-	# Force child execution order by just going through and re-assigning
-	# process priority to everything in the list. Mods must execute before the
-	# physics on the model, or the physics will lag a frame behind.
-	var child_index = 0
-	for child in $Mods.get_children():
-		child.set_process_priority(-1 - get_child_count() + child_index)
-		child_index += 1
 
 
 func get_background_color():
@@ -65,78 +55,31 @@ func set_background_transparency(transparent : bool):
 func get_background_transparency() -> bool:
 	return not get_node("BackgroundLayer").visible
 
-## Load the mods at runtime. This function just adds the zip files to the
-## project tree.
-func _load_mods() -> void:
-
-	if _mods_loaded:
-		return
-
-	var mods_paths : PackedStringArray = []
-
-	# If we're running a build, make sure we add mods next to the binary by
-	# default.
-	if not OS.has_feature("editor"):
-		var default_mods_dir : String = OS.get_executable_path().get_base_dir().path_join("Mods")
-		mods_paths.append(default_mods_dir)
-
-	# Add other environment-variable-defined mod locations.
-	mods_paths.append_array(get_added_mods_locations())
-
-	# Scan for mods and add them.
-	for mods_dir : String in mods_paths:
-
-		if not DirAccess.dir_exists_absolute(mods_dir):
-			push_error("mods folder \"", mods_dir, "\" does not exist")
-			continue
-
-		print("loading mods from \"", mods_dir, "\"...")
-		var mods_zip_list : PackedStringArray = DirAccess.get_files_at(mods_dir)
-		for mod_zip in mods_zip_list:
-			print("  loading: ", mod_zip)
-			DirAccessWithMods.add_zip(mods_dir.path_join(mod_zip))
-
-	_mods_loaded = true
 
 func _ready():
-	
-	_load_mods()
-
 	set_background_transparency(true)
-
-	# Auto-load on startup.
-	load_settings()
-	
+	load_settings() # Auto-load on startup.
 	$AudioStreamRecord.play()
 
 func _exit_tree():
 	# We may need to kill some background processes and stuff (like the
 	# MediaPipe tracker) before fully shutting down here.
-	shutdown_mods()
+	mods._shutdown_mods()
 
 	# Auto-save on quit.
 	save_settings()
 
 func _on_handle_channel_points_redeem(redeemer_username, redeemer_display_name, redeem_title, user_input):
-	
-	# Relay message to all mods.
-	for child in $Mods.get_children():
-		if child is Mod_Base:
-			child.handle_channel_point_redeem(redeemer_username, redeemer_display_name, redeem_title, user_input)
+	for child in mods.get_active_mods():
+		child.handle_channel_point_redeem(redeemer_username, redeemer_display_name, redeem_title, user_input)
 
 func _on_handle_channel_chat_message(cheerer_username, cheerer_display_name, message, bits_count):
-
-	# Relay message to all mods.
-	for child in $Mods.get_children():
-		if child is Mod_Base:
-			child.handle_channel_chat_message(cheerer_username, cheerer_display_name, message, bits_count)
+	for child in mods.get_active_mods():
+		child.handle_channel_chat_message(cheerer_username, cheerer_display_name, message, bits_count)
 
 func _on_handle_channel_raid(raider_username, raider_display_name, raid_user_count):
-	
-	# Relay message to all mods.
-	for child in $Mods.get_children():
-		if child is Mod_Base:
-			child.handle_channel_raid(raider_username, raider_display_name, raid_user_count)
+	for child in mods.get_active_mods():
+		child.handle_channel_raid(raider_username, raider_display_name, raid_user_count)
 
 func _input(event):
 	
@@ -259,11 +202,7 @@ func reset_settings_to_default() -> void:
 	load_vrm(location)
 
 	# Clear mods list.
-	var mods_to_delete = $Mods.get_children()
-	for child in mods_to_delete:
-		child.scene_shutdown()
-		$Mods.remove_child(child)
-		child.queue_free()
+	mods._clear_mods()
 
 	# Reset camera.
 	$CameraBoom.reset_to_default()
@@ -334,15 +273,7 @@ func serialize_settings(do_settings=true, do_mods=true):
 			(get_viewport().mode & Window.MODE_MAXIMIZED)
 
 	# Save mods list.
-	if do_mods:
-		var mods_list = $Mods.get_children()
-		settings_to_save["mods"] = []
-		for mod in mods_list:
-			var mod_definition = {}
-			mod_definition["scene_path"] = mod.scene_file_path
-			mod_definition["name"] = mod.get_name()
-			mod_definition["settings"] = mod.save_settings()
-			settings_to_save["mods"].append(mod_definition)
+	if do_mods: settings_to_save["mods"] = mods._save_mods_to_settings()
 
 	# Save state of all serializable subwindows (dimensions/popout/etc)
 	var subwindows_dict = settings_to_save.get_or_add("subwindows", {})
@@ -494,19 +425,8 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 	_update_window_decorations()
 
 	# Load mods list.
-	if do_mods:
-		if "mods" in settings_dict:
-			shutdown_mods()
-			for mod_definition in settings_dict["mods"]:
-				print(mod_definition)
-				var packed_scene = load(mod_definition["scene_path"])
-				if packed_scene:
-					var scene = packed_scene.instantiate()
-					scene.set_name(mod_definition["name"])
-					$Mods.add_child(scene)
-					scene.load_settings(mod_definition["settings"])
-					scene.update_settings_ui()
-			reinit_mods()
+	if do_mods and "mods" in settings_dict:
+		mods._load_mods_from_settings(settings_dict["mods"])
 
 	# Restore state of all serializable subwindows (dimensions/popout/etc)
 	var subwindows_dict = settings_dict.get("subwindows")
@@ -539,8 +459,6 @@ func save_settings(path : String = ""):
 	file.close()
 
 func load_settings(path : String = ""):
-	
-	_load_mods()
 	print("Loading settings...")
 	
 	# Get actual save path.
@@ -629,11 +547,11 @@ func load_vrm(path) -> bool:
 
 	# FIXME: Handle failure cases.
 
-	shutdown_mods()
+	mods._shutdown_mods()
 	var new_model_root : Node3D = $ModelController.load_vrm(path)
 
 	if not new_model_root:
-		reinit_mods()
+		mods._reinit_mods()
 		push_error("Failed to load VRM: ", path)
 		return false
 
@@ -711,22 +629,10 @@ func load_vrm(path) -> bool:
 
 	set_colliders(collider_data)
 
-	reinit_mods()
+	mods._reinit_mods()
 	_force_update_ui()
 
 	return true
-
-func shutdown_mods():
-	if _mods_running:
-		for mod in $Mods.get_children():
-			mod.scene_shutdown()
-		_mods_running = false
-
-func reinit_mods():
-	if not _mods_running:
-		for mod in $Mods.get_children():
-			mod.scene_init()
-		_mods_running = true
 
 func get_audio():
 	return $AudioStreamRecord

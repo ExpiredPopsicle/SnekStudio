@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://cfw605s4nxgam" path="res://Core/Main.gd" id="1_88riu"]
 [ext_resource type="PackedScene" uid="uid://dqrb5gghpk1iu" path="res://Core/UI/UI_Root.tscn" id="2_a0eek"]
 [ext_resource type="PackedScene" uid="uid://dq62o1q7l83ro" path="res://Core/CameraBoom/CameraBoom.tscn" id="3_ur4kn"]
+[ext_resource type="Script" uid="uid://cnj3tavcobn7w" path="res://Core/Mods.gd" id="4_fauey"]
 [ext_resource type="Script" uid="uid://v8u2efcjmg73" path="res://Core/ModelController.gd" id="5_upw4c"]
 [ext_resource type="Shader" uid="uid://0om5ta3s57os" path="res://Core/Materials/debug_mesh.gdshader" id="6_fxul2"]
 [ext_resource type="Script" uid="uid://bhjru7482htmb" path="res://Core/AudioInput/AudioStreamRecord.gd" id="10_dpnxj"]
@@ -60,6 +61,7 @@ transform = Transform3D(1, 0, 0, 0, 0.994522, 0.104528, 0, -0.104528, 0.994522, 
 
 [node name="Mods" type="Node" parent="." unique_id=2137161948]
 unique_name_in_owner = true
+script = ExtResource("4_fauey")
 
 [node name="ModelController" type="Node3D" parent="." unique_id=930888419]
 transform = Transform3D(1, 0, 3.49691e-07, 0, 1, 0, -3.49691e-07, 0, 1, 0, 0, 0)
