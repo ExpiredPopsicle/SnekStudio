@@ -1,0 +1,4 @@
+Provides mouse-based head tracking.
+Allows you to set pitch and yaw constraints and screens to use.
+
+Your model will move with your mouse as it moves across the selected screens.

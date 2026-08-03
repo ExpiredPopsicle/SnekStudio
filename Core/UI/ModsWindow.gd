@@ -141,6 +141,8 @@ func update_mods_list():
 	for i in range(mods_node.get_child_count()):
 		if mods_node.get_child(i).name != mods_list_node.get_item_text(i):
 			mods_list_node.set_item_text(i, mods_node.get_child(i).name)
+		if mods_node.get_child(i).icon != mods_list_node.get_item_icon(i):
+			mods_list_node.set_item_icon(i, mods_node.get_child(i).icon)
 
 	# Handle mod selection changing.
 	_handle_selection_change()
@@ -284,3 +286,61 @@ func deserialize_window(dict: Dictionary) -> void:
 func close_window() -> void:
 	save_current_splitter_offsets()
 	super.close_window()
+
+
+func _on_button_toggle_mod_pressed() -> void:
+	var mods_list_node: ItemList = %ModsList
+	var selected_item = mods_list_node.get_selected_items()
+	if len(selected_item) < 1:
+		return
+
+	var mods_node = _get_mods_node()
+	var mod: Mod_Base = mods_node.get_child(selected_item[0])
+
+
+	if mod is DisabledMod:
+
+		# This mod is already disabled. Re-enable it.
+
+		# Re-create the mod instance.
+		var loaded_mod = load(mod.saved_settings["scene_path"]).instantiate()
+		loaded_mod.name = mod.get_name()
+
+		# Remove the placeholder (but don't free it yet) so the names don't
+		# collide.
+		_get_mods_node().remove_child(mod)
+
+		# Add the new one to the scene and initialize it with the settings.
+		_get_mods_node().add_child(loaded_mod)
+		_get_mods_node().move_child(loaded_mod, selected_item[0])
+		loaded_mod.load_settings(mod.saved_settings["settings"])
+		loaded_mod.update_settings_ui()
+		loaded_mod.scene_init()
+
+		# Free the old placeholder.
+		mod.queue_free()
+
+	else:
+
+		var saved_settings: Dictionary = {}
+
+		saved_settings["scene_path"] = mod.scene_file_path
+		saved_settings["name"] = mod.get_name()
+		saved_settings["settings"] = mod.save_settings()
+
+		var placeholder: DisabledMod = load("res://Mods/DisabledMod/DisabledMod.tscn").instantiate()
+		placeholder.name = saved_settings["name"]
+		placeholder.saved_settings = saved_settings
+
+		# Clear out the mod we just disabled. Do this first so the name doesn't
+		# get clobbered with the placeholder mod.
+		mod.scene_shutdown()
+		mods_node.remove_child(mod)
+		mod.queue_free()
+
+		# Insert the placeholder.
+		_get_mods_node().add_child(placeholder)
+		_get_mods_node().move_child(placeholder, selected_item[0])
+
+	_handle_selection_change()
+	update_mods_list()

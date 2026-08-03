@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://gcqhftuxajne"]
+
+[ext_resource type="PackedScene" uid="uid://fhm0lw7jf81x" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject.tscn" id="1_xue3b"]
+[ext_resource type="Shader" uid="uid://bk88vaf1p35ef" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_SpriteShader.gdshader" id="2_6utgx"]
+[ext_resource type="AudioStream" uid="uid://bik6ce4jagwh7" path="res://Mods/ThrownObjects/ObjectBase/ThrownObject_Sound_HitHurt.wav" id="2_dytrd"]
+[ext_resource type="Texture2D" uid="uid://dtiav1kws6bea" path="res://Core/UI/Images/kiri_smug.png" id="3_dytrd"]
+[ext_resource type="PackedScene" uid="uid://c5xo0w33jmy1l" path="res://Mods/ThrownObjects/Objects/Estrogen/estrogen.glb" id="4_6utgx"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_dytrd"]
+radius = 0.05
+height = 0.1809082
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sechh"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("2_6utgx")
+shader_parameter/texture_albedo = ExtResource("3_dytrd")
+shader_parameter/rotation = 0.0
+shader_parameter/uniform_scale = 1.0
+
+[node name="ThrownObject" unique_id=1870182306 instance=ExtResource("1_xue3b")]
+sticky = false
+stickiness_chance = 0.0
+collision_sound = ExtResource("2_dytrd")
+
+[node name="MeshInstance" parent="." index="0"]
+visible = false
+
+[node name="CollisionShape" parent="." index="1"]
+transform = Transform3D(-4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0, 1, 0.0057373047, -2.5078517e-10, 0)
+shape = SubResource("CapsuleShape3D_dytrd")
+
+[node name="Sprite3D" parent="." index="3"]
+visible = false
+material_override = SubResource("ShaderMaterial_sechh")
+
+[node name="Particles" parent="." index="4"]
+visible = false
+
+[node name="estrogen" parent="." index="5" unique_id=1446241999 instance=ExtResource("4_6utgx")]
+transform = Transform3D(0.32, 0, 0, 0, 0.32, 0, 0, 0, 0.32, 0, 0, 0)

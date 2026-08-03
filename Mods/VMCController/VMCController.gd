@@ -238,7 +238,7 @@ func _on_OSCServer_message_received(address_string, arguments):
 	# Blend shapes
 
 	if address_string == "/VMC/Ext/Blend/Val":
-		blend_shape_last_values[arguments[0].to_upper()] = arguments[1]
+		blend_shape_last_values[arguments[0]] = arguments[1]
 
 	# Merge blend shapes with overridden stuff.
 	var combined_blend_shape_last_values = blend_shape_last_values.duplicate()
@@ -291,9 +291,14 @@ func _on_OSCServer_message_received(address_string, arguments):
 				var full_anim_name = anim_name
 				if full_anim_name in name_mapping_so_this_works_tomorrow:
 					full_anim_name = name_mapping_so_this_works_tomorrow[full_anim_name]
+
+				# Match animation names case-insensitively.
+				for name_to_check in anim_player.get_animation_list():
+					if name_to_check.to_upper() == full_anim_name.to_upper():
+						full_anim_name = name_to_check
+						break
+
 				if not (full_anim_name in anim_player.get_animation_list()):
-					#print("NAME: ", anim_name)
-					#print(anim_player.get_animation_list())
 					continue
 					
 				var anim = anim_player.get_animation(full_anim_name)
@@ -321,11 +326,11 @@ func _on_OSCServer_message_received(address_string, arguments):
 			# appropriate blend shape on the object.
 			var anim_root = anim_player.get_node(anim_player.root_node)
 			if anim_root:
-				
 				for anim_path_max_value_key in anim_path_maximums.keys():
 				
 					var object_to_animate : Node = anim_root.get_node(anim_path_max_value_key)
 					if object_to_animate:
+						print(object_to_animate, anim_path_max_value_key)
 						object_to_animate.set(
 							"blend_shapes/" + anim_path_max_value_key.get_subname(0),
 							anim_path_maximums[anim_path_max_value_key])

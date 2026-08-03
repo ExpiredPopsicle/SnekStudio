@@ -1,0 +1,29 @@
+[gd_scene format=3 uid="uid://1d0avs5nomn7"]
+
+[node name="DisabledModSettings" type="Control" unique_id=1494874777]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=972943370]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=429502047]
+layout_mode = 2
+text = "This mod has been disabled.
+Saved settings:"
+
+[node name="SettingsJSONDisplay" type="TextEdit" parent="VBoxContainer" unique_id=1307510934]
+layout_mode = 2
+size_flags_vertical = 3
+editable = false

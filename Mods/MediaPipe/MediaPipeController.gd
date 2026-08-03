@@ -26,6 +26,7 @@ var _init_complete = false
 
 var frames_missing_before_spine_reset = 6.0
 var blend_to_rest_speed = 4.5
+var head_pitch_offset: float = 0.0
 
 # FIXME: Prune unused settings.
 
@@ -57,6 +58,9 @@ var functions_blendshapes = preload("MediaPipeController_BlendShapes.gd")
 
 # FIXME: Make key for this configurable.
 var tracking_pause = false
+
+var head_rotation_smoothing : float = 2.0
+var head_position_smoothing : float = 2.0
 
 var hand_confidence_time_threshold = 1.0
 var hand_count_change_time_threshold = 1.0
@@ -127,6 +131,20 @@ func _ready():
 	add_tracked_setting(
 		"blend_to_rest_speed", "Blend back to rest pose speed",
 		{ "min" : 0.0, "max" : 10.0, "step" : 0.1 },
+		"advanced")
+
+
+	add_tracked_setting(
+		"head_position_smoothing", "Head Position Smoothing",
+		{ "min" : 1.0, "max" : 10.0 },
+		"advanced")
+	add_tracked_setting(
+		"head_rotation_smoothing", "Head Rotation Smoothing",
+		{ "min" : 1.0, "max" : 10.0 },
+		"advanced")
+	add_tracked_setting(
+		"head_pitch_offset", "Head pitch offset",
+		{ "min" : -1.0, "max" : 1.0 },
 		"advanced")
 
 
@@ -258,8 +276,13 @@ func scene_init():
 
 	# Set the head tracker to match the model's head position.
 	var head_bone_index = get_skeleton().find_bone("Head")
-	$Head.global_transform = get_skeleton().get_bone_global_rest(
-		head_bone_index)
+
+	if head_bone_index != -1:
+		$Head.global_transform = get_skeleton().get_bone_global_rest(
+			head_bone_index)
+	else:
+		# We have to guess.
+		$Head.global_transform.origin.y = 1.6
 
 	_reinit()
 
@@ -386,8 +409,7 @@ func _start_tracker():
 
 func _stop_tracker():
 
-	tracker_python_process.call_rpc_sync(
-		"stop_tracker", [])
+	tracker_python_process.stop_process()
 
 	set_status("Stopped")
 
@@ -711,16 +733,19 @@ func _process(delta):
 					head_origin_array[0],
 					head_origin_array[1],
 					head_origin_array[2]) * head_origin_multiplier),
-					delta_scale * 0.5) # FIXME: Hardcoded smoothing.
+					delta_scale * (1.0 / head_position_smoothing))
 			var head_quat_array = parsed_data["head_quat"]
 			var head_euler = Basis(Quaternion(
 				head_quat_array[0] * head_quat_multiplier[0],
 				head_quat_array[1] * head_quat_multiplier[1],
 				head_quat_array[2] * head_quat_multiplier[2],
 				head_quat_array[3] * head_quat_multiplier[3])).get_euler()
+			var head_basis_target := Basis.from_euler(head_euler * head_rotation_scale)
+			# Rotating the head by the x axis to allow for pitch offset
+			head_basis_target = head_basis_target.rotated(head_basis_target.x, head_pitch_offset)
 			$Head.transform.basis = $Head.transform.basis.slerp(
-				Basis.from_euler(head_euler * head_rotation_scale),
-				delta_scale * 0.5) # FIXME: Hardcoded smoothing.
+				head_basis_target,
+				delta_scale * (1.0 / head_rotation_smoothing))
 		else:
 
 			# Haven't had face tracker data in a while? Just blend us back to a

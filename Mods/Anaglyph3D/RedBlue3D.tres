@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://djolrxmgodwnn"]
+
+[ext_resource type="Shader" uid="uid://1hrqw72vu12f" path="res://Mods/Anaglyph3D/RedBlue3D.gdshader" id="1_tjvb6"]
+
+[resource]
+resource_local_to_scene = true
+shader = ExtResource("1_tjvb6")
+shader_parameter/luminance_vs_color = 0.0
+shader_parameter/color_left = Vector4(0, 0, 0, 0)
+shader_parameter/color_right = Vector4(0, 0, 0, 0)

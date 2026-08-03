@@ -2,6 +2,5 @@
 
 [ext_resource type="Script" uid="uid://c58bcsbgsf6vh" path="res://Mods/BlendShapeScalingAndOffset/BlendShapeScalingAndOffset.gd" id="1_seq4u"]
 
-[node name="BlendShapeScalingAndOffset" type="Node"]
+[node name="BlendShapeScalingAndOffset" type="Node3D"]
 script = ExtResource("1_seq4u")
-metadata/_custom_type_script = "uid://bsjotf2wtnmeq"

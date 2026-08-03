@@ -5,9 +5,8 @@
 [sub_resource type="BoxMesh" id="BoxMesh_r4gtc"]
 size = Vector3(0.1, 0.1, 0.1)
 
-[node name="RotateTrackers" type="Node"]
+[node name="RotateTrackers" type="Node3D"]
 script = ExtResource("1_r4gtc")
-metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
 
 [node name="Head" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)

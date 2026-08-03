@@ -3,6 +3,6 @@
 [ext_resource type="Script" uid="uid://1wqhqf3o012g" path="res://Mods/HeadPats/HeadPats.gd" id="1_27bfs"]
 [ext_resource type="PackedScene" uid="uid://dl2mo3ygrhbi3" path="res://Mods/HeadPats/Resources/HeadPats_BoneAttachment.tscn" id="2_cnxw1"]
 
-[node name="HeadPats" type="Node"]
+[node name="HeadPats" type="Node3D"]
 script = ExtResource("1_27bfs")
 headpats_scene = ExtResource("2_cnxw1")

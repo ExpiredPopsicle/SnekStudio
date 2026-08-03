@@ -213,9 +213,12 @@ func _update_local_trackers() -> void:
 
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
 
-	$Head.global_transform = tracker_dict["head"].transform
-	$Hand_Left.global_transform = tracker_dict["hand_left"].transform
-	$Hand_Right.global_transform = tracker_dict["hand_right"].transform
+	if tracker_dict.has("head"):
+		$Head.global_transform = tracker_dict["head"].transform
+	if tracker_dict.has("hand_left"):
+		$Hand_Left.global_transform = tracker_dict["hand_left"].transform
+	if tracker_dict.has("hand_right"):
+		$Hand_Right.global_transform = tracker_dict["hand_right"].transform
 
 	# https://ai.google.dev/edge/mediapipe/solutions/vision/hand_landmarker
 	var mediapipe_hand_landmark_names : Array = [
@@ -255,13 +258,14 @@ func _update_local_trackers() -> void:
 		else:
 			tracker = $Hand_Right
 
-		for landmark_index : int in range(0, len(mediapipe_hand_landmark_names)):
-			if tracker.get_child_count() > landmark_index:
-				var finger_tracker : Node3D = tracker.get_child(landmark_index)
-				var landmark_name : String = side + "_" + mediapipe_hand_landmark_names[landmark_index]
-				#print(landmark_name, " = ", tracker_dict["finger_positions"][landmark_name])
-				if landmark_name in tracker_dict["finger_positions"]:
-					finger_tracker.global_transform.origin = tracker_dict["finger_positions"][landmark_name]
+		if tracker_dict.has("finger_positions"):
+			for landmark_index : int in range(0, len(mediapipe_hand_landmark_names)):
+				if tracker.get_child_count() > landmark_index:
+					var finger_tracker : Node3D = tracker.get_child(landmark_index)
+					var landmark_name : String = side + "_" + mediapipe_hand_landmark_names[landmark_index]
+					#print(landmark_name, " = ", tracker_dict["finger_positions"][landmark_name])
+					if landmark_name in tracker_dict["finger_positions"]:
+						finger_tracker.global_transform.origin = tracker_dict["finger_positions"][landmark_name]
 
 func _process(delta : float) -> void:
 
@@ -271,6 +275,9 @@ func _process(delta : float) -> void:
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
 	var skel : Skeleton3D = get_skeleton()
 	var model_root : Node3D = get_model()
+
+	if not tracker_dict.has("head"):
+		return
 
 	# ---------------------------------------------------------------------------------------------
 	# Update this mod's tracker instances
@@ -643,10 +650,12 @@ func _update_finger_chain(finger_bone_array : Array, hand_landmarks : Array, whi
 		# Convert that to a rotation offset from the rest rotation.
 		var global_rotation_from_rest = skel.get_bone_global_rest(bone_to_modify_index).basis * rotation_axis_local
 
-		if not tracker_dict["hand_" + which_hand.to_lower()]["active"]:
-			skel.set_bone_pose_rotation(bone_to_modify_index, Basis())
-		else:
-			rotate_bone_in_global_space(skel, bone_to_modify_index, global_rotation_from_rest, -angle_between)
+		var hand_index = "hand_" + which_hand.to_lower()
+		if tracker_dict.has(hand_index):
+			if not tracker_dict[hand_index]:
+				skel.set_bone_pose_rotation(bone_to_modify_index, Basis())
+			else:
+				rotate_bone_in_global_space(skel, bone_to_modify_index, global_rotation_from_rest, -angle_between)
 
 		is_first_bone = false
 

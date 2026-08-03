@@ -7,6 +7,8 @@ var udp_peer : PacketPeerUDP = null
 @export var host_port : int = 39567
 @export var auto_start : bool = true
 
+var host_ip_resolved : String = IP.resolve_hostname(host_ip)
+
 signal message_received(address, arguments)
 
 var _errors_since_last_check = []
@@ -21,6 +23,7 @@ func _add_error(new_error):
 func change_port_and_ip(port, ip):
 	if host_ip != ip or host_port != port:
 		host_ip = ip
+		host_ip_resolved = IP.resolve_hostname(ip)
 		host_port = port
 		if is_server_active():
 			stop_server()
@@ -28,7 +31,7 @@ func change_port_and_ip(port, ip):
 
 func start_server():
 	udp_peer = PacketPeerUDP.new()
-	var err = udp_peer.bind(host_port, host_ip)
+	var err = udp_peer.bind(host_port, host_ip_resolved)
 	if err != OK:
 		_add_error("Failed to bind port!")
 		udp_peer.close()

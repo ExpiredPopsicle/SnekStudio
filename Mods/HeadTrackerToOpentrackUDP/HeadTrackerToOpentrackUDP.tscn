@@ -2,6 +2,5 @@
 
 [ext_resource type="Script" uid="uid://b1bf55tf5k4em" path="res://Mods/HeadTrackerToOpentrackUDP/HeadTrackerToOpentrackUDP.gd" id="1_4xcxy"]
 
-[node name="HeadTrackerToOpentrackUdp" type="Node"]
+[node name="HeadTrackerToOpentrackUdp" type="Node3D"]
 script = ExtResource("1_4xcxy")
-metadata/_custom_type_script = "uid://bsjotf2wtnmeq"

@@ -2,6 +2,5 @@
 
 [ext_resource type="Script" uid="uid://bbjbk6sgmpi82" path="res://Mods/AnimationApplier/AnimationApplier.gd" id="1_w4n1e"]
 
-[node name="AnimationApplier" type="Node"]
+[node name="AnimationApplier" type="Node3D"]
 script = ExtResource("1_w4n1e")
-metadata/_custom_type_script = "uid://bsjotf2wtnmeq"

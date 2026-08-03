@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://dl1rgodi2xys6"]
+
+[ext_resource type="Script" uid="uid://c0ycj3mb3xqwa" path="res://Mods/DisabledMod/DisabledMod.gd" id="1_wy1un"]
+[ext_resource type="Texture2D" uid="uid://ccsrfh1nkg1av" path="res://Mods/DisabledMod/mod_disabled.svg" id="2_wy1un"]
+
+[node name="DisabledMod" type="Node3D" unique_id=448641574]
+script = ExtResource("1_wy1un")
+icon = ExtResource("2_wy1un")
+metadata/_custom_type_script = "uid://bsjotf2wtnmeq"

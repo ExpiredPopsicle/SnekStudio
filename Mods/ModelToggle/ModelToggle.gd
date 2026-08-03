@@ -4,33 +4,30 @@ var model_name : String = ""
 var redeem_name : String = ""
 var start_hidden : bool = true
 var time_until_undo : float = 0.0
+var keybind_action_name : String = ""
+var keybind_prefix : String = ""
 
 var currently_toggled : bool = false
 var current_time_until_undo : float = 0.0
 
 func scene_init():
-	var skel = get_skeleton()
-	var model = skel.get_node_or_null(model_name)
-	if model:
-		model.visible = !start_hidden
+	if model_name:
+		for model in get_skeleton().find_children(model_name, "Node3D"):
+			model.visible = !start_hidden
 
 func _reset_visibility():
-	var skel = get_skeleton()
-	var model = skel.get_node_or_null(model_name)
-	if model:
-		model.visible = true
+	if model_name:
+		for model in get_skeleton().find_children(model_name, "Node3D"):
+			model.visible = true
 
 func scene_shutdown():
 	_reset_visibility()
-	
+
 func _update_model():
-	var skel = get_skeleton()
-	var model = skel.get_node_or_null(model_name)
-	if model:
-		if currently_toggled:
-			model.visible = start_hidden
-		else:
-			model.visible = !start_hidden
+	if model_name:
+		var model_visible := currently_toggled == start_hidden
+		for model in get_skeleton().find_children(model_name, "Node3D"):
+			model.visible = model_visible
 
 func handle_channel_point_redeem(_redeemer_username, _redeemer_display_name, _redeem_title, _user_input):
 	if _redeem_title == redeem_name:
@@ -41,6 +38,22 @@ func handle_channel_point_redeem(_redeemer_username, _redeemer_display_name, _re
 			current_time_until_undo = time_until_undo
 		
 		_update_model()
+
+func _handle_global_mod_message(key : String, values : Dictionary):
+	if key == "KeybindsActionPressed" and values["action"] == keybind_action_name:
+		print_log("Toggling via keybind.")
+		currently_toggled = !currently_toggled
+		_update_model()
+	elif key == "Keybinds":
+		keybind_prefix = values["prefix"]
+
+func check_configuration() -> PackedStringArray:
+	var errors : PackedStringArray = []
+	var global_dict = get_global_mod_data("Keybinds")
+	if global_dict.get("prefix", "") == "" and keybind_action_name != "":
+		errors.append("No Keybinds mod installed. Keybind toggle for model will not work.")
+
+	return errors
 
 func _process(delta):
 	
@@ -60,6 +73,7 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 func _ready():
 	add_tracked_setting("start_hidden", "Start hidden")
 	add_tracked_setting("model_name", "Model name")
+	add_tracked_setting("keybind_action_name", "Toggle keybind action name")
 	add_tracked_setting("redeem_name", "Redeem name", {"is_redeem" : true})
 	add_tracked_setting("time_until_undo", "Time until reset", {"min": 0.0, "max":24*60})
 	update_settings_ui()

@@ -2,5 +2,5 @@
 
 [ext_resource type="Script" uid="uid://big1nxok714d8" path="res://Mods/ModelToggle/ModelToggle.gd" id="1_qyh8s"]
 
-[node name="ModelToggle" type="Node"]
+[node name="ModelToggle" type="Node3D"]
 script = ExtResource("1_qyh8s")

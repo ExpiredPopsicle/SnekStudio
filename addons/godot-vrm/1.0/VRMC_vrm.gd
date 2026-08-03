@@ -378,12 +378,36 @@ func _create_animation_player(animplayer: AnimationPlayer, vrm_extension: Dictio
 	for i in range(meshes.size()):
 		var gltfmesh: GLTFMesh = meshes[i]
 		for j in range(gltfmesh.mesh.get_surface_count()):
-			material_idx_to_mesh_and_surface_idx[material_to_idx[gltfmesh.mesh.get_surface_material(j)]] = [i, j]
+			# There may be gaps in the dictionary here if stand-in materials
+			# were created for surfaces with no material defined.
+			if material_to_idx.has(gltfmesh.mesh.get_surface_material(j)):
+				material_idx_to_mesh_and_surface_idx[material_to_idx[gltfmesh.mesh.get_surface_material(j)]] = [i, j]
 
 	for i in range(nodes.size()):
 		var gltfnode: GLTFNode = nodes[i]
 		var mesh_idx: int = gltfnode.mesh
 		if mesh_idx != -1:
+
+			# Build a list of every node to search through.
+			# FIXME: Limit it to just root nodes!
+			var nodes_to_search : Array = []
+			for k in range(nodes.size()):
+				var node: Node = gstate.get_scene_node(k)
+				assert(node)
+				nodes_to_search.append(node)
+
+			var gltfmesh: GLTFMesh = gstate.get_meshes()[mesh_idx]
+
+			# FIXME: Will do redundant searches.
+			while nodes_to_search.size():
+				var node: Node = nodes_to_search.pop_back()
+				if node is ImporterMeshInstance3D:
+					if node.mesh == gltfmesh.mesh:
+						mesh_idx_to_meshinstance[mesh_idx] = node
+						break
+				for child in node.get_children():
+					nodes_to_search.append(child)
+
 			var scenenode: ImporterMeshInstance3D = gstate.get_scene_node(i)
 			mesh_idx_to_meshinstance[mesh_idx] = scenenode
 

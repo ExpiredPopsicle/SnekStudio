@@ -9,6 +9,8 @@ var ntp_start_unix : int
 @export var target_port : int = 39539
 @export var auto_start : bool = false
 
+var target_ip_resolved : String = IP.resolve_hostname(target_ip)
+
 func _ready():
 	ntp_start_date = Time.get_datetime_dict_from_datetime_string("1900-01-01T00:00:00Z", false)
 	ntp_start_unix = Time.get_unix_time_from_datetime_dict(ntp_start_date)
@@ -19,6 +21,7 @@ func _ready():
 func change_port_and_ip(port : int, ip : String) -> void:
 	if target_ip != ip or target_port != port:
 		target_ip = ip
+		target_ip_resolved = IP.resolve_hostname(ip)
 		target_port = port
 		if is_client_active():
 			stop_client()
@@ -27,7 +30,7 @@ func change_port_and_ip(port : int, ip : String) -> void:
 ## Connect to host.
 func start_client() -> void:
 	udp_peer = PacketPeerUDP.new()
-	udp_peer.connect_to_host(target_ip, target_port)
+	udp_peer.connect_to_host(target_ip_resolved, target_port)
 
 ## Disconnect from host.
 func stop_client() -> void:

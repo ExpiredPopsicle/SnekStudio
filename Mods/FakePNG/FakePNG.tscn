@@ -6,7 +6,7 @@
 [sub_resource type="Environment" id="Environment_f8r6w"]
 background_mode = 3
 
-[node name="FakePng" type="Node"]
+[node name="FakePng" type="Node3D"]
 script = ExtResource("1_s4mf0")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]

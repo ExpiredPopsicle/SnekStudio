@@ -1,13 +1,12 @@
-[gd_scene load_steps=2 format=3 uid="uid://b2n8nnpq1p4no"]
+[gd_scene format=3 uid="uid://b2n8nnpq1p4no"]
 
 [ext_resource type="Script" uid="uid://bhwmfiiu0cips" path="res://Mods/PoseIK/PoseIK.gd" id="1_nrhi5"]
 
-[node name="PoseIk" type="Node"]
+[node name="PoseIk" type="Node3D" unique_id=453228202]
 script = ExtResource("1_nrhi5")
-metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
 
-[node name="Head" type="Node3D" parent="."]
+[node name="Head" type="Node3D" parent="." unique_id=2129869701]
 
-[node name="Hand_Right" type="Node3D" parent="."]
+[node name="Hand_Right" type="Node3D" parent="." unique_id=775644197]
 
-[node name="Hand_Left" type="Node3D" parent="."]
+[node name="Hand_Left" type="Node3D" parent="." unique_id=1640401503]

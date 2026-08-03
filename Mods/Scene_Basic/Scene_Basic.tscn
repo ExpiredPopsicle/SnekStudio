@@ -22,7 +22,7 @@ reflected_light_source = 1
 [sub_resource type="PlaneMesh" id="PlaneMesh_d4h00"]
 size = Vector2(10, 10)
 
-[node name="SceneBasic" type="Node"]
+[node name="SceneBasic" type="Node3D"]
 script = ExtResource("1_qx82q")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]

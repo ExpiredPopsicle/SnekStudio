@@ -1,9 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://bst148ok43uyo"]
+[gd_scene format=3 uid="uid://bst148ok43uyo"]
 
 [ext_resource type="Script" uid="uid://cfw605s4nxgam" path="res://Core/Main.gd" id="1_88riu"]
 [ext_resource type="PackedScene" uid="uid://dqrb5gghpk1iu" path="res://Core/UI/UI_Root.tscn" id="2_a0eek"]
 [ext_resource type="PackedScene" uid="uid://dq62o1q7l83ro" path="res://Core/CameraBoom/CameraBoom.tscn" id="3_ur4kn"]
 [ext_resource type="Script" uid="uid://v8u2efcjmg73" path="res://Core/ModelController.gd" id="5_upw4c"]
+[ext_resource type="Shader" uid="uid://0om5ta3s57os" path="res://Core/Materials/debug_mesh.gdshader" id="6_fxul2"]
 [ext_resource type="Script" uid="uid://bhjru7482htmb" path="res://Core/AudioInput/AudioStreamRecord.gd" id="10_dpnxj"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nh3ai"]
@@ -25,21 +26,27 @@ reflected_light_source = 1
 
 [sub_resource type="AudioStreamMicrophone" id="AudioStreamMicrophone_djr57"]
 
-[node name="SnekStudio_Main" type="Node3D"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fauey"]
+render_priority = 0
+shader = ExtResource("6_fxul2")
+
+[sub_resource type="ImmediateMesh" id="ImmediateMesh_mmo8m"]
+
+[node name="SnekStudio_Main" type="Node3D" unique_id=1531562643]
 script = ExtResource("1_88riu")
 
-[node name="CanvasLayer2" type="CanvasLayer" parent="."]
+[node name="CanvasLayer2" type="CanvasLayer" parent="." unique_id=599508500]
 layer = 2
 
-[node name="UI_Root" parent="CanvasLayer2" node_paths=PackedStringArray("controller", "camera_boom") instance=ExtResource("2_a0eek")]
+[node name="UI_Root" parent="CanvasLayer2" unique_id=539242864 node_paths=PackedStringArray("controller", "camera_boom") instance=ExtResource("2_a0eek")]
 unique_name_in_owner = true
 controller = NodePath("../../ModelController")
 camera_boom = NodePath("../../CameraBoom")
 
-[node name="BackgroundLayer" type="CanvasLayer" parent="."]
+[node name="BackgroundLayer" type="CanvasLayer" parent="." unique_id=1279483787]
 layer = -1
 
-[node name="BackgroundPanel" type="Panel" parent="BackgroundLayer"]
+[node name="BackgroundPanel" type="Panel" parent="BackgroundLayer" unique_id=1332554965]
 unique_name_in_owner = true
 anchors_preset = 15
 anchor_right = 1.0
@@ -48,20 +55,24 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_nh3ai")
 
-[node name="CameraBoom" parent="." instance=ExtResource("3_ur4kn")]
+[node name="CameraBoom" parent="." unique_id=827507908 instance=ExtResource("3_ur4kn")]
 transform = Transform3D(1, 0, 0, 0, 0.994522, 0.104528, 0, -0.104528, 0.994522, 0, 1.45, 0)
 
-[node name="Mods" type="Node" parent="."]
+[node name="Mods" type="Node" parent="." unique_id=2137161948]
 unique_name_in_owner = true
 
-[node name="ModelController" type="Node3D" parent="."]
+[node name="ModelController" type="Node3D" parent="." unique_id=930888419]
 transform = Transform3D(1, 0, 3.49691e-07, 0, 1, 0, -3.49691e-07, 0, 1, 0, 0, 0)
 script = ExtResource("5_upw4c")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1477399033]
 environment = SubResource("Environment_w4pqy")
 
-[node name="AudioStreamRecord" type="AudioStreamPlayer" parent="."]
+[node name="AudioStreamRecord" type="AudioStreamPlayer" parent="." unique_id=2117267123]
 stream = SubResource("AudioStreamMicrophone_djr57")
 bus = &"Record"
 script = ExtResource("10_dpnxj")
+
+[node name="DebugMesh" type="MeshInstance3D" parent="." unique_id=1521247506]
+material_override = SubResource("ShaderMaterial_fauey")
+mesh = SubResource("ImmediateMesh_mmo8m")

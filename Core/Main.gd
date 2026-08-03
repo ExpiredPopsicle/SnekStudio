@@ -14,6 +14,7 @@ var _mods_loaded : bool = false
 var subwindows : Array[BasicSubWindow] = []
 
 func _process(_delta):
+	$DebugMesh.mesh.clear_surfaces()
 	_set_process_order()
 
 func _set_process_order():
@@ -268,7 +269,7 @@ func reset_settings_to_default() -> void:
 	$CameraBoom.reset_to_default()
 
 	# Reset transparency.	
-	set_background_transparency(false)
+	set_background_transparency(true)
 
 	# Reset background color.
 	set_background_color(Color(1.0, 0.0, 1.0, 1.0))
@@ -648,7 +649,7 @@ func load_vrm(path) -> bool:
 	var model = $ModelController.get_node_or_null("Model")
 	if model:
 		var secondary_path = NodePath("secondary") #model.vrm_secondary
-		var secondary = model.get_node(secondary_path)
+		var secondary = model.get_node_or_null(secondary_path)
 
 		#if collider_data == null:
 		#	collider_data = []
@@ -774,3 +775,11 @@ static func get_added_mods_locations() -> PackedStringArray:
 		for global_path : String in paths_global:
 			paths_localized.append(ProjectSettings.localize_path(global_path))
 	return paths_localized
+
+## Get an ImmediateMesh for drawing debug lines to. Simple material with a
+## shader that uses vertex data.
+##
+## The mesh is cleared every frame, so this is for immediate-mode style debug
+## rendering.
+func get_debug_mesh() -> ImmediateMesh:
+	return $DebugMesh.mesh
