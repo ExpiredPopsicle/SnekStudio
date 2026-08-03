@@ -1,0 +1,185 @@
+[gd_scene format=3 uid="uid://blnh62kxek1ge"]
+
+[ext_resource type="Script" uid="uid://bmrd6whmljbgg" path="res://Mods/HOTAS/FlightStick/StickDriver.gd" id="1_kf3tv"]
+[ext_resource type="PackedScene" uid="uid://bipp5qsas7wu5" path="res://Mods/HOTAS/FlightStick/Model/OmniStick.glb" id="2_fibe4"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_kf3tv"]
+radius = 0.01
+height = 0.02
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_380jh"]
+animation = &"TwistRight"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_kf3tv"]
+animation = &"TwistLeft"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_ft77p"]
+animation = &"Backward"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_gwdlp"]
+animation = &"Forward"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_krm5d"]
+animation = &"Idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_wjrnr"]
+animation = &"Left"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_51ut8"]
+animation = &"Right"
+
+[sub_resource type="AnimationNodeAdd3" id="AnimationNodeAdd3_fibe4"]
+
+[sub_resource type="AnimationNodeAdd3" id="AnimationNodeAdd3_ox3mk"]
+
+[sub_resource type="AnimationNodeBlend3" id="AnimationNodeBlend3_hbuks"]
+
+[sub_resource type="AnimationNodeBlendTree" id="AnimationNodeBlendTree_i6g44"]
+graph_offset = Vector2(-444.3, 236.80002)
+nodes/output/position = Vector2(680, 320)
+"nodes/Animation 2/node" = SubResource("AnimationNodeAnimation_380jh")
+"nodes/Animation 2/position" = Vector2(160, 660)
+nodes/Backward/node = SubResource("AnimationNodeAnimation_ft77p")
+nodes/Backward/position = Vector2(-260, 720)
+nodes/Forward/node = SubResource("AnimationNodeAnimation_gwdlp")
+nodes/Forward/position = Vector2(-260, 360)
+nodes/Idle/node = SubResource("AnimationNodeAnimation_krm5d")
+nodes/Idle/position = Vector2(-260, 540)
+nodes/y_axis/node = SubResource("AnimationNodeBlend3_hbuks")
+nodes/y_axis/position = Vector2(-40, 460)
+nodes/Right/node = SubResource("AnimationNodeAnimation_51ut8")
+nodes/Right/position = Vector2(-40, 700)
+nodes/Left/node = SubResource("AnimationNodeAnimation_wjrnr")
+nodes/Left/position = Vector2(-40, 180)
+nodes/Animation/node = SubResource("AnimationNodeAnimation_kf3tv")
+nodes/Animation/position = Vector2(180, 200)
+nodes/x_axis/node = SubResource("AnimationNodeAdd3_ox3mk")
+nodes/x_axis/position = Vector2(180, 380)
+nodes/twist/node = SubResource("AnimationNodeAdd3_fibe4")
+nodes/twist/position = Vector2(420, 320)
+node_connections = [&"output", 0, &"twist", &"y_axis", 0, &"Forward", &"y_axis", 1, &"Idle", &"y_axis", 2, &"Backward", &"x_axis", 0, &"Left", &"x_axis", 1, &"y_axis", &"x_axis", 2, &"Right", &"twist", 0, &"Animation", &"twist", 1, &"x_axis", &"twist", 2, &"Animation 2"]
+
+[node name="device" type="Node3D" unique_id=2120853259]
+script = ExtResource("1_kf3tv")
+
+[node name="OmniStick" parent="." unique_id=1134257696 instance=ExtResource("2_fibe4")]
+
+[node name="Skeleton3D" parent="OmniStick/OmniStick" parent_id_path=PackedInt32Array(1134257696, 244334596) index="0" unique_id=957940046]
+bones/2/rotation = Quaternion(7.1500144e-09, -1.8923576e-07, 0.5, 0.8660254)
+bones/3/rotation = Quaternion(-6.2628196e-08, -2.853268e-07, -0.5, 0.8660254)
+bones/4/rotation = Quaternion(3.4999195e-09, 1.711431e-08, 7.7591256e-10, 1)
+
+[node name="BoneAttachment3D" type="BoneAttachment3D" parent="OmniStick/OmniStick/Skeleton3D" index="0" unique_id=534014609]
+transform = Transform3D(0.5, 0.8660254, -2.2738234e-07, -0.8660254, 0.5, 3.93802e-07, 4.547337e-07, 1.7905677e-11, 1, -0.0777675, 0.10667217, 0.00048315432)
+visible = false
+bone_name = "omni_twist_right"
+bone_idx = 3
+
+[node name="wrist" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1563741091]
+transform = Transform3D(0.9975316, -0.02517439, 0.06555006, 0.0042752624, 0.9535643, 0.3011569, -0.07008773, -0.3001334, 0.95131826, -0.028, 0.119, -0.035)
+mesh = SubResource("SphereMesh_kf3tv")
+skeleton = NodePath("")
+
+[node name="hand" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1728259665]
+transform = Transform3D(0.062244985, -0.9975214, -0.03280793, 0.5224782, 0.0045596147, 0.8526397, -0.8503768, -0.070214055, 0.5214671, -0.02, 0.119, -0.035)
+mesh = SubResource("SphereMesh_kf3tv")
+skeleton = NodePath("")
+
+[node name="thumb_cmc" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1611148990]
+transform = Transform3D(0.9975316, 0.0042753206, 0.07008773, 0.0042752624, 0.9925949, -0.121395506, -0.07008772, 0.121395506, 0.9901266, 0.016, 0.147, -0.016)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="thumb_mcp" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=585444048]
+transform = Transform3D(0.8974427, 0.0042753206, -0.44110885, -0.057357997, 0.9925949, -0.10707556, 0.43738464, 0.1213955, 0.89104223, 0.017, 0.17, 0.003)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="thumb_ip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1999049897]
+transform = Transform3D(0.9975316, 0.0042753206, 0.07008773, 0.0042752624, 0.9925949, -0.121395506, -0.07008772, 0.121395506, 0.9901266, 0.021, 0.154, 0.028)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="thumb_tip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=161673469]
+transform = Transform3D(0.9975316, 0.0042753206, 0.07008773, 0.0042752624, 0.9925949, -0.121395506, -0.07008772, 0.121395506, 0.9901266, 0.05, 0.148, 0.075)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="index_finger_mcp" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=630664127]
+transform = Transform3D(0.9975309, 0.0042753476, 0.07008772, 0.0042752028, 0.9925949, -0.12139549, -0.07008772, 0.121395506, 0.9901266, 0.1052253, 0.10003555, 0.092896216)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="index_finger_pip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1878951742]
+transform = Transform3D(0.9975311, 0.0042753476, 0.07008772, 0.0042752028, 0.9925949, -0.12139549, -0.07008772, 0.121395506, 0.9901266, 0.038753837, 0.06307606, 0.15584843)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="index_finger_dip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1881283663]
+transform = Transform3D(0.9975313, 0.0042753476, 0.07008772, 0.0042752028, 0.9925949, -0.12139549, -0.07008772, 0.121395506, 0.9901266, -0.0359395, 0.13408542, 0.15289621)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="index_finger_tip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1734634851]
+transform = Transform3D(0.9975313, 0.0042753476, 0.07008772, 0.0042752028, 0.9925949, -0.12139549, -0.07008772, 0.121395506, 0.9901266, -0.00530605, 0.101140365, 0.14311008)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="middle_finger_mcp" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=32809771]
+transform = Transform3D(0.9975316, 0.017446678, 0.06801603, 0.0042752624, 0.95175326, -0.30683413, -0.07008772, 0.30636764, 0.94932956, -0.052, 0.092, 0.065)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="middle_finger_pip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1320687423]
+transform = Transform3D(0.9975316, 0.017446678, 0.06801603, 0.0042752624, 0.95175326, -0.30683413, -0.07008772, 0.30636764, 0.94932956, -0.039, 0.07, 0.091)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="middle_finger_dip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=73003237]
+transform = Transform3D(0.9975316, 0.017446678, 0.06801603, 0.0042752624, 0.95175326, -0.30683413, -0.07008772, 0.30636764, 0.94932956, -0.006, 0.078, 0.087)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="middle_finger_tip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=2099728957]
+transform = Transform3D(0.9975316, 0.017446678, 0.06801603, 0.0042752624, 0.95175326, -0.30683413, -0.07008772, 0.30636764, 0.94932956, 0.008, 0.083, 0.072)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="ring_finger_mcp" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1857330921]
+transform = Transform3D(0.9975316, 0.017446678, 0.06801603, 0.0042752624, 0.95175326, -0.30683413, -0.07008772, 0.30636764, 0.94932956, -0.051, 0.069, 0.048)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="ring_finger_pip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1488402019]
+transform = Transform3D(0.9975316, 0.017446678, 0.06801603, 0.0042752624, 0.95175326, -0.30683413, -0.07008772, 0.30636764, 0.94932956, -0.038, 0.047, 0.074)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="ring_finger_dip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1589488262]
+transform = Transform3D(0.9975316, 0.017446678, 0.06801603, 0.0042752624, 0.95175326, -0.30683413, -0.07008772, 0.30636764, 0.94932956, -0.005, 0.055, 0.07)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="ring_finger_tip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=653625362]
+transform = Transform3D(0.9975316, 0.017446678, 0.06801603, 0.0042752624, 0.95175326, -0.30683413, -0.07008772, 0.30636764, 0.94932956, 0.002, 0.06, 0.055)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="pinky_finger_mcp" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=178083104]
+transform = Transform3D(0.92288357, -0.11054232, -0.3688718, -0.11057997, 0.8414893, -0.52883565, 0.3688604, 0.52884346, 0.76437324, -0.064, 0.055, 0.039)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="pinky_finger_pip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1963173213]
+transform = Transform3D(0.92288357, -0.11054232, -0.3688718, -0.11057997, 0.8414893, -0.52883565, 0.3688604, 0.52884346, 0.76437324, -0.065, 0.037, 0.062)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="pinky_finger_dip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=1257169579]
+transform = Transform3D(0.923896, -0.11007892, -0.3664661, -0.10962349, 0.8414345, -0.5291225, 0.36660245, 0.5290277, 0.7653308, -0.058, 0.024, 0.073)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="pinky_finger_tip" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=901546090]
+transform = Transform3D(0.92288357, -0.11054232, -0.3688718, -0.11057997, 0.8414893, -0.52883565, 0.3688604, 0.52884346, 0.76437324, -0.011, 0.024, 0.077)
+mesh = SubResource("SphereMesh_kf3tv")
+
+[node name="OmniStickLeft" parent="OmniStick/OmniStick/Skeleton3D" index="2" unique_id=545991833]
+visible = false
+
+[node name="StickLeft" parent="OmniStick/OmniStick/Skeleton3D" index="4" unique_id=982901099]
+visible = false
+
+[node name="StickRight" parent="OmniStick/OmniStick/Skeleton3D" index="5" unique_id=679701618]
+visible = false
+
+[node name="AnimationTree" type="AnimationTree" parent="." unique_id=1640792490]
+root_node = NodePath("../OmniStick")
+tree_root = SubResource("AnimationNodeBlendTree_i6g44")
+anim_player = NodePath("../OmniStick/AnimationPlayer")
+parameters/y_axis/blend_amount = 0.0
+parameters/x_axis/add_amount = 0.0
+parameters/twist/add_amount = 0.0
+
+[editable path="OmniStick"]
