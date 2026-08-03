@@ -163,8 +163,11 @@ func _swap_adjacent_mods(index1, index2):
 	# Swap the text.
 	var mods_list_node : ItemList = %ModsList
 	var text_tmp = mods_list_node.get_item_text(index1)
+	var icon_tmp: Texture2D = mods_list_node.get_item_icon(index1)
 	mods_list_node.set_item_text(index1, mods_list_node.get_item_text(index2))
+	mods_list_node.set_item_icon(index1, mods_list_node.get_item_icon(index2))
 	mods_list_node.set_item_text(index2, text_tmp)
+	mods_list_node.set_item_icon(index2, icon_tmp)
 
 	var mods_node = _get_mods_node()
 	if index1 > index2:
