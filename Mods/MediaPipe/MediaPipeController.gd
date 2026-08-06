@@ -133,20 +133,20 @@ func _ready():
 	# Connects to min_hand_detection_confidence, min_tracking_confidence, and
 	# min_hand_presence_confidence respectively in new_tracker.py
 	add_tracked_setting(
-		"min_hand_detection_confidence", "Minimum hand detection confidence level (%)",
-		{ "min" : 0.0, "max" : 1.0 },
+		"min_hand_detection_confidence", "Minimum hand detection confidence score",
+		{ "min" : 0.01, "max" : 1.0, "step" : 0.01 },
 		"advanced"
 	)
 	
 	add_tracked_setting(
-		"min_hand_tracking_confidence", "Minimum hand tracking confidence level (%)",
-		{ "min" : 0.0, "max" : 1.0 },
+		"min_hand_tracking_confidence", "Minimum hand tracking confidence score",
+		{ "min" : 0.01, "max" : 1.0, "step" : 0.01 },
 		"advanced"
 	)
 	
 	add_tracked_setting(
-		"min_hand_presence_confidence", "Minimum hand presence confidence level (%)",
-		{ "min" : 0.0, "max" : 1.0 },
+		"min_hand_presence_confidence", "Minimum hand presence confidence score",
+		{ "min" : 0.01, "max" : 1.0, "step" : 0.01 },
 		"advanced"
 	)
 
