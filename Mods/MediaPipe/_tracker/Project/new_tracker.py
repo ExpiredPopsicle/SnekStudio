@@ -741,7 +741,7 @@ class MediaPipeTracker:
 
         if "hand_presence_confidence" in new_settings_dict:
             with self.the_big_ugly_mutex:
-                self.hand_tracking_confidence = new_settings_dict["hand_presence_confidence"]
+                self.hand_presence_confidence = new_settings_dict["hand_presence_confidence"]
 
     def _shutdown_mediapipe(self):
 
