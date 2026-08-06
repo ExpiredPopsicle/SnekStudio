@@ -1,32 +1,13 @@
-[gd_scene load_steps=7 format=3 uid="uid://bgoav4n60htm2"]
+[gd_scene load_steps=4 format=3 uid="uid://bgoav4n60htm2"]
 
 [ext_resource type="Script" uid="uid://7quu5svg8jeg" path="res://Mods/Scene_Basic/Scene_Basic.gd" id="1_qx82q"]
 [ext_resource type="Material" uid="uid://bi00jwt1yfcby" path="res://Core/Materials/TriplanarGridMaterial.tres" id="2_udkp6"]
-
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_wvywh"]
-sky_energy_multiplier = 7.83
-
-[sub_resource type="Sky" id="Sky_2mrp7"]
-sky_material = SubResource("ProceduralSkyMaterial_wvywh")
-
-[sub_resource type="Environment" id="Environment_tf4s1"]
-background_mode = 3
-background_color = Color(0.952941, 0, 0.835294, 1)
-background_energy_multiplier = 0.5
-sky = SubResource("Sky_2mrp7")
-ambient_light_source = 2
-ambient_light_color = Color(1, 1, 1, 1)
-ambient_light_energy = 0.5
-reflected_light_source = 1
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_d4h00"]
 size = Vector2(10, 10)
 
 [node name="SceneBasic" type="Node3D"]
 script = ExtResource("1_qx82q")
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_tf4s1")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.844865, -0.251842, 0.471996, -0.109142, 0.782572, 0.612918, -0.523729, -0.569347, 0.633681, 3.96731, 2.64172, -1.05663)
