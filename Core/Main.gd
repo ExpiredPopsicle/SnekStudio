@@ -10,6 +10,8 @@ var module_global_data : Dictionary = {}
 
 var _mods_loaded : bool = false
 
+var window_size_set : bool = false
+
 # Array of all serializable BasicSubWindows
 var subwindows : Array[BasicSubWindow] = []
 
@@ -64,6 +66,44 @@ func set_background_transparency(transparent : bool):
 
 func get_background_transparency() -> bool:
 	return not get_node("BackgroundLayer").visible
+
+func confirm_window_size(res: Vector2i):
+	var settings_dict = {}
+	if not Engine.is_embedded_in_editor():
+		# Create objects
+		var timer := Timer.new()
+		var dialog = ConfirmationDialog.new()
+
+		# Setup objects
+		var original_size := get_tree().get_root().size
+
+		timer.one_shot = true
+		timer.wait_time = 5.0
+		timer.ignore_time_scale = true
+		timer.timeout.connect((func (d: ConfirmationDialog):
+			d.hide()
+			get_tree().get_root().set_size(original_size)
+		).bind(dialog))
+		get_parent().add_child(timer)
+		
+		dialog.canceled.connect((func (t: Timer): 
+			t.timeout.emit(dialog)
+		).bind(timer))
+		dialog.confirmed.connect((func (t: Timer):
+			settings_dict["window_size"] = [
+				res[0], res[1]
+			]
+			deserialize_settings(settings_dict, true, false)
+			t.stop()
+		).bind(timer))
+		dialog.dialog_text = "Keep resolution? Will reset in " + str(timer.wait_time) + " seconds."
+		get_parent().add_child(dialog)
+
+		# Apply settings
+		get_tree().get_root().set_size(res)
+		timer.start()
+		dialog.popup()
+		return
 
 ## Load the mods at runtime. This function just adds the zip files to the
 ## project tree.
@@ -284,6 +324,7 @@ func reset_settings_to_default() -> void:
 		ProjectSettings.get_setting("display/window/size/viewport_width"),
 		ProjectSettings.get_setting("display/window/size/viewport_height"))
 	get_viewport().set_size(viewport_default_size)
+	
 	# Note: Not messing with window position (it doesn't really have a default).
 	# FIXME: Make it default to screen center?
 	get_viewport().mode &= ~Window.MODE_MAXIMIZED
@@ -322,11 +363,12 @@ func serialize_settings(do_settings=true, do_mods=true):
 		settings_to_save["colliders"] = colliders_by_model_name
 
 		# Window settings
+		settings_to_save["window_size_set"] = window_size_set
 		var window_size = get_viewport().get_size()
-		var window_position = get_viewport().get_position()
 		settings_to_save["window_size"] = [
 			window_size[0],
 			window_size[1]]
+		var window_position = get_viewport().get_position()		
 		settings_to_save["window_position"] = [
 			window_position[0],
 			window_position[1]]	
@@ -477,10 +519,14 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 		#	AudioServer.set_output_device("Default")
 			
 		# Window size/position settings
+
 		if _setting_changed("window_size", old_settings_dict, settings_dict):
 			get_viewport().set_size(Vector2i(
 				settings_dict["window_size"][0], 
 				settings_dict["window_size"][1]))
+		if _setting_changed("window_size_set", old_settings_dict, settings_dict):
+			window_size_set = settings_dict["window_size_set"]
+			get_viewport().set_flag(Window.FLAG_RESIZE_DISABLED, settings_dict["window_size_set"])
 		if _setting_changed("window_position", old_settings_dict, settings_dict):
 			get_viewport().set_position(Vector2i(
 				settings_dict["window_position"][0], 
