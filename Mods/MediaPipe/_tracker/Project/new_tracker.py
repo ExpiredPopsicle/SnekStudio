@@ -711,11 +711,11 @@ class MediaPipeTracker:
             with self.the_big_ugly_mutex:
                 self.video_device_index = new_settings_dict["video_device_number"]
 
-        if "set_hand_confidence_time_threshold" in new_settings_dict:
+        if "hand_confidence_time_threshold" in new_settings_dict:
             with self.the_big_ugly_mutex:
-                self.hand_detection_confidence = new_settings_dict["set_hand_confidence_time_threshold"]
+                self.hand_confidence_time_threshold = new_settings_dict["hand_confidence_time_threshold"]
 
-        if  "hand_count_change_time_threshold" in new_settings_dict:
+        if "hand_count_change_time_threshold" in new_settings_dict:
             with self.the_big_ugly_mutex:
                 self.time_since_hand_count_changed_threshold = new_settings_dict["hand_count_change_time_threshold"]
 
