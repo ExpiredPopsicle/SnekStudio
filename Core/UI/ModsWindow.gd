@@ -1,3 +1,4 @@
+@tool
 extends BasicSubWindow
 
 ## Get the currently selected mod in the mod list, if any.

@@ -1,13 +1,13 @@
-[gd_scene load_steps=3 format=3 uid="uid://dl2mo3ygrhbi3"]
+[gd_scene format=3 uid="uid://dl2mo3ygrhbi3"]
 
-[ext_resource type="Script" uid="uid://bi638ibo8itll" path="res://Mods/HeadPats/Resources/HeadPats_BoneAttachment.gd" id="1_wi6xn"]
+[ext_resource type="Script" uid="uid://dyb4f1wlhpart" path="res://Mods/HeadPats/Resources/HeadPats_BoneAttachment.gd" id="1_wi6xn"]
 [ext_resource type="SpriteFrames" uid="uid://c6neld0rvb4he" path="res://Mods/HeadPats/Resources/Sprites/HeadPats_SpriteFrames.tres" id="1_xdojq"]
 
-[node name="HeadPats_BoneAttachment" type="BoneAttachment3D"]
+[node name="HeadPats_BoneAttachment" type="BoneAttachment3D" unique_id=643341776]
 bone_name = "Head"
 script = ExtResource("1_wi6xn")
 
-[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="." unique_id=2128236555]
 transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, 0, 0.2, 0.22)
 billboard = 1
 sprite_frames = ExtResource("1_xdojq")

@@ -149,7 +149,7 @@ func create_osc_bundle(timetag : int, osc_element_packets : Array) -> PackedByte
 ## Retrieve a timetag for the current time to help with sending.
 ## Will return an int representing the time since 1900.
 func get_timetag_for_current_time() -> int:
-	return Time.get_unix_time_from_system() - ntp_start_unix
+	return int(Time.get_unix_time_from_system()) - ntp_start_unix
 	
 func _osc_string(s : String) -> PackedByteArray:
 	var packet = PackedByteArray()

@@ -1,11 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://dq62o1q7l83ro"]
+[gd_scene format=3 uid="uid://dq62o1q7l83ro"]
 
-[ext_resource type="Script" uid="uid://br24fa3ct4n62" path="res://Core/CameraBoom/CameraBoom.gd" id="1_dxg52"]
+[ext_resource type="Script" uid="uid://d07abqeoxw0co" path="res://Core/CameraBoom/CameraBoom.gd" id="1_dxg52"]
 
-[node name="CameraBoom" type="Node3D"]
+[node name="CameraBoom" type="Node3D" unique_id=759231147]
 script = ExtResource("1_dxg52")
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera3D" type="Camera3D" parent="." unique_id=781307533]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4.5)
 cull_mask = 1048573
 current = true

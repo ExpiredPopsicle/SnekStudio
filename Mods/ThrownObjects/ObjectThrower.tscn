@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://bmbjtqols03wy"]
+[gd_scene format=3 uid="uid://bmbjtqols03wy"]
 
-[ext_resource type="Script" uid="uid://30owalomuxiq" path="res://Mods/ThrownObjects/ObjectThrower.gd" id="1_exhux"]
+[ext_resource type="Script" uid="uid://xraqmerwbmbv" path="res://Mods/ThrownObjects/ObjectThrower.gd" id="1_exhux"]
 
-[node name="ObjectThrower" type="Node3D"]
+[node name="ObjectThrower" type="Node3D" unique_id=1859069083]
 script = ExtResource("1_exhux")

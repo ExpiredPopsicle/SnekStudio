@@ -27,13 +27,13 @@ SnekStudio is still in early development, so is lacking in documentation and mig
 If you're on a platform for which there is no release yet (MacOS), want to tinker with SnekStudio, or write your own modules, here's how to go about that:
 
 1. Clone the repository **recursively**.
-    ```
-    git clone --recursive https://github.com/ExpiredPopsicle/SnekStudio.git
-    ```
-    1. If you forget to clone recursively, run `git submodule init` and `git submodule update`.
-    2. When pulling the newest changes from SnekStudio, use `git pull --recurse-submodules` to ensure submodules (like TwitchGD4) get updated too.
+	```
+	git clone --recursive https://github.com/ExpiredPopsicle/SnekStudio.git
+	```
+	1. If you forget to clone recursively, run `git submodule init` and `git submodule update`.
+	2. When pulling the newest changes from SnekStudio, use `git pull --recurse-submodules` to ensure submodules (like TwitchGD4) get updated too.
 
-2. Open the project in Godot `4.6.x`. (Newer versions might not work.)
+2. Open the project in Godot `4.7.x`. (Newer versions might not work.)
 
 3. Set up Python Standalone + its dependencies by clicking the "Python Builds" tab in the bottom panel, and clicking both "Download" buttons for your platform. This can freeze the editor while downloading, so give it some time.
 

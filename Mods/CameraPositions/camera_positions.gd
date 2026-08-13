@@ -7,8 +7,8 @@ var cam_positions: Dictionary = {}
 var last_camera_selected: String
 var should_track_last_camera: bool
 
-func _log(str: String):
-	print_log(str)
+func _log(s: String):
+	print_log(s)
 	
 func _ready():
 	var name_vals: Array[String]

@@ -1,3 +1,4 @@
+@tool
 extends BasicSubWindow
 
 func _output_index_selected(index):

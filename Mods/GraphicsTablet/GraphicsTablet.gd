@@ -30,7 +30,7 @@ func _ready() -> void:
 	add_tracked_setting("maintain_x_offset", "Maintain X offset from model")
 	add_tracked_setting("x_offset", "X offset", {"min" : -10, "max": 10, "step": 0.02})
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 
 	var model: Node3D = get_app().get_model()
 

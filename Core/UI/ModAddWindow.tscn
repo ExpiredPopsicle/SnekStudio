@@ -11,6 +11,7 @@ label_text = "Add Mod"
 
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
 offset_right = 357.0
+text = "Add Mod"
 
 [node name="HSplitContainer" type="HSplitContainer" parent="." index="2" unique_id=1743629833]
 layout_mode = 1

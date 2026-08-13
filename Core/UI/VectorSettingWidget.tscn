@@ -1,23 +1,23 @@
-[gd_scene load_steps=2 format=3 uid="uid://deopl3p3blrra"]
+[gd_scene format=3 uid="uid://deopl3p3blrra"]
 
-[ext_resource type="Script" uid="uid://gpi80m4xwr8n" path="res://Core/UI/VectorSettingWidget.gd" id="1_a0wdn"]
+[ext_resource type="Script" uid="uid://bb3uq05r2c5a8" path="res://Core/UI/VectorSettingWidget.gd" id="1_a0wdn"]
 
-[node name="VectorSettingWidget" type="HBoxContainer"]
+[node name="VectorSettingWidget" type="HBoxContainer" unique_id=1393554301]
 script = ExtResource("1_a0wdn")
 
-[node name="SpinBox0" type="SpinBox" parent="."]
+[node name="SpinBox0" type="SpinBox" parent="." unique_id=1247458611]
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = -100.0
 step = 0.01
 
-[node name="SpinBox1" type="SpinBox" parent="."]
+[node name="SpinBox1" type="SpinBox" parent="." unique_id=1702991745]
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = -100.0
 step = 0.01
 
-[node name="SpinBox2" type="SpinBox" parent="."]
+[node name="SpinBox2" type="SpinBox" parent="." unique_id=744460049]
 layout_mode = 2
 size_flags_horizontal = 3
 min_value = -100.0

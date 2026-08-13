@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://bqcfcry0epcb0"]
+[gd_scene format=3 uid="uid://bqcfcry0epcb0"]
 
 [ext_resource type="Script" uid="uid://c58bcsbgsf6vh" path="res://Mods/BlendShapeScalingAndOffset/BlendShapeScalingAndOffset.gd" id="1_seq4u"]
 
-[node name="BlendShapeScalingAndOffset" type="Node3D"]
+[node name="BlendShapeScalingAndOffset" type="Node3D" unique_id=1218819886]
 script = ExtResource("1_seq4u")

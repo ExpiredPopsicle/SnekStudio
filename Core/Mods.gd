@@ -200,7 +200,6 @@ func _load_mods_from_settings(dict: Array) -> void:
 	_clear_mods()
 
 	for mod_definition in dict:
-		print(mod_definition)
 		var packed_scene: PackedScene = load(mod_definition["scene_path"])
 		if not packed_scene: continue
 

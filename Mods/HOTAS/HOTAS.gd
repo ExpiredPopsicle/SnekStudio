@@ -62,7 +62,7 @@ func _ready() -> void:
 	add_tracked_setting("stick_y_axis", "Stick Y axis")
 	add_tracked_setting("throttle_axis", "Throttle axis")
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 
 	$FlightStick.transform.origin.x = -model_distance / 2.0
 	$Throttle2.transform.origin.x = model_distance / 2.0
@@ -77,7 +77,7 @@ func _process(delta: float) -> void:
 	$Throttle2.transform.origin.z = model_zoffset
 
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
-	var time = Time.get_unix_time_from_system() * 3;
+	# var time = Time.get_unix_time_from_system() * 3; # UNUSED
 
 	var device_index : int = _device_list.find(joystick_device[0])
 

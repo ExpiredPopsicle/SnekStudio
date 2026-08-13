@@ -1,3 +1,4 @@
+@tool
 extends BasicSubWindow
 
 var _filter_text: String = ""

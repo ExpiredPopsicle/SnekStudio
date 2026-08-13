@@ -10,7 +10,9 @@ class_name OSCQueryServer
 @export var http_server : HttpServer
 
 var running : bool = false
+@warning_ignore("unused_signal") # signal is used by an inner class
 signal on_host_info_requested
+@warning_ignore("unused_signal") # signal is used by an inner class
 signal on_root_requested
 signal on_osc_server_message_received(address : String, args)
 

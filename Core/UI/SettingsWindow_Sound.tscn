@@ -1,10 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://yq6jyoi206yb"]
+[gd_scene format=3 uid="uid://yq6jyoi206yb"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_y64ri"]
 [ext_resource type="Script" uid="uid://v0lkx7cvkk0o" path="res://Core/UI/SettingsWindow_Sound.gd" id="2_c0jna"]
 [ext_resource type="PackedScene" uid="uid://cwt2oqwri2i5y" path="res://Core/UI/BasicSliderWithNumber.tscn" id="3_g1kp0"]
 
-[node name="SettingsWindow_Sound" instance=ExtResource("1_y64ri")]
+[node name="SettingsWindow_Sound" unique_id=674790195 instance=ExtResource("1_y64ri")]
 offset_right = 370.0
 offset_bottom = 205.0
 script = ExtResource("2_c0jna")
@@ -13,7 +13,7 @@ label_text = "Sound Settings"
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
 text = "Sound Settings"
 
-[node name="GridContainer" type="GridContainer" parent="." index="2"]
+[node name="GridContainer" type="GridContainer" parent="." index="2" unique_id=980112549]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -24,41 +24,41 @@ theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 2
 columns = 2
 
-[node name="Label" type="Label" parent="GridContainer" index="0"]
+[node name="Label" type="Label" parent="GridContainer" index="0" unique_id=1017106164]
 layout_mode = 2
 text = "Output device
 "
 
-[node name="MenuButton_OutputDevice" type="MenuButton" parent="GridContainer" index="1"]
+[node name="MenuButton_OutputDevice" type="MenuButton" parent="GridContainer" index="1" unique_id=842278432]
 unique_name_in_owner = true
 layout_mode = 2
 text = "placeholder"
 
-[node name="Label15" type="Label" parent="GridContainer" index="2"]
+[node name="Label15" type="Label" parent="GridContainer" index="2" unique_id=536986482]
 layout_mode = 2
 text = "Output volume"
 
-[node name="HSlider_OutputVolume" parent="GridContainer" index="3" instance=ExtResource("3_g1kp0")]
+[node name="HSlider_OutputVolume" parent="GridContainer" index="3" unique_id=814554304 instance=ExtResource("3_g1kp0")]
 unique_name_in_owner = true
 layout_mode = 2
 min_value = -30.0
 max_value = 10.0
 value = 0.0
 
-[node name="Label2" type="Label" parent="GridContainer" index="4"]
+[node name="Label2" type="Label" parent="GridContainer" index="4" unique_id=145023106]
 layout_mode = 2
 text = "Input device"
 
-[node name="MenuButton_InputDevice" type="MenuButton" parent="GridContainer" index="5"]
+[node name="MenuButton_InputDevice" type="MenuButton" parent="GridContainer" index="5" unique_id=1537079828]
 unique_name_in_owner = true
 layout_mode = 2
 text = "placeholder"
 
-[node name="Label3" type="Label" parent="GridContainer" index="6"]
+[node name="Label3" type="Label" parent="GridContainer" index="6" unique_id=40579880]
 layout_mode = 2
 text = "Input volume"
 
-[node name="HSlider_InputVolume" parent="GridContainer" index="7" instance=ExtResource("3_g1kp0")]
+[node name="HSlider_InputVolume" parent="GridContainer" index="7" unique_id=1612863870 instance=ExtResource("3_g1kp0")]
 unique_name_in_owner = true
 layout_mode = 2
 min_value = -30.0

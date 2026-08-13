@@ -30,6 +30,7 @@ var monthnames: Array[String] = ['___', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'
 ## [br] - [param fallback_page]: Full path to the fallback page which will be served if the requested file was not found
 ## [br] - [param extensions]: A list of extensions that will be checked if no file extension is provided by the request
 ## [br]	- [param exclude_extensions]: A list of extensions that will be excluded if requested
+@warning_ignore("shadowed_variable")
 func _init(
 	path: String,
 	options: Dictionary = {
@@ -111,7 +112,7 @@ func handle_get(request: HttpRequest, response: HttpResponse) -> void:
 func _serve_file(file_path: String, seek: int = -1) -> PackedByteArray:
 	var content: PackedByteArray = []
 	var file: FileAccess = FileAccess.open(file_path, FileAccess.READ)
-	var error = file.get_open_error()
+	var error = FileAccess.get_open_error()
 	if error:
 		content = ("Couldn't serve file, ERROR = %s" % error).to_ascii_buffer()
 	else:

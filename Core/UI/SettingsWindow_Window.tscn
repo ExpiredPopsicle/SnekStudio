@@ -1,18 +1,22 @@
-[gd_scene load_steps=3 format=3 uid="uid://c0krlpbiun1ic"]
+[gd_scene format=3 uid="uid://c0krlpbiun1ic"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_g1tow"]
 [ext_resource type="Script" uid="uid://c86snfjcgxmfx" path="res://Core/UI/SettingsWindow_Window.gd" id="2_v2kbv"]
 
-[node name="SettingsWindow_Window" instance=ExtResource("1_g1tow")]
+[node name="SettingsWindow_Window" unique_id=777290780 instance=ExtResource("1_g1tow")]
 offset_right = 426.0
 offset_bottom = 189.0
 script = ExtResource("2_v2kbv")
 label_text = "Window Settings"
 
+[node name="WindowTitlePanel" parent="." index="1"]
+offset_right = 0.0
+
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
+offset_right = 672.0
 text = "Window Settings"
 
-[node name="GridContainer" type="GridContainer" parent="." index="2"]
+[node name="GridContainer" type="GridContainer" parent="." index="2" unique_id=234538248]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,41 +27,42 @@ theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 2
 columns = 2
 
-[node name="Label3" type="Label" parent="GridContainer" index="0"]
+[node name="Label3" type="Label" parent="GridContainer" index="0" unique_id=219021080]
 layout_mode = 2
 text = "Transparent background"
 
-[node name="CheckBox_TransparentBackground" type="CheckBox" parent="GridContainer" index="1"]
+[node name="CheckBox_TransparentBackground" type="CheckBox" parent="GridContainer" index="1" unique_id=1391460532]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Label" type="Label" parent="GridContainer" index="2"]
+[node name="Label" type="Label" parent="GridContainer" index="2" unique_id=1792943349]
 layout_mode = 2
 text = "Hide window decorations with UI"
 
-[node name="CheckBox_HideWindowDecorations" type="CheckBox" parent="GridContainer" index="3"]
+[node name="CheckBox_HideWindowDecorations" type="CheckBox" parent="GridContainer" index="3" unique_id=591098841]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Label6" type="Label" parent="GridContainer" index="4"]
+[node name="Label6" type="Label" parent="GridContainer" index="4" unique_id=1108142883]
 layout_mode = 2
 text = "Background color"
 
-[node name="ColorPickerButton_BackgroundColor" type="ColorPickerButton" parent="GridContainer" index="5"]
+[node name="ColorPickerButton_BackgroundColor" type="ColorPickerButton" parent="GridContainer" index="5" unique_id=30215221]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Label7" type="Label" parent="GridContainer" index="6"]
+[node name="Label7" type="Label" parent="GridContainer" index="6" unique_id=1417134369]
 layout_mode = 2
 text = "VSync Mode"
 
-[node name="OptionButton_VSyncMode" type="OptionButton" parent="GridContainer" index="7"]
+[node name="OptionButton_VSyncMode" type="OptionButton" parent="GridContainer" index="7" unique_id=268417281]
 unique_name_in_owner = true
 layout_mode = 2
 selected = 0
 item_count = 4
 popup/item_0/text = "Disabled"
+popup/item_0/id = 0
 popup/item_1/text = "Enabled"
 popup/item_1/id = 1
 popup/item_2/text = "Adaptive"

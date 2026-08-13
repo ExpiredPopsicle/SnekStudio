@@ -23,14 +23,12 @@ func _ready() -> void:
 	add_tracked_setting("scale_pitch", "Pitch scale", { "min" : -10, "max" : 10 })
 	add_tracked_setting("enable_pitch", "Pitch enabled")
 	
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
 
 	var encoded_data : PackedByteArray = PackedByteArray()
 	# 6 doubles (XYZ, PYR?) at 8 bytes each.
 	encoded_data.resize(8 * 6)
-
-	var val : float = cos(Time.get_unix_time_from_system()) * 20.0
 
 	if "head" in tracker_dict:
 		var b : Basis = tracker_dict["head"]["transform"].basis

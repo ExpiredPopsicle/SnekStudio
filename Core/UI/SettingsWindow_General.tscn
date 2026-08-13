@@ -1,20 +1,23 @@
-[gd_scene load_steps=4 format=3 uid="uid://6rc2mjibeujw"]
+[gd_scene format=3 uid="uid://6rc2mjibeujw"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_fb5na"]
 [ext_resource type="Script" uid="uid://cmsa3glep6m3a" path="res://Core/UI/SettingsWindow_General.gd" id="2_1jk3i"]
 [ext_resource type="PackedScene" uid="uid://cwt2oqwri2i5y" path="res://Core/UI/BasicSliderWithNumber.tscn" id="3_nw828"]
 
-[node name="SettingsWindow_General" instance=ExtResource("1_fb5na")]
+[node name="SettingsWindow_General" unique_id=405378893 instance=ExtResource("1_fb5na")]
 offset_right = 502.0
 offset_bottom = 279.0
 script = ExtResource("2_1jk3i")
 label_text = "General Settings"
 
-[node name="WindowTitle" parent="WindowTitlePanel" index="0"]
-offset_right = 644.0
-text = "Settings"
+[node name="WindowTitlePanel" parent="." index="1"]
+offset_right = 0.0
 
-[node name="ScrollContainer" type="ScrollContainer" parent="." index="2"]
+[node name="WindowTitle" parent="WindowTitlePanel" index="0"]
+offset_right = 748.0
+text = "General Settings"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="." index="2" unique_id=412659019]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,7 +26,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 3
 
-[node name="GridContainer" type="GridContainer" parent="ScrollContainer" index="0"]
+[node name="GridContainer" type="GridContainer" parent="ScrollContainer" index="0" unique_id=233326478]
 clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -32,11 +35,11 @@ theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 2
 columns = 2
 
-[node name="Label" type="Label" parent="ScrollContainer/GridContainer" index="0"]
+[node name="Label" type="Label" parent="ScrollContainer/GridContainer" index="0" unique_id=1722146510]
 layout_mode = 2
 text = "Camera FOV"
 
-[node name="BasicSliderWithNumber_CameraFOV" parent="ScrollContainer/GridContainer" index="1" instance=ExtResource("3_nw828")]
+[node name="BasicSliderWithNumber_CameraFOV" parent="ScrollContainer/GridContainer" index="1" unique_id=347999666 instance=ExtResource("3_nw828")]
 unique_name_in_owner = true
 layout_mode = 2
 min_value = 5.0
