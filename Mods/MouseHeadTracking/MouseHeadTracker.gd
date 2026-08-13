@@ -77,7 +77,7 @@ func _change_screen_center():
 	_change_screens(selected_screen_index)
 	update_settings_ui()
 	
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if len(selected_screen_index) == 0:
 		_change_screen_center()
 	elif selected_screen_index != prev_selected_screen_index and len(selected_screen_index) > 0:

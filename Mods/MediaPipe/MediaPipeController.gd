@@ -860,7 +860,7 @@ func _reset_hand_landmarks():
 	assert(len(hand_landmarks_left) == 21)
 	assert(len(hand_landmarks_right) == 21)
 
-func _update_hand(hand, parsed_data, skel : Skeleton3D):
+func _update_hand(hand, parsed_data, _skel : Skeleton3D):
 	var mark_counter = 0
 
 	var which_hand = hand[0].to_lower()
@@ -906,124 +906,125 @@ func _update_hand(hand, parsed_data, skel : Skeleton3D):
 		mark_counter += 1
 
 	# FIXME: I have no idea what these columns mean anymore.
-	var finger_bone_array_array = [
-		[
-			{
-				"bone_name_current" : "IndexProximal",
-				"landmark_index_start" : 5,
-				"landmark_index_end"  : 6,
-				"bone_name_next" : "IndexIntermediate",
-				"bone_name_parent_of_next" : "IndexProximal"
-			},
-			{
-				"bone_name_current" : "IndexIntermediate",
-				"landmark_index_start" : 6,
-				"landmark_index_end"  : 7,
-				"bone_name_next" : "IndexDistal",
-				"bone_name_parent_of_next" : "IndexIntermediate"
-			},
-			{
-				"bone_name_current" : "IndexDistal",
-				"landmark_index_start" : 7,
-				"landmark_index_end"  : 8,
-				"bone_name_next" : "IndexDistal",
-				"bone_name_parent_of_next" : "IndexIntermediate"
-			}
-		],
-		[
-			{
-				"bone_name_current" : "MiddleProximal",
-				"landmark_index_start" : 9,
-				"landmark_index_end"  : 10,
-				"bone_name_next" : "MiddleIntermediate",
-				"bone_name_parent_of_next" : "MiddleProximal"
-			},
-			{
-				"bone_name_current" : "MiddleIntermediate",
-				"landmark_index_start" : 10,
-				"landmark_index_end"  : 11,
-				"bone_name_next" : "MiddleDistal",
-				"bone_name_parent_of_next" : "MiddleIntermediate"
-			},
-			{
-				"bone_name_current" : "MiddleDistal",
-				"landmark_index_start" : 11,
-				"landmark_index_end"  : 12,
-				"bone_name_next" : "MiddleDistal",
-				"bone_name_parent_of_next" : "MiddleIntermediate"
-			}
-		],
-		[
-			{
-				"bone_name_current" : "RingProximal",
-				"landmark_index_start" : 13,
-				"landmark_index_end"  : 14,
-				"bone_name_next" : "RingIntermediate",
-				"bone_name_parent_of_next" : "RingProximal"
-			},
-			{
-				"bone_name_current" : "RingIntermediate",
-				"landmark_index_start" : 14,
-				"landmark_index_end"  : 15,
-				"bone_name_next" : "RingDistal",
-				"bone_name_parent_of_next" : "RingIntermediate"
-			},
-			{
-				"bone_name_current" : "RingDistal",
-				"landmark_index_start" : 15,
-				"landmark_index_end"  : 16,
-				"bone_name_next" : "RingDistal",
-				"bone_name_parent_of_next" : "RingIntermediate"
-			}
-		],
-		[
-			{
-				"bone_name_current" : "LittleProximal",
-				"landmark_index_start" : 17,
-				"landmark_index_end"  : 18,
-				"bone_name_next" : "LittleIntermediate",
-				"bone_name_parent_of_next" : "LittleProximal"
-			},
-			{
-				"bone_name_current" : "LittleIntermediate",
-				"landmark_index_start" : 18,
-				"landmark_index_end"  : 19,
-				"bone_name_next" : "LittleDistal",
-				"bone_name_parent_of_next" : "LittleIntermediate"
-			},
-			{
-				"bone_name_current" : "LittleDistal",
-				"landmark_index_start" : 19,
-				"landmark_index_end"  : 20,
-				"bone_name_next" : "LittleDistal",
-				"bone_name_parent_of_next" : "LittleIntermediate"
-			}
-		],
-		[
-			# FIXME: Metacarpal *origin* needs to change relative to hand as well.
-			{
-				"bone_name_current" : "ThumbMetacarpal",
-				"landmark_index_start" : 1,
-				"landmark_index_end"  : 2,
-				"bone_name_next" : "ThumbProximal",
-				"bone_name_parent_of_next" : "ThumbMetacarpal"
-			},
-			{
-				"bone_name_current" : "ThumbProximal",
-				"landmark_index_start" : 2,
-				"landmark_index_end"  : 3,
-				"bone_name_next" : "ThumbDistal",
-				"bone_name_parent_of_next" : "ThumbProximal"
-			},
-			{
-				"bone_name_current" : "ThumbDistal",
-				"landmark_index_start" : 3,
-				"landmark_index_end"  : 4,
-				"bone_name_next" : "ThumbDistal",
-				"bone_name_parent_of_next" : "ThumbProximal"
-			},
-		]
-	]
+	# UNUSED
+	# var finger_bone_array_array = [
+	# 	[
+	# 		{
+	# 			"bone_name_current" : "IndexProximal",
+	# 			"landmark_index_start" : 5,
+	# 			"landmark_index_end"  : 6,
+	# 			"bone_name_next" : "IndexIntermediate",
+	# 			"bone_name_parent_of_next" : "IndexProximal"
+	# 		},
+	# 		{
+	# 			"bone_name_current" : "IndexIntermediate",
+	# 			"landmark_index_start" : 6,
+	# 			"landmark_index_end"  : 7,
+	# 			"bone_name_next" : "IndexDistal",
+	# 			"bone_name_parent_of_next" : "IndexIntermediate"
+	# 		},
+	# 		{
+	# 			"bone_name_current" : "IndexDistal",
+	# 			"landmark_index_start" : 7,
+	# 			"landmark_index_end"  : 8,
+	# 			"bone_name_next" : "IndexDistal",
+	# 			"bone_name_parent_of_next" : "IndexIntermediate"
+	# 		}
+	# 	],
+	# 	[
+	# 		{
+	# 			"bone_name_current" : "MiddleProximal",
+	# 			"landmark_index_start" : 9,
+	# 			"landmark_index_end"  : 10,
+	# 			"bone_name_next" : "MiddleIntermediate",
+	# 			"bone_name_parent_of_next" : "MiddleProximal"
+	# 		},
+	# 		{
+	# 			"bone_name_current" : "MiddleIntermediate",
+	# 			"landmark_index_start" : 10,
+	# 			"landmark_index_end"  : 11,
+	# 			"bone_name_next" : "MiddleDistal",
+	# 			"bone_name_parent_of_next" : "MiddleIntermediate"
+	# 		},
+	# 		{
+	# 			"bone_name_current" : "MiddleDistal",
+	# 			"landmark_index_start" : 11,
+	# 			"landmark_index_end"  : 12,
+	# 			"bone_name_next" : "MiddleDistal",
+	# 			"bone_name_parent_of_next" : "MiddleIntermediate"
+	# 		}
+	# 	],
+	# 	[
+	# 		{
+	# 			"bone_name_current" : "RingProximal",
+	# 			"landmark_index_start" : 13,
+	# 			"landmark_index_end"  : 14,
+	# 			"bone_name_next" : "RingIntermediate",
+	# 			"bone_name_parent_of_next" : "RingProximal"
+	# 		},
+	# 		{
+	# 			"bone_name_current" : "RingIntermediate",
+	# 			"landmark_index_start" : 14,
+	# 			"landmark_index_end"  : 15,
+	# 			"bone_name_next" : "RingDistal",
+	# 			"bone_name_parent_of_next" : "RingIntermediate"
+	# 		},
+	# 		{
+	# 			"bone_name_current" : "RingDistal",
+	# 			"landmark_index_start" : 15,
+	# 			"landmark_index_end"  : 16,
+	# 			"bone_name_next" : "RingDistal",
+	# 			"bone_name_parent_of_next" : "RingIntermediate"
+	# 		}
+	# 	],
+	# 	[
+	# 		{
+	# 			"bone_name_current" : "LittleProximal",
+	# 			"landmark_index_start" : 17,
+	# 			"landmark_index_end"  : 18,
+	# 			"bone_name_next" : "LittleIntermediate",
+	# 			"bone_name_parent_of_next" : "LittleProximal"
+	# 		},
+	# 		{
+	# 			"bone_name_current" : "LittleIntermediate",
+	# 			"landmark_index_start" : 18,
+	# 			"landmark_index_end"  : 19,
+	# 			"bone_name_next" : "LittleDistal",
+	# 			"bone_name_parent_of_next" : "LittleIntermediate"
+	# 		},
+	# 		{
+	# 			"bone_name_current" : "LittleDistal",
+	# 			"landmark_index_start" : 19,
+	# 			"landmark_index_end"  : 20,
+	# 			"bone_name_next" : "LittleDistal",
+	# 			"bone_name_parent_of_next" : "LittleIntermediate"
+	# 		}
+	# 	],
+	# 	[
+	# 		# FIXME: Metacarpal *origin* needs to change relative to hand as well.
+	# 		{
+	# 			"bone_name_current" : "ThumbMetacarpal",
+	# 			"landmark_index_start" : 1,
+	# 			"landmark_index_end"  : 2,
+	# 			"bone_name_next" : "ThumbProximal",
+	# 			"bone_name_parent_of_next" : "ThumbMetacarpal"
+	# 		},
+	# 		{
+	# 			"bone_name_current" : "ThumbProximal",
+	# 			"landmark_index_start" : 2,
+	# 			"landmark_index_end"  : 3,
+	# 			"bone_name_next" : "ThumbDistal",
+	# 			"bone_name_parent_of_next" : "ThumbProximal"
+	# 		},
+	# 		{
+	# 			"bone_name_current" : "ThumbDistal",
+	# 			"landmark_index_start" : 3,
+	# 			"landmark_index_end"  : 4,
+	# 			"bone_name_next" : "ThumbDistal",
+	# 			"bone_name_parent_of_next" : "ThumbProximal"
+	# 		},
+	# 	]
+	# ]
 
 func _update_hand_tracker(
 	delta, hand_data, parsed_data, score_threshold, score_exponent,

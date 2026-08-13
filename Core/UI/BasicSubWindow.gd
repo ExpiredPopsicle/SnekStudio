@@ -87,6 +87,7 @@ func _on_resized() -> void:
 		child.position = Vector2(0.0, 0.0)
 
 @export_tool_button("Fix header")
+@warning_ignore("unused_private_class_variable")
 var _fix_header_button : Callable = func():
 	_on_resized()
 

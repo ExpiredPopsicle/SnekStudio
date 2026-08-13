@@ -7,7 +7,7 @@ func _ready() -> void:
 	add_tracked_setting("yaw_offset", "Yaw Offset", { "min" : -180.0, "max" : 180.0 })
 	add_tracked_setting("pitch_offset", "Pitch Offset", { "min" : -180.0, "max" : 180.0 })
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 
 	var rotation_transform : Transform3D = Transform3D(
 		Basis.from_euler(Vector3(pitch_offset * PI/180.0, yaw_offset * PI/180.0, 0.0)),

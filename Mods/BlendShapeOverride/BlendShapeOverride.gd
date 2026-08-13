@@ -19,7 +19,7 @@ func scene_shutdown() -> void:
 func load_before(_settings_old : Dictionary, _settings_new : Dictionary):
 	_clear_shape()
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	var blend_shape_dict : Dictionary = get_global_mod_data("BlendShapes")
 	blend_shape_dict[blendshape_name] = blendshape_value
 

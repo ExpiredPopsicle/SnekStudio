@@ -53,7 +53,12 @@ func send_raw(status_code: int, data: PackedByteArray = PackedByteArray([]), con
 ## For sending parts of data
 ## [br]TODO: http_file_router.gd - use this to send small parts of large files at a time to avoid smashing the ram of the server
 ## [br]TODO: This will probably be used for range header?
-func send_partial(status_code: int, data: PackedByteArray = PackedByteArray([]), content_type: String = "application/octet-stream", extra_header: String = "") -> void:
+func send_partial(
+	_status_code: int,
+	data: PackedByteArray = [],
+	_content_type: String = "application/octet-stream",
+	_extra_header: String = "",
+) -> void:
 	client.put_data(data)
 
 ## Send out a response to the client

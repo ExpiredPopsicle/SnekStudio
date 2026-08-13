@@ -131,7 +131,7 @@ func scene_shutdown() -> void:
 	var skeleton : Skeleton3D = get_skeleton()
 	skeleton.global_position = Vector3(0.0, 0.0, 0.0)
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 
 	if playback_enabled:
 

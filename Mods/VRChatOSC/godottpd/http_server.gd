@@ -40,7 +40,7 @@ var _method_regex: RegEx = RegEx.new()
 var _header_regex: RegEx = RegEx.new()
 
 # The base path used in a project to serve files
-var _local_base_path: String = "res://src"
+# var _local_base_path: String = "res://src" # UNUSED
 
 # list of host allowed to call the server
 var _allowed_origins: PackedStringArray = []
@@ -52,8 +52,8 @@ var _access_control_allowed_methods = "POST, GET, OPTIONS"
 var _access_control_allowed_headers = "content-type"
 
 # Compile the required regex
-func _init(_logging: bool = false):
-	self._logging = _logging
+func _init(logging: bool = false):
+	self._logging = logging
 	set_process(false)
 	_method_regex.compile("^(?<method>GET|POST|HEAD|PUT|PATCH|DELETE|OPTIONS) (?<path>[^ ]+) HTTP/1.1$")
 	_header_regex.compile("^(?<key>[\\w-]+): (?<value>(.*))$")
@@ -72,7 +72,7 @@ func _print_debug(message: String) -> void:
 ## [br][param path] - The path the router will handle.
 ## Supports a regular expression and the group matches will be available in HttpRequest.query_match.
 ## [br][param router] - The router which will handle the request
-func register_router(path: String, router: HttpRouter, condition: Callable = func(request: HttpRequest): return true):
+func register_router(path: String, router: HttpRouter, condition: Callable = func(_request: HttpRequest): return true):
 	var path_regex = RegEx.new()
 	var params: Array = []
 	if path.left(0) == "^":

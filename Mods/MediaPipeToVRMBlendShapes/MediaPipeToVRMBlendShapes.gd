@@ -14,7 +14,7 @@ func check_configuration() -> PackedStringArray:
 func _ready() -> void:
 	add_tracked_setting("remove_other_shapes", "Exclude other shapes")
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 
 	var blend_shapes_to_convert : Dictionary = get_global_mod_data("BlendShapes")
 	var output_shapes : Dictionary = convert_mediapipe_shapes_to_vrm_standard(blend_shapes_to_convert)
