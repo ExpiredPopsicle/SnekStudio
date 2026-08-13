@@ -498,7 +498,6 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 		if "mods" in settings_dict:
 			shutdown_mods()
 			for mod_definition in settings_dict["mods"]:
-				print(mod_definition)
 				var packed_scene = load(mod_definition["scene_path"])
 				if packed_scene:
 					var scene = packed_scene.instantiate()
