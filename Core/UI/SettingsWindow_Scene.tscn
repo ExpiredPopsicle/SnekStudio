@@ -1,21 +1,22 @@
-[gd_scene load_steps=3 format=3 uid="uid://kxrsf0p1se2x"]
+[gd_scene format=3 uid="uid://kxrsf0p1se2x"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_btiov"]
 [ext_resource type="Script" uid="uid://bwvka7mkevlcg" path="res://Core/UI/SettingsWindow_Scene.gd" id="2_d1a2w"]
 
-[node name="SettingsWindow_Lighting" instance=ExtResource("1_btiov")]
+[node name="SettingsWindow_Lighting" unique_id=1506872349 instance=ExtResource("1_btiov")]
 offset_right = 618.0
 offset_bottom = 291.0
 script = ExtResource("2_d1a2w")
 label_text = "Scene Settings"
 
 [node name="WindowTitlePanel" parent="." index="1"]
-grow_horizontal = 2
+offset_right = 0.0
 
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
+offset_right = 864.0
 text = "Scene Settings"
 
-[node name="GridContainer" type="GridContainer" parent="." index="2"]
+[node name="GridContainer" type="GridContainer" parent="." index="2" unique_id=1385995331]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -26,7 +27,7 @@ theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 2
 columns = 2
 
-[node name="Label" type="Label" parent="." index="3"]
+[node name="Label" type="Label" parent="." index="3" unique_id=598119119]
 custom_minimum_size = Vector2(256, 0)
 layout_mode = 0
 offset_right = 40.0

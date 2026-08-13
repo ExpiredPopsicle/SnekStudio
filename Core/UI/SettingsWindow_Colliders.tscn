@@ -1,10 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://y6nky8evh76x"]
+[gd_scene format=3 uid="uid://y6nky8evh76x"]
 
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_6t81y"]
 [ext_resource type="Script" uid="uid://c0jjjq1tu0h1m" path="res://Core/UI/SettingsWindow_Colliders.gd" id="2_emcxk"]
 [ext_resource type="PackedScene" uid="uid://cwt2oqwri2i5y" path="res://Core/UI/BasicSliderWithNumber.tscn" id="3_iqo7w"]
 
-[node name="SettingsWindow_Colliders" instance=ExtResource("1_6t81y")]
+[node name="SettingsWindow_Colliders" unique_id=563047408 instance=ExtResource("1_6t81y")]
 offset_right = 397.0
 offset_bottom = 287.0
 script = ExtResource("2_emcxk")
@@ -17,7 +17,7 @@ offset_right = 397.0
 offset_right = 365.0
 text = "Colliders Settings"
 
-[node name="HSplitContainer" type="HSplitContainer" parent="." index="2"]
+[node name="HSplitContainer" type="HSplitContainer" parent="." index="2" unique_id=319922569]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -25,59 +25,60 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer" index="0"]
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer" index="0" unique_id=2039524937]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Label" type="Label" parent="HSplitContainer/VBoxContainer" index="0"]
+[node name="Label" type="Label" parent="HSplitContainer/VBoxContainer" index="0" unique_id=1965000896]
 layout_mode = 2
 text = "Bone hierarchy"
 
-[node name="ColliderTree" type="Tree" parent="HSplitContainer/VBoxContainer" index="1"]
+[node name="ColliderTree" type="Tree" parent="HSplitContainer/VBoxContainer" index="1" unique_id=1286922166]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/VBoxContainer" index="2"]
+[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/VBoxContainer" index="2" unique_id=423426936]
 layout_mode = 2
 
-[node name="Button_Add" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="0"]
+[node name="Button_Add" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="0" unique_id=189586777]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Add"
 
-[node name="Button_Remove" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="1"]
+[node name="Button_Remove" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="1" unique_id=202659823]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Remove"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer" index="1"]
+[node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer" index="1" unique_id=544138263]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Slider_Container" type="VBoxContainer" parent="HSplitContainer/ScrollContainer" index="0"]
+[node name="Slider_Container" type="VBoxContainer" parent="HSplitContainer/ScrollContainer" index="0" unique_id=1160792073]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CheckBox_Enabled" type="CheckBox" parent="HSplitContainer/ScrollContainer/Slider_Container" index="0"]
+[node name="CheckBox_Enabled" type="CheckBox" parent="HSplitContainer/ScrollContainer/Slider_Container" index="0" unique_id=1357616097]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Enabled"
 
-[node name="Label" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container" index="1"]
+[node name="Label" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container" index="1" unique_id=1914737752]
 layout_mode = 2
 text = "Position"
 
-[node name="GridContainer" type="GridContainer" parent="HSplitContainer/ScrollContainer/Slider_Container" index="2"]
+[node name="GridContainer" type="GridContainer" parent="HSplitContainer/ScrollContainer/Slider_Container" index="2" unique_id=912562167]
 layout_mode = 2
 columns = 2
 
-[node name="Label" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="0"]
+[node name="Label" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="0" unique_id=1823926830]
 layout_mode = 2
 text = "X"
 
-[node name="Position_Slider_X" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="1" instance=ExtResource("3_iqo7w")]
+[node name="Position_Slider_X" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="1" unique_id=1265502311 instance=ExtResource("3_iqo7w")]
 unique_name_in_owner = true
 layout_mode = 2
 min_value = -2.0
@@ -85,11 +86,11 @@ max_value = 2.0
 value = 0.0
 step = 0.01
 
-[node name="Label2" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="2"]
+[node name="Label2" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="2" unique_id=478082586]
 layout_mode = 2
 text = "Y"
 
-[node name="Position_Slider_Y" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="3" instance=ExtResource("3_iqo7w")]
+[node name="Position_Slider_Y" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="3" unique_id=386604511 instance=ExtResource("3_iqo7w")]
 unique_name_in_owner = true
 layout_mode = 2
 min_value = -2.0
@@ -97,11 +98,11 @@ max_value = 2.0
 value = 0.0
 step = 0.01
 
-[node name="Label3" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="4"]
+[node name="Label3" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="4" unique_id=763886011]
 layout_mode = 2
 text = "Z"
 
-[node name="Position_Slider_Z" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="5" instance=ExtResource("3_iqo7w")]
+[node name="Position_Slider_Z" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="5" unique_id=837521025 instance=ExtResource("3_iqo7w")]
 unique_name_in_owner = true
 layout_mode = 2
 min_value = -2.0
@@ -109,11 +110,11 @@ max_value = 2.0
 value = 0.0
 step = 0.01
 
-[node name="Label4" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container" index="3"]
+[node name="Label4" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container" index="3" unique_id=404570862]
 layout_mode = 2
 text = "Radius"
 
-[node name="Radius_Slider" parent="HSplitContainer/ScrollContainer/Slider_Container" index="4" instance=ExtResource("3_iqo7w")]
+[node name="Radius_Slider" parent="HSplitContainer/ScrollContainer/Slider_Container" index="4" unique_id=172520427 instance=ExtResource("3_iqo7w")]
 unique_name_in_owner = true
 layout_mode = 2
 max_value = 5.0

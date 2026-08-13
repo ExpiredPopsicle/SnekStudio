@@ -1,42 +1,42 @@
-[gd_scene load_steps=4 format=3 uid="uid://c6e15slpt0o7x"]
+[gd_scene format=3 uid="uid://c6e15slpt0o7x"]
 
-[ext_resource type="Script" uid="uid://dex3x1r7i8yqy" path="res://Core/UI/SettingsWindowGroup.gd" id="1_2cmcf"]
+[ext_resource type="Script" uid="uid://c2cx3j1m336px" path="res://Core/UI/SettingsWindowGroup.gd" id="1_2cmcf"]
 [ext_resource type="Texture2D" uid="uid://d3mbo5a4poijq" path="res://Core/UI/Images/icon_collapsible_open.png" id="2_4wbec"]
 [ext_resource type="Texture2D" uid="uid://l1xrk53vhbb" path="res://Core/UI/Images/icon_collapsible_closed.png" id="3_f6m0g"]
 
-[node name="SettingsWindowGroup" type="PanelContainer"]
+[node name="SettingsWindowGroup" type="PanelContainer" unique_id=483730758]
 offset_right = 169.0
 offset_bottom = 24.0
 size_flags_horizontal = 3
 script = ExtResource("1_2cmcf")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=106358589]
 layout_mode = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=461554916]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1984300956]
 layout_mode = 2
 
-[node name="CheckBox_ShowGroup" type="CheckBox" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="CheckBox_ShowGroup" type="CheckBox" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1749905174]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_icons/checked = ExtResource("2_4wbec")
 theme_override_icons/unchecked = ExtResource("3_f6m0g")
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1558194095]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "<unknown group>"
 
-[node name="Container_SettingsGroup" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="Container_SettingsGroup" type="VBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1649343813]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2

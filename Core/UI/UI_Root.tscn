@@ -1,6 +1,6 @@
-[gd_scene load_steps=12 format=3 uid="uid://dqrb5gghpk1iu"]
+[gd_scene format=3 uid="uid://dqrb5gghpk1iu"]
 
-[ext_resource type="Script" uid="uid://blbfdsno3vvss" path="res://Core/UI/UI_Root.gd" id="1_nc2n8"]
+[ext_resource type="Script" uid="uid://egtkt1ep7rnk" path="res://Core/UI/UI_Root.gd" id="1_nc2n8"]
 [ext_resource type="PackedScene" uid="uid://yq6jyoi206yb" path="res://Core/UI/SettingsWindow_Sound.tscn" id="2_22ujg"]
 [ext_resource type="PackedScene" uid="uid://1yetg6crf27v" path="res://Core/UI/HelpControlsWindow.tscn" id="2_kenqi"]
 [ext_resource type="PackedScene" uid="uid://y6nky8evh76x" path="res://Core/UI/SettingsWindow_Colliders.tscn" id="2_m5fmr"]
@@ -12,7 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://kxrsf0p1se2x" path="res://Core/UI/SettingsWindow_Scene.tscn" id="10_7flul"]
 [ext_resource type="PackedScene" uid="uid://c0krlpbiun1ic" path="res://Core/UI/SettingsWindow_Window.tscn" id="11_5qt8l"]
 
-[node name="UI_Root" type="Control"]
+[node name="UI_Root" type="Control" unique_id=1519584203]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,7 +23,7 @@ size_flags_horizontal = 3
 mouse_filter = 1
 script = ExtResource("1_nc2n8")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1083736599]
 custom_minimum_size = Vector2(0, 32)
 layout_mode = 1
 anchors_preset = 10
@@ -31,17 +31,17 @@ anchor_right = 1.0
 grow_horizontal = 2
 color = Color(0, 0, 0, 1)
 
-[node name="HBoxContainer" type="HBoxContainer" parent="ColorRect"]
+[node name="HBoxContainer" type="HBoxContainer" parent="ColorRect" unique_id=247979554]
 layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 0.062
 offset_bottom = 28.52
 
-[node name="MenuBar" type="MenuBar" parent="ColorRect/HBoxContainer"]
+[node name="MenuBar" type="MenuBar" parent="ColorRect/HBoxContainer" unique_id=1946792517]
 layout_mode = 2
 
-[node name="File" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar"]
+[node name="File" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar" unique_id=1005201247]
 size = Vector2i(145, 124)
 item_count = 6
 item_0/text = "Open VRM..."
@@ -57,7 +57,7 @@ item_4/separator = true
 item_5/text = "Quit"
 item_5/id = 1
 
-[node name="Settings" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar"]
+[node name="Settings" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar" unique_id=1364139792]
 size = Vector2i(176, 100)
 item_count = 5
 item_0/text = "General settings..."
@@ -71,34 +71,34 @@ item_3/id = 3
 item_4/text = "Window..."
 item_4/id = 4
 
-[node name="Modules" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar"]
+[node name="Modules" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar" unique_id=1374391545]
 item_count = 2
 item_0/text = "Mod list..."
 item_0/id = 0
 item_1/text = "Channel Event Tester..."
 item_1/id = 1
 
-[node name="Control" type="Control" parent="ColorRect/HBoxContainer"]
+[node name="Control" type="Control" parent="ColorRect/HBoxContainer" unique_id=1994807295]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="MenuBar2" type="MenuBar" parent="ColorRect/HBoxContainer"]
+[node name="MenuBar2" type="MenuBar" parent="ColorRect/HBoxContainer" unique_id=952943693]
 layout_mode = 2
 
-[node name="Help" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar2"]
+[node name="Help" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar2" unique_id=580153458]
 item_count = 2
 item_0/text = "Controls..."
 item_0/id = 0
 item_1/text = "About..."
 item_1/id = 1
 
-[node name="SettingsSaveDialog" type="FileDialog" parent="."]
+[node name="SettingsSaveDialog" type="FileDialog" parent="." unique_id=1502143859]
 size = Vector2i(603, 175)
 access = 2
 filters = PackedStringArray("*.json")
 use_native_dialog = true
 
-[node name="SettingsLoadDialog" type="FileDialog" parent="."]
+[node name="SettingsLoadDialog" type="FileDialog" parent="." unique_id=927871564]
 title = "Open a File"
 ok_button_text = "Open"
 file_mode = 0
@@ -106,7 +106,7 @@ access = 2
 filters = PackedStringArray("*.json")
 use_native_dialog = true
 
-[node name="VRMFileLoadDialog" type="FileDialog" parent="."]
+[node name="VRMFileLoadDialog" type="FileDialog" parent="." unique_id=601215949]
 title = "Open a File"
 size = Vector2i(392, 175)
 ok_button_text = "Open"
@@ -115,87 +115,97 @@ access = 2
 filters = PackedStringArray("*.vrm")
 use_native_dialog = true
 
-[node name="LineEditFileDialog" type="FileDialog" parent="."]
+[node name="LineEditFileDialog" type="FileDialog" parent="." unique_id=1863480991]
 title = "Open a File"
 ok_button_text = "Open"
 file_mode = 0
 access = 2
 use_native_dialog = true
 
-[node name="ModsWindow" parent="." instance=ExtResource("2_v48gv")]
+[node name="ModsWindow" parent="." unique_id=1865287418 instance=ExtResource("2_v48gv")]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
 offset_left = 247.0
 offset_top = 148.0
 offset_right = 886.0
 offset_bottom = 513.0
 
-[node name="HelpControlsWindow" parent="." instance=ExtResource("2_kenqi")]
+[node name="HelpControlsWindow" parent="." unique_id=267634806 instance=ExtResource("2_kenqi")]
 visible = false
+layout_mode = 0
 offset_left = 287.0
 offset_top = 298.0
 offset_right = 565.0
 offset_bottom = 454.0
 
-[node name="HelpAboutWindow" parent="." instance=ExtResource("3_krby6")]
+[node name="HelpAboutWindow" parent="." unique_id=501118854 instance=ExtResource("3_krby6")]
 visible = false
+layout_mode = 0
 offset_left = 394.0
 offset_top = 228.0
 offset_right = 672.0
 offset_bottom = 384.0
 focus_mode = 0
 
-[node name="ModAddWindow" parent="." instance=ExtResource("6_ohgoj")]
+[node name="ModAddWindow" parent="." unique_id=943051755 instance=ExtResource("6_ohgoj")]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
 offset_left = 363.0
 offset_top = 255.0
 offset_right = 841.0
 offset_bottom = 612.0
 
-[node name="ChannelEvents" parent="." instance=ExtResource("7_0a1sx")]
+[node name="ChannelEvents" parent="." unique_id=517740418 instance=ExtResource("7_0a1sx")]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
 offset_left = 664.0
 offset_top = 103.0
 offset_right = 1088.0
 offset_bottom = 259.0
 
-[node name="SettingsWindow_Colliders" parent="." instance=ExtResource("2_m5fmr")]
+[node name="SettingsWindow_Colliders" parent="." unique_id=1560350496 instance=ExtResource("2_m5fmr")]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
 offset_left = 308.0
 offset_top = 160.0
 offset_right = 858.0
 offset_bottom = 491.0
 
-[node name="SettingsWindow_General" parent="." instance=ExtResource("4_kl5fl")]
+[node name="SettingsWindow_General" parent="." unique_id=1831025119 instance=ExtResource("4_kl5fl")]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
 offset_left = 281.0
 offset_top = 171.0
 offset_right = 956.0
 offset_bottom = 484.0
 
-[node name="SettingsWindow_Sound" parent="." instance=ExtResource("2_22ujg")]
+[node name="SettingsWindow_Sound" parent="." unique_id=1435306768 instance=ExtResource("2_22ujg")]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
 offset_left = 466.0
 offset_top = 225.0
 offset_right = 744.0
 offset_bottom = 381.0
 
-[node name="SettingsWindow_Scene" parent="." instance=ExtResource("10_7flul")]
+[node name="SettingsWindow_Scene" parent="." unique_id=879473983 instance=ExtResource("10_7flul")]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
 offset_left = 241.0
 offset_top = 206.0
 offset_right = 859.0
 offset_bottom = 497.0
 
-[node name="SettingsWindow_Window" parent="." instance=ExtResource("11_5qt8l")]
+[node name="SettingsWindow_Window" parent="." unique_id=221462454 instance=ExtResource("11_5qt8l")]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
 offset_left = 390.0
 offset_top = 214.0
 offset_right = 668.0
