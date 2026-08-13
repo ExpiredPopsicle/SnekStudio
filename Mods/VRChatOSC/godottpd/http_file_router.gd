@@ -111,7 +111,7 @@ func handle_get(request: HttpRequest, response: HttpResponse) -> void:
 func _serve_file(file_path: String, seek: int = -1) -> PackedByteArray:
 	var content: PackedByteArray = []
 	var file: FileAccess = FileAccess.open(file_path, FileAccess.READ)
-	var error = file.get_open_error()
+	var error = FileAccess.get_open_error()
 	if error:
 		content = ("Couldn't serve file, ERROR = %s" % error).to_ascii_buffer()
 	else:
