@@ -707,9 +707,7 @@ class MediaPipeTracker:
             with self.the_big_ugly_mutex:
                 self.udp_port_number = new_settings_dict["udp_port_number"]
 
-        if "video_device_number" in new_settings_dict:
-            with self.the_big_ugly_mutex:
-                self.video_device_index = new_settings_dict["video_device_number"]
+        landmark_options_changed = False
 
         if "hand_confidence_time_threshold" in new_settings_dict:
             with self.the_big_ugly_mutex:
@@ -734,14 +732,22 @@ class MediaPipeTracker:
         if "hand_detection_confidence" in new_settings_dict:
             with self.the_big_ugly_mutex:
                 self.hand_detection_confidence = new_settings_dict["hand_detection_confidence"]
+                landmark_options_changed = True
 
         if "hand_tracking_confidence" in new_settings_dict:
             with self.the_big_ugly_mutex:
                 self.hand_tracking_confidence = new_settings_dict["hand_tracking_confidence"]
+                landmark_options_changed = True
 
         if "hand_presence_confidence" in new_settings_dict:
             with self.the_big_ugly_mutex:
                 self.hand_presence_confidence = new_settings_dict["hand_presence_confidence"]
+                landmark_options_changed = True
+
+        if landmark_options_changed:
+            with self.the_big_ugly_mutex:
+                self._write_log("Settings updated, reinitializing MediaPipe")
+                self._init_mediapipe()
 
     def _shutdown_mediapipe(self):
 
