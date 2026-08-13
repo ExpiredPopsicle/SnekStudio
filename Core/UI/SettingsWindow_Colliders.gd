@@ -1,3 +1,4 @@
+@tool
 extends BasicSubWindow
 
 var _tree_items_by_bone = {}

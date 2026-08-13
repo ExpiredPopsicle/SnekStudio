@@ -1,3 +1,4 @@
+@tool
 extends BasicSubWindow
 
 var _mods_list: Array[Dictionary]
