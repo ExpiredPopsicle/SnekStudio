@@ -127,14 +127,14 @@ func _handle_message_part(packet : PackedByteArray):
 	
 	var parse_result # Temp value used in a bunch of places.
 
-	var address_string = ""
-	var type_string = ""
+	var address_str = ""
+	var type_str = ""
 	var arguments = []
-	
+
 	# Parse address string.
 	parse_result = _parse_osc_string(packet, byte_index)
 	byte_index = parse_result[0]
-	address_string = parse_result[1]
+	address_str = parse_result[1]
 
 	if parse_result[1] == "#bundle":
 
@@ -162,14 +162,14 @@ func _handle_message_part(packet : PackedByteArray):
 			parse_result = _parse_osc_string(packet, byte_index)
 			if parse_result[1].length() > 0:
 				if parse_result[1][0] == ',':
-					type_string = parse_result[1]
+					type_str = parse_result[1]
 					byte_index = parse_result[0]
 		
 		# Discard any packets with unknown type data.
-		if type_string.length() > 0:
+		if type_str.length() > 0:
 			
 			var bad_packet = false
-			for c in type_string:
+			for c in type_str:
 
 				if c != "f" && c != "i" && c != "s" && c != "b" && c != ",":
 					# FIXME: Do bad packet reporting here.
@@ -180,9 +180,9 @@ func _handle_message_part(packet : PackedByteArray):
 				return
 
 		# Parse data.
-		if type_string.length() > 1:
+		if type_str.length() > 1:
 
-			for c in type_string.substr(1):
+			for c in type_str.substr(1):
 				if c == "i":
 					parse_result = _parse_osc_int(packet, byte_index)
 				if c == "f":
@@ -196,7 +196,7 @@ func _handle_message_part(packet : PackedByteArray):
 				arguments.append(parse_result[1])
 
 		emit_signal(
-			"message_received", address_string,
+			"message_received", address_str,
 			arguments)
 
 func _physics_process(_delta):

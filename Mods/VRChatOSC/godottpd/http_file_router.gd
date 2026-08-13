@@ -30,6 +30,7 @@ var monthnames: Array[String] = ['___', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'
 ## [br] - [param fallback_page]: Full path to the fallback page which will be served if the requested file was not found
 ## [br] - [param extensions]: A list of extensions that will be checked if no file extension is provided by the request
 ## [br]	- [param exclude_extensions]: A list of extensions that will be excluded if requested
+@warning_ignore("shadowed_variable")
 func _init(
 	path: String,
 	options: Dictionary = {
