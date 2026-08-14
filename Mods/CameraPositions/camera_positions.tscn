@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cfocpa8me6kp8"]
 
-[ext_resource type="Script" uid="uid://btyx10nnpmgto" path="res://Mods/CameraPositions/camera_positions.gd" id="1_7ofvo"]
+[ext_resource type="Script" uid="uid://bmq8glvhm7wdr" path="res://Mods/CameraPositions/camera_positions.gd" id="1_7ofvo"]
 
 [node name="CameraPositions" type="Node3D" unique_id=296717549]
 script = ExtResource("1_7ofvo")
