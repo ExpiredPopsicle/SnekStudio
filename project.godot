@@ -31,7 +31,6 @@ driver/enable_input=true
 
 [debug]
 
-settings/stdout/print_fps=true
 gdscript/warnings/integer_division=0
 
 [display]
