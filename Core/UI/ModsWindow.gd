@@ -1,7 +1,28 @@
 @tool
 extends BasicSubWindow
 
-var _selected_mod = null
+## Get the currently selected mod in the mod list, if any.
+func get_selected_mod() -> Mod_Base:
+	var mods_list_node : ItemList = %ModsList
+	var selected := mods_list_node.get_selected_items()
+	if selected.size() == 0: return null # nothing selected
+
+	assert(selected.size() == 1) # only one selection is supported
+	var mod: Mod_Base = mods_list_node.get_item_metadata(selected[0])
+	if (not is_instance_valid(mod)) or (not mod.is_inside_tree()): return null
+
+	return mod
+
+## Sets the currently selected mod in the mod list to the specified mod, if any.
+## May only be called after update_mods_list if the global mods list changed.
+func set_selected_mod(mod: Mod_Base) -> void:
+	if is_instance_valid(mod) and (mod.get_parent() == _get_app_root().mods):
+		%ModsList.select(mod.get_index())
+		%ModsList.ensure_current_is_visible()
+	else:
+		%ModsList.deselect_all()
+	_handle_selection_change()
+
 
 # Saved splitter offsets for both embedded and popout mode
 var embed_mod_list_offset: int = 0
@@ -32,38 +53,23 @@ func _update_error_list():
 		%ModWarningsLabel.hide()
 		%ModWarningsLabel.text = ""
 
-# FIXME: Kind of a hack until we figure out how to correctly update the pointer
-#   when mods are removed.
-func _get_selected_mod() -> Node:
-	var mods_node : Node = _get_mods_node()
-	if is_instance_valid(_selected_mod):
-		if mods_node:
-			if _selected_mod in mods_node.get_children():
-				if is_instance_valid(_selected_mod):
-					return _selected_mod
-	return null
+func _update_status_text_for_mod(mod: Mod_Base):
+	if mod == get_selected_mod():
+		_update_status_text()
 
-func _update_status_text_for_mod(mod):
-	var selected : Node = _get_selected_mod()
-	if selected != mod:
-		return
-	_update_status_text()
-	
 func _update_status_text():
-	var selected : Node = _get_selected_mod()
-	if selected:
+	var selected := get_selected_mod()
+	if selected != null:
 		%LineEdit_ModStatus.text = selected._mod_status
 	else:
 		%LineEdit_ModStatus.text = ""
 
-func _update_log_text_for_mod(mod):
-	var selected : Node = _get_selected_mod()
-	if selected != mod:
-		return
-	_update_log_text()
-	
+func _update_log_text_for_mod(mod: Mod_Base):
+	if mod == get_selected_mod():
+		_update_log_text()
+
 func _update_log_text():
-	var selected : Node = _get_selected_mod()
+	var selected : Node = get_selected_mod()
 
 	var old_scroll_vertical = \
 		%TextEdit_ModLog.scroll_vertical
@@ -83,72 +89,48 @@ func _update_log_text():
 		%TextEdit_ModLog.set_v_scroll(old_scroll_vertical) 
 
 func _handle_selection_change():
-	var mods_list_node : ItemList = %ModsList
-	var selected = mods_list_node.get_selected_items()
-	
-	if len(selected) > 0:
+	# Clear out old mods window.
+	for child in %Mods_Settings_Panel.get_children():
+		%Mods_Settings_Panel.remove_child(child)
 
-		var newly_selected_mod = null
-		if selected[0] < _get_mods_node().get_child_count():
-			newly_selected_mod = _get_mods_node().get_child(selected[0])
-
-		if newly_selected_mod != _get_selected_mod():
-			_selected_mod = newly_selected_mod
-			
-			# Clear out old mods window.
-			for child in %Mods_Settings_Panel.get_children():
-				%Mods_Settings_Panel.remove_child(child)
-			
-			# Create and add new settings panel.
-			if _selected_mod:
-				%Mods_Settings_Panel.add_child(
-					_selected_mod.get_settings_window())
-				%TextEdit_ModName.text = _selected_mod.name
-				%TextEdit_ModName.editable = true
-			else:
-				%TextEdit_ModName.text = ""
-				%TextEdit_ModName.editable = false
-	
+	var selected := get_selected_mod()
+	if selected != null:
+		%Mods_Settings_Panel.add_child(selected.get_settings_window())
+		%TextEdit_ModName.text = selected.name
+		%TextEdit_ModName.editable = true
 	else:
-		
-		# Clear out old mods window.
-		for child in %Mods_Settings_Panel.get_children():
-			%Mods_Settings_Panel.remove_child(child)
-			%TextEdit_ModName.text = ""
-			%TextEdit_ModName.editable = false
-	
+		%TextEdit_ModName.text = ""
+		%TextEdit_ModName.editable = false
+
 	_update_log_text()
 	_update_status_text()
-	
+
 func _on_mods_list_item_selected(_index):
 	_handle_selection_change()
-	
-func _get_mods_node():
-	return _get_app_root().get_node("%Mods")
+
+func _get_mods_node() -> SnekStudioMods:
+	return _get_app_root().mods
 
 func update_mods_list():
-	var mods_node = _get_mods_node()
+	var mods_node := _get_mods_node()
 	var mods_list_node : ItemList = %ModsList
+	var previous_selected := get_selected_mod()
 
 	# This is just for running the local scene without a full app.
-	if not mods_node:
-		return
+	if mods_node:
+		# Recreate list of mods from scratch.
+		mods_list_node.clear()
+		for mod: Mod_Base in mods_node.get_children():
+			mods_list_node.add_item(mod.name)
+			mods_list_node.set_item_icon(mods_list_node.item_count - 1, mod.icon)
+			mods_list_node.set_item_metadata(mods_list_node.item_count - 1, mod)
 
-	# Rewrite and resize the list to match actual existing mods.
-	while mods_list_node.item_count < mods_node.get_child_count():
-		mods_list_node.add_item("test")
-	while mods_list_node.item_count > mods_node.get_child_count():
-		mods_list_node.remove_item(mods_list_node.item_count - 1)
-	for i in range(mods_node.get_child_count()):
-		if mods_node.get_child(i).name != mods_list_node.get_item_text(i):
-			mods_list_node.set_item_text(i, mods_node.get_child(i).name)
-		if mods_node.get_child(i).icon != mods_list_node.get_item_icon(i):
-			mods_list_node.set_item_icon(i, mods_node.get_child(i).icon)
-
-	# Handle mod selection changing.
-	_handle_selection_change()
+	# Restore previously selected mod, if any.
+	set_selected_mod(previous_selected)
 
 func _ready():
+	_get_mods_node().mod_list_changed.connect(update_mods_list)
+
 	# Save default values for both popout and embedded splitter offsets
 	popout_mod_list_offset = $VBoxContainer3/HSplitContainer.split_offset
 	popout_mod_status_offset = $VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
@@ -159,63 +141,22 @@ func _ready():
 	update_mods_list()
 	_update_error_list()
 
-func _swap_adjacent_mods(index1, index2):
-
-	# Swap the text.
-	var mods_list_node : ItemList = %ModsList
-	var text_tmp = mods_list_node.get_item_text(index1)
-	var icon_tmp: Texture2D = mods_list_node.get_item_icon(index1)
-	mods_list_node.set_item_text(index1, mods_list_node.get_item_text(index2))
-	mods_list_node.set_item_icon(index1, mods_list_node.get_item_icon(index2))
-	mods_list_node.set_item_text(index2, text_tmp)
-	mods_list_node.set_item_icon(index2, icon_tmp)
-
-	var mods_node = _get_mods_node()
-	if index1 > index2:
-		mods_node.move_child(mods_node.get_child(index1), index2)
-	else:
-		mods_node.move_child(mods_node.get_child(index2), index1)
-
 func _on_button_move_mod_up_pressed():
-	var mods_list_node : ItemList = %ModsList
-	var selected_item = mods_list_node.get_selected_items()
-	if len(selected_item) < 1:
-		return
-	
-	if selected_item[0] == 0:
-		return
-	
-	_swap_adjacent_mods(selected_item[0], selected_item[0] - 1)
-	
-	mods_list_node.select(selected_item[0] - 1)
+	var selected := get_selected_mod()
+	if selected == null: return
+	_get_mods_node().move_mod(selected, selected.get_index() - 1)
+	set_selected_mod(selected)
 
 func _on_button_move_mod_down_pressed():
-	var mods_list_node : ItemList = %ModsList
-	var selected_item = mods_list_node.get_selected_items()
-	if len(selected_item) < 1:
-		return
-	
-	if selected_item[0] >= mods_list_node.get_item_count() - 1:
-		return
-	
-	_swap_adjacent_mods(selected_item[0], selected_item[0] + 1)
-	
-	mods_list_node.select(selected_item[0] + 1)
+	var selected := get_selected_mod()
+	if selected == null: return
+	_get_mods_node().move_mod(selected, selected.get_index() + 1)
+	set_selected_mod(selected)
 
 func _on_button_remove_mod_pressed():
-	var mods_list_node : ItemList = %ModsList
-	var selected_item = mods_list_node.get_selected_items()
-	if len(selected_item) < 1:
-		return
-	
-	var mods_node = _get_mods_node()
-	var mod = mods_node.get_child(selected_item[0])
-	mod.scene_shutdown()
-	mods_node.remove_child(mod)
-	mod.queue_free()
-	_handle_selection_change()
-
-	update_mods_list()
+	var selected := get_selected_mod()
+	if not selected: return
+	_get_mods_node().remove_mod(selected)
 
 func _on_button_add_mod_pressed():
 	var add_window = _get_app_root().get_node("%UI_Root/%ModAddWindow")
@@ -293,58 +234,14 @@ func close_window() -> void:
 
 
 func _on_button_toggle_mod_pressed() -> void:
-	var mods_list_node: ItemList = %ModsList
-	var selected_item = mods_list_node.get_selected_items()
-	if len(selected_item) < 1:
-		return
+	var selected := get_selected_mod()
+	if selected == null: return
 
-	var mods_node = _get_mods_node()
-	var mod: Mod_Base = mods_node.get_child(selected_item[0])
-
-
-	if mod is DisabledMod:
-
-		# This mod is already disabled. Re-enable it.
-
-		# Re-create the mod instance.
-		var loaded_mod = load(mod.saved_settings["scene_path"]).instantiate()
-		loaded_mod.name = mod.get_name()
-
-		# Remove the placeholder (but don't free it yet) so the names don't
-		# collide.
-		_get_mods_node().remove_child(mod)
-
-		# Add the new one to the scene and initialize it with the settings.
-		_get_mods_node().add_child(loaded_mod)
-		_get_mods_node().move_child(loaded_mod, selected_item[0])
-		loaded_mod.load_settings(mod.saved_settings["settings"])
-		loaded_mod.update_settings_ui()
-		loaded_mod.scene_init()
-
-		# Free the old placeholder.
-		mod.queue_free()
-
+	var new_mod: Mod_Base
+	if selected is DisabledMod:
+		new_mod = _get_mods_node().enable_mod(selected)
 	else:
+		new_mod = _get_mods_node().disable_mod(selected)
 
-		var saved_settings: Dictionary = {}
-
-		saved_settings["scene_path"] = mod.scene_file_path
-		saved_settings["name"] = mod.get_name()
-		saved_settings["settings"] = mod.save_settings()
-
-		var placeholder: DisabledMod = load("res://Mods/DisabledMod/DisabledMod.tscn").instantiate()
-		placeholder.name = saved_settings["name"]
-		placeholder.saved_settings = saved_settings
-
-		# Clear out the mod we just disabled. Do this first so the name doesn't
-		# get clobbered with the placeholder mod.
-		mod.scene_shutdown()
-		mods_node.remove_child(mod)
-		mod.queue_free()
-
-		# Insert the placeholder.
-		_get_mods_node().add_child(placeholder)
-		_get_mods_node().move_child(placeholder, selected_item[0])
-
-	_handle_selection_change()
 	update_mods_list()
+	set_selected_mod(new_mod)
