@@ -1,7 +1,6 @@
 extends Node3D
 
 var _mods_running = false
-var colliders_by_model_name = {}
 
 var hide_window_decorations_with_ui : bool = false
 
@@ -163,54 +162,11 @@ func _force_update_ui():
 	%UI_Root/%SettingsWindow_Sound.settings_changed_from_app()
 	%UI_Root/%SettingsWindow_Scene.settings_changed_from_app()
 	%UI_Root/%SettingsWindow_Window.settings_changed_from_app()
-	%UI_Root/%SettingsWindow_Colliders.update_from_app()
 
 func _get_current_model_base_name():
 	var last_vrm_path = $ModelController.get_last_loaded_vrm()
 	var model_base_name = last_vrm_path.get_file()
-	return model_base_name	
-
-func _save_colliders_for_current_model():
-	var model_base_name = _get_current_model_base_name()
-
-	var new_list = []
-
-	var skeleton = get_skeleton()
-	for c in skeleton.get_children():
-		if c is AvatarCollider:
-			var new_collider_entry = {}
-			#new_collider_entry["bone_name"] = c.get_bone_name()
-			new_collider_entry = c.get_settings()
-			#var pos = c.
-			#new_collider_entry["position"] = c.
-			new_list.append(new_collider_entry)
-
-	colliders_by_model_name[model_base_name] = new_list
-
-## Get settings for colliders for this model, as an array of Dictionaries
-## containing their settings (not the actual instantiated collider objects).
-func get_colliders(create_defaults_if_missing : bool = false) -> Array:
-	var model_base_name = _get_current_model_base_name()
-
-	if model_base_name in colliders_by_model_name:
-		# Settings exist for this model. Use them.
-		return colliders_by_model_name[model_base_name]
-
-	else:
-		# No settings? Optionally create defaults, otherwise return empty.
-		var default_colliders : Array = []
-		if create_defaults_if_missing:
-			default_colliders = [
-				{
-					"bone_name" : "Head",
-					"position" : [0.0, 0.1, 0.02],
-					"radius" : 0.12,
-					"from_vrm" : false,
-				}
-			]
-			colliders_by_model_name[model_base_name] = default_colliders
-
-		return default_colliders
+	return model_base_name
 
 ## Get the root object of the VTuber model.
 func get_model() -> Node3D:
@@ -222,37 +178,7 @@ func get_skeleton() -> Skeleton3D:
 	# FIXME (multiplayer): Get skeleton by index or something.
 	return $ModelController.get_skeleton()
 
-## Sync colliders on model with whatever is in the dictionary, or do a default
-## if colliders_list is null.
-func set_colliders(colliders_list=null) -> void:
-
-	var collider_type = preload("res://Core/AvatarColliders/AvatarCollider.tscn")
-
-	var skeleton = get_skeleton()
-	var children_to_delete = []
-	if skeleton:
-
-		# Delete all existing colliders.
-		for c in skeleton.get_children():
-			if c is AvatarCollider:
-				children_to_delete.append(c)
-		for c in children_to_delete:
-			skeleton.remove_child(c)
-			c.queue_free()
-
-		# Add colliders.
-		if colliders_list != null:
-			for collider_data in colliders_list:
-				var new_collider : BoneAttachment3D = collider_type.instantiate()
-				new_collider.set_settings(collider_data)
-				skeleton.add_child(new_collider)
-
-		_save_colliders_for_current_model()
-
 func reset_settings_to_default() -> void:
-
-	# Reset all collider data.
-	colliders_by_model_name = {}
 
 	# Reset model to default.
 	var location = get_sample_location().path_join("VRM/samplesnek_mediapipe_16.vrm")
@@ -319,7 +245,7 @@ func serialize_settings(do_settings=true, do_mods=true):
 		settings_to_save["sound_device_input"] = AudioServer.get_input_device()
 		
 		# Save colliders.
-		settings_to_save["colliders"] = colliders_by_model_name
+		settings_to_save["colliders"] = %UI_Root/%SettingsWindow_Colliders.save_settings()
 
 		# Window settings
 		var window_size = get_viewport().get_size()
@@ -417,7 +343,7 @@ func deserialize_settings(settings_dict, do_settings=true, do_mods=true):
 
 		# Colliders (must be loaded before VRM).
 		if _setting_changed("colliders", old_settings_dict, settings_dict):
-			colliders_by_model_name = settings_dict["colliders"]
+			%UI_Root/%SettingsWindow_Colliders.load_settings(settings_dict["colliders"])
 
 		# Load last model.
 		if _setting_changed("last_vrm_path", old_settings_dict, settings_dict):
@@ -637,78 +563,10 @@ func load_vrm(path) -> bool:
 		return false
 
 	# Load colliders list
-	var collider_data : Array = get_colliders(true)
-
-	# Clear "from_vrm" from everything loaded because we'll correlate
-	# loaded colliders in the next step.
-	for collider in collider_data:
-		collider["from_vrm"] = false
-
-	# Add colliders from VRM (the ones used for springbone collisions).
-	var model = $ModelController.get_node_or_null("Model")
-	if model:
-		var secondary_path = NodePath("secondary") #model.vrm_secondary
-		var secondary = model.get_node_or_null(secondary_path)
-
-		#if collider_data == null:
-		#	collider_data = []
-
-		var do_vrm_colliders = false
-		if secondary != null and do_vrm_colliders:
-			var collider_groups = secondary.collider_groups
-			for collider_group in collider_groups:
-				for sphere_collider in collider_group.colliders:
-
-					# FIXME: Add support for capsules.
-					if sphere_collider.is_capsule:
-						continue
-
-					var bone_name = sphere_collider.bone			
-
-					var new_collider = {}
-					
-					new_collider["position"] = [
-						sphere_collider.offset[0],
-						sphere_collider.offset[1],
-						sphere_collider.offset[2]]
-						
-					new_collider["radius"] = sphere_collider.radius
-					new_collider["bone_name"] = bone_name	
-					new_collider["from_vrm"] = true
-					
-					# See if this new one matches and existing collider.
-					var found_collider = null
-					for existing_collider in collider_data:
-						var fields_to_compare = [
-							"position", "radius",
-							"bone_name" ]
-						
-						var is_this_collider = true
-						for field in fields_to_compare:
-							if not _compare_values(existing_collider[field], new_collider[field]):
-								is_this_collider = false
-								break
-
-						if is_this_collider:
-							existing_collider["from_vrm"] = true
-							found_collider = existing_collider
-							break
-					
-					# No loaded collider found? Add it.
-					if found_collider == null:
-						collider_data.append(new_collider)
-
-	# FIXME: Hack to make collider visibility match collider window.
-	var ui_root = _get_ui_root()
-	var ui_collider_window = ui_root.get_node_or_null("%SettingsWindow_Colliders")
-	for k in collider_data:
-		k["visible"] = ui_collider_window.visible
+	%UI_Root/%SettingsWindow_Colliders.setup_for_current_model()
 
 	# Force initial T-Pose.
-	var skel : Skeleton3D = get_skeleton()
-	skel.reset_bone_poses()
-
-	set_colliders(collider_data)
+	get_skeleton().reset_bone_poses()
 
 	reinit_mods()
 	_force_update_ui()
