@@ -330,7 +330,7 @@ func _on_OSCServer_message_received(address_string, arguments):
 				
 					var object_to_animate : Node = anim_root.get_node(anim_path_max_value_key)
 					if object_to_animate:
-						print(object_to_animate, anim_path_max_value_key)
+						#print(object_to_animate, anim_path_max_value_key)
 						object_to_animate.set(
 							"blend_shapes/" + anim_path_max_value_key.get_subname(0),
 							anim_path_maximums[anim_path_max_value_key])
