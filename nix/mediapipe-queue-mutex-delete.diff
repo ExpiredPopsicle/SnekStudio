@@ -1,0 +1,103 @@
+diff --git a/Mods/MediaPipe/_tracker/Project/new_tracker.py b/Mods/MediaPipe/_tracker/Project/new_tracker.py
+index 4bb067a..e210f44 100644
+--- a/Mods/MediaPipe/_tracker/Project/new_tracker.py
++++ b/Mods/MediaPipe/_tracker/Project/new_tracker.py
+@@ -37,9 +37,6 @@ class MediaPipeTracker:
+         # We need these to avoid deadlocks. If we're queueing frames
+         # faster than they can process, we'll hit a deadlock in
+         # MediaPipe.
+-        self.frames_queued_face = 0
+-        self.frames_queued_hands = 0
+-        self.frames_queued_mutex = threading.Lock()
+         self.should_quit_threads = False
+ 
+         # Open the socket immediately so we can start sending error
+@@ -242,9 +239,6 @@ class MediaPipeTracker:
+                 # move it into Godot.
+                 self.last_blendshapes[shape.category_name] = shape.score # normalized
+ 
+-        with self.frames_queued_mutex:
+-            self.frames_queued_face -= 1
+-
+     # FIXME: If we ever come back to it, finish this.
+     def _handle_result_pose(
+             self,
+@@ -261,9 +255,6 @@ class MediaPipeTracker:
+         # self._write_log("HAND RESULTS: ", timestamp_ms)
+         # return
+ 
+-        with self.frames_queued_mutex:
+-            self.frames_queued_hands -= 1
+-
+         # Check if hand count changed. Pause tracking for a moment if we
+         # did.
+         if self.last_hand_count != len(result.hand_landmarks):
+@@ -549,28 +540,8 @@ class MediaPipeTracker:
+                         if this_time <= last_timestamp_used:
+                             continue
+ 
+-                        # Check to see if we have too many face tracking
+-                        # frames queued.
+-                        need_reset = False
+-                        with self.frames_queued_mutex:
+-                            if self.frames_queued_face > 5:
+-                                need_reset = True
+-                            else:
+-                                self.frames_queued_face += 1
+-
+-                        # This will get reset immediately if we detect
+-                        # a face. Otherwise it'll be how many frames
+-                        # since the last face detection.
+                         self.time_since_last_face_detection += 1.0
+-
+-                        # Reset if we have too face frames queued. Avoid a
+-                        # deadlock.
+-                        if need_reset:
+-                            # Deadlock-avoidance.
+-                            self.landmarker._runner.restart()
+-                            self.frames_queued_face = 0
+-                        else:
+-                            self.landmarker.detect_async(mp_image, this_time)
++                        self.landmarker.detect_async(mp_image, this_time)
+ 
+                         # Hands
+ 
+@@ -585,23 +556,8 @@ class MediaPipeTracker:
+                         if hand_landmarker_time_skew > 50: # FIXME: Make configurable (milliseconds)
+                             self._last_hand_result_timestamp += this_time - self._last_hand_detect_timestamp
+                         else:
+-                            # Check to see if we have too many hand tracking
+-                            # frames queued.
+-                            need_reset = False
+-                            with self.frames_queued_mutex:
+-                                if self.frames_queued_face > 5:
+-                                    need_reset = True
+-                                else:
+-                                    self.frames_queued_hands += 1
+-
+-                            # If we do have too many frames queued, just reset
+-                            # the tracker to avoid a deadlock.
+-                            if need_reset:
+-                                self.landmarker_hands._runner.restart()
+-                                self.frames_queued_hands = 0
+-                            else:
+-                                self.landmarker_hands.detect_async(mp_image, this_time)
+-                                self._last_hand_detect_timestamp = this_time
++                            self.landmarker_hands.detect_async(mp_image, this_time)
++                            self._last_hand_detect_timestamp = this_time
+ 
+                         # Track the last timestamp because we have to keep
+                         # these monotonically increasing and we can't send
+@@ -644,12 +600,6 @@ class MediaPipeTracker:
+ 
+                         output_data_json = json.dumps(output_data, indent=4).encode("utf-8")
+ 
+-                        with self.frames_queued_mutex:
+-                            status_packet_str = "Tracking data sending. (Queue: %2d hand, %2d face)" % (self.frames_queued_hands, self.frames_queued_face)
+-
+-                        # FIXME: This is too spammy.
+-                        # self._write_log(status_packet_str)
+-
+                         # Output the packet.
+                         if self.video_device_capture:
+                             self._udp_socket.sendto(output_data_json, ("127.0.0.1", self.udp_port_number))
