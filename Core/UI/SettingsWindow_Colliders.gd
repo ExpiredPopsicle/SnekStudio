@@ -42,7 +42,6 @@ const ICON_GROUP := preload("res://Core/UI/Images/godot/Folder.svg")
 
 const AVATAR_COLLIDER := preload("res://Core/AvatarColliders/AvatarCollider.tscn")
 
-# FIXME: Ensure that parents of known bones are always visible!
 # TODO: Improve default collider settings to include body, arms, hands and legs.
 # TODO: Option to mirror changes / added colliders.
 # TODO: Highlight selected bones.
@@ -268,8 +267,11 @@ func _get_skeleton() -> Skeleton3D:
 
 func _add_bone_recursive(skeleton: Skeleton3D, bone_idx: int, parent: TreeItem) -> TreeItem:
 	var bone_name := skeleton.get_bone_name(bone_idx)
+
+	var is_known := KNOWN_BONES.has(bone_name)
+	if is_known: _ensure_parents_always_visible(parent)
 	# Spring bone detection is done separately in setup_for_current_model.
-	var icon := ICON_BONE_KNOWN if KNOWN_BONES.has(bone_name) else ICON_BONE_UNKNOWN
+	var icon := ICON_BONE_KNOWN if is_known else ICON_BONE_UNKNOWN
 
 	var item := hierarchy.create_item(parent)
 	item.set_icon(0, icon)
@@ -282,13 +284,22 @@ func _add_bone_recursive(skeleton: Skeleton3D, bone_idx: int, parent: TreeItem) 
 
 	# Make sure that only known bones are expanded by default.
 	# This avoids chains of spring bones taking up a lot of space.
-	if not KNOWN_BONES.has(bone_name): item.collapsed = true
+	if not is_known: item.collapsed = true
 
 	for child_bone_idx in skeleton.get_bone_children(bone_idx):
 		var child_item := _add_bone_recursive(skeleton, child_bone_idx, item)
 		if not item.has_meta("first_bone_item"): item.set_meta("first_bone_item", child_item)
 
 	return item
+
+## To ensure that parent items of known bones are always visible, this function
+## is called recursive on its parents. For example, the samplesnek model has a
+## "MaybeHips" bone that most of the rest of the skeleton is parented to.
+func _ensure_parents_always_visible(item: TreeItem) -> void:
+	if (item == null) or (item.get_icon(0) == ICON_BONE_KNOWN): return
+	item.set_meta("always_visible", true)
+	item.collapsed = false
+	_ensure_parents_always_visible(item.get_parent())
 
 func _add_collider(collider_data: Dictionary) -> TreeItem:
 	var collider: AvatarCollider = AVATAR_COLLIDER.instantiate()
@@ -328,10 +339,11 @@ func _set_collider_visibility(value: bool) -> void:
 			child.visible = value
 
 func _update_bone_visibility_recursive(item: TreeItem) -> void:
-	match item.get_icon(0):
-		ICON_BONE_KNOWN   : item.visible = true
-		ICON_BONE_UNKNOWN : item.visible = show_unknown
-		ICON_BONE_SPRING  : item.visible = show_spring
+	item.visible = true
+	if not item.get_meta("always_visible", false):
+		match item.get_icon(0):
+			ICON_BONE_UNKNOWN : item.visible = show_unknown
+			ICON_BONE_SPRING  : item.visible = show_spring
 	for child in item.get_children():
 		_update_bone_visibility_recursive(child)
 
