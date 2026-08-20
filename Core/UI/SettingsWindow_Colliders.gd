@@ -14,7 +14,10 @@ const KNOWN_BONES := [
 	"RightLowerLeg", "RightUpperLeg", "RightFoot",
 ]
 
-const ICON_BONE     := preload("res://Core/UI/Images/godot/Bone.svg")
+const ICON_BONE_KNOWN   := preload("res://Core/UI/Images/godot/Bone.svg")
+const ICON_BONE_UNKNOWN := preload("res://Core/UI/Images/godot/Bone2D.svg")
+const ICON_BONE_SPRING  := preload("res://Core/UI/Images/godot/DampedSpringJoint2D.svg")
+
 const ICON_SPHERE   := preload("res://Core/UI/Images/godot/SphereShape3D.svg")
 const ICON_CAPSULE  := preload("res://Core/UI/Images/godot/CapsuleShape3D.svg")
 const ICON_CYLINDER := preload("res://Core/UI/Images/godot/CylinderShape3D.svg")
@@ -22,7 +25,6 @@ const ICON_BOX      := preload("res://Core/UI/Images/godot/BoxShape3D.svg")
 
 const AVATAR_COLLIDER := preload("res://Core/AvatarColliders/AvatarCollider.tscn")
 
-# TODO: Differentiate between known, unknown and physical bones with icon.
 # TODO: Implement toggles to hide unknown and/or physical bones.
 # TODO: Implement shared collider settings.
 # TODO: Improve default collider settings to include body, arms, hands and legs.
@@ -100,8 +102,17 @@ func setup_for_current_model() -> void:
 	_add_bone_recursive(skeleton, hips_idx, null)
 	_set_unknown_visible_recursive(true, hierarchy.get_root())
 
-	var model_name: String = _get_app_root()._get_current_model_base_name()
+	var app = _get_app_root()
+	var model_name: String = app._get_current_model_base_name()
 	var collider_data := get_collider_data_for_model_name(model_name, true)
+
+	var secondary: VRMSecondary = app.get_model().get_node_or_null("secondary")
+	if secondary != null:
+		# Mark bones as "spring bones" if they are defined as such in the VRM.
+		for spring_bone in secondary.spring_bones:
+			for bone_name in spring_bone.joint_nodes:
+				var bone_item: TreeItem = items_by_bone_name.get(bone_name)
+				if bone_item != null: bone_item.set_icon(0, ICON_BONE_SPRING)
 
 	# This was disabled anyway, so I'm commenting it out.
 
@@ -196,8 +207,11 @@ func _get_skeleton() -> Skeleton3D:
 
 func _add_bone_recursive(skeleton: Skeleton3D, bone_idx: int, parent: TreeItem) -> TreeItem:
 	var bone_name := skeleton.get_bone_name(bone_idx)
+	# Spring bone detection is done separately in setup_for_current_model.
+	var icon := ICON_BONE_KNOWN if KNOWN_BONES.has(bone_name) else ICON_BONE_UNKNOWN
+
 	var item := hierarchy.create_item(parent)
-	item.set_icon(0, ICON_BONE)
+	item.set_icon(0, icon)
 	item.set_text(0, bone_name)
 	item.set_text_overrun_behavior(0, TextServer.OverrunBehavior.OVERRUN_NO_TRIMMING)
 	item.set_meta("type", TreeItemType.BONE)
