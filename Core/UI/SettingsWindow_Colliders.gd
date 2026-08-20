@@ -4,6 +4,21 @@ extends BasicSubWindow
 
 enum TreeItemType { BONE, COLLIDER }
 
+class ColliderDataGroup extends RefCounted:
+	## Unique name identifying this group.
+	## In the case of a single user, this must be equivalent to its filename.
+	var name: String
+	## The index into the "Share" OptionButton for this collider group.
+	var option_idx: int
+	## The model (file) names currently using this data group.
+	## If there are multiple users, this entry will be shown as a group.
+	var users: Array[String]
+	## List of serialized AvatarCollider data.
+	var data: Array[Dictionary]
+	## Whether any settings on this collider group was changed.
+	## If this is true, it won't be saved to disk.
+	var is_default: bool
+
 ## Known common bones that a user will likely want to add colliders to.
 ## By default, bones not in this list aren't listed in the hierarchy.
 const KNOWN_BONES := [
@@ -23,15 +38,20 @@ const ICON_CAPSULE  := preload("res://Core/UI/Images/godot/CapsuleShape3D.svg")
 const ICON_CYLINDER := preload("res://Core/UI/Images/godot/CylinderShape3D.svg")
 const ICON_BOX      := preload("res://Core/UI/Images/godot/BoxShape3D.svg")
 
+const ICON_GROUP := preload("res://Core/UI/Images/godot/Folder.svg")
+
 const AVATAR_COLLIDER := preload("res://Core/AvatarColliders/AvatarCollider.tscn")
 
-# TODO: Implement shared collider settings.
+# FIXME: Ensure that parents of known bones are always visible!
 # TODO: Improve default collider settings to include body, arms, hands and legs.
 # TODO: Option to mirror changes / added colliders.
 # TODO: Highlight selected bones.
 # TODO: Revisit VRM colliders.
 
-var collider_data_by_model_name: Dictionary[String, Array]
+## Dictionary of collider groups keyed by their name.
+var collider_groups : Dictionary[String, ColliderDataGroup]
+## Dictionary of model file names and which collider group they use.
+var model_files     : Dictionary[String, ColliderDataGroup]
 
 var items_by_bone_name : Dictionary[String, TreeItem]
 var selected_item      : TreeItem
@@ -50,6 +70,12 @@ var selected_item      : TreeItem
 @onready var cylinder : Container = %Cylinder
 @onready var box      : Container = %Box
 
+@onready var share     : OptionButton = %Share
+@onready var rename    : Button       = %Rename
+@onready var unlink    : Button       = %Unlink
+@onready var reset     : Button       = %Reset
+@onready var name_edit : LineEdit     = %NameEdit
+
 var show_unknown: bool:
 	get: return toggle_unknown.button_pressed
 var show_spring: bool:
@@ -57,37 +83,60 @@ var show_spring: bool:
 
 
 func load_settings(settings: Variant) -> void:
-	# NOTE: This is a little workaround to ensure that each value in
-	#       collider_data_by_model_name is actually a typed Array[Dictionary].
-	collider_data_by_model_name = {}
-	for model_name in settings:
-		var colliders: Array[Dictionary]
-		colliders.append_array(settings[model_name])
-		collider_data_by_model_name[model_name] = colliders
+	# Upgrading from SnekStudio v0.1.6
+	if not settings.has("model_files"):
+		var model_data := {}
+		for model_name in settings: model_data[model_name] = model_name
+		settings = { "collider_groups": settings, "model_files": model_data }
+
+	collider_groups.clear()
+	var groups: Dictionary = settings["collider_groups"]
+	for group_name in groups:
+		var data: Array = groups[group_name]
+		var group := ColliderDataGroup.new()
+		group.name = group_name
+		group.data.append_array(data)
+		collider_groups[group_name] = group
+
+	model_files.clear()
+	var models: Dictionary = settings["model_files"]
+	for model_name in models:
+		var group_name: String = models[model_name]
+		var group := collider_groups[group_name]
+		model_files[model_name] = group
+		group.users.append(model_name)
 
 func save_settings() -> Variant:
-	return collider_data_by_model_name
+	var groups: Dictionary[String, Array]
+	var models: Dictionary[String, String]
+
+	for group_name in collider_groups:
+		var group := collider_groups[group_name]
+		if group.is_default: continue # skip if default
+		groups[group_name] = group.data
+		for model_name in group.users:
+			models[model_name] = group_name
+
+	return {
+		"collider_groups" : groups,
+		"model_files"     : models,
+	}
 
 
-## Saves the current collider data into collider_data_by_model_name.
-## Note that this doesn't save the colliders to file (yet).
-## The app needs to save its settings for that to happen.
-func update_current_model_collider_data() -> void:
-	var model_name: String = _get_app_root()._get_current_model_base_name()
-	collider_data_by_model_name[model_name] = save_colliders()
+func get_current_model_file_name() -> String:
+	return _get_app_root()._get_current_model_base_name()
 
-## Get settings for colliders for this model, as an array of Dictionaries
-## containing their settings (not the actual instantiated collider objects).
-func get_collider_data_for_model_name(model_name: String, create_defaults_if_missing := false) -> Array[Dictionary]:
-	if collider_data_by_model_name.has(model_name):
-		return collider_data_by_model_name[model_name]
-	if create_defaults_if_missing:
-		var default_colliders := create_default_colliders(_get_skeleton())
-		collider_data_by_model_name[model_name] = default_colliders
-		return default_colliders
-	return []
+func get_current_collider_group(create_if_missing := false) -> ColliderDataGroup:
+	var model_name := get_current_model_file_name()
+	var group: ColliderDataGroup = model_files.get(model_name, null)
+	if (group == null) and create_if_missing:
+		group = _create_collider_group(model_name)
+		group.data = create_default_colliders()
+		group.is_default = true
+		_update_share_options()
+	return group
 
-func create_default_colliders(_skeleton: Skeleton3D) -> Array[Dictionary]:
+func create_default_colliders() -> Array[Dictionary]:
 	return [
 		{
 			"bone_name" : "Head",
@@ -95,6 +144,12 @@ func create_default_colliders(_skeleton: Skeleton3D) -> Array[Dictionary]:
 			"radius"    : 0.12,
 		},
 	]
+
+func update_current_model_collider_data() -> void:
+	var group := get_current_collider_group()
+	group.data = save_colliders()
+	group.is_default = false
+
 
 func setup_for_current_model() -> void:
 	hierarchy.clear()
@@ -108,17 +163,19 @@ func setup_for_current_model() -> void:
 	_add_bone_recursive(skeleton, hips_idx, null)
 	_update_bone_visibility_recursive(hierarchy.get_root())
 
-	var app = _get_app_root()
-	var model_name: String = app._get_current_model_base_name()
-	var collider_data := get_collider_data_for_model_name(model_name, true)
-
-	var secondary: VRMSecondary = app.get_model().get_node_or_null("secondary")
+	var model: Node3D = _get_app_root().get_model()
+	var secondary: VRMSecondary = model.get_node_or_null("secondary")
 	if secondary != null:
 		# Mark bones as "spring bones" if they are defined as such in the VRM.
 		for spring_bone in secondary.spring_bones:
 			for bone_name in spring_bone.joint_nodes:
 				var bone_item: TreeItem = items_by_bone_name.get(bone_name)
 				if bone_item != null: bone_item.set_icon(0, ICON_BONE_SPRING)
+
+	var group := get_current_collider_group(true)
+	load_colliders(group.data)
+	_update_share_options()
+	share.select(group.option_idx)
 
 	# This was disabled anyway, so I'm commenting it out.
 
@@ -178,8 +235,6 @@ func setup_for_current_model() -> void:
 	# 				if found_collider == null:
 	# 					collider_data.append(new_collider)
 
-	load_colliders(collider_data)
-	#collider_data_by_model_name[model_name] = save_colliders()
 
 func load_colliders(colliders: Array[Dictionary]) -> void:
 	var skeleton := _get_skeleton()
@@ -279,6 +334,34 @@ func _update_bone_visibility_recursive(item: TreeItem) -> void:
 		ICON_BONE_SPRING  : item.visible = show_spring
 	for child in item.get_children():
 		_update_bone_visibility_recursive(child)
+
+func _update_share_options() -> void:
+	var shared_group_names: Array[String]
+	var unique_model_files: Array[String]
+	for group_name in collider_groups:
+		var num_users = collider_groups[group_name].users.size()
+		if num_users > 1: shared_group_names.append(group_name)
+		else:             unique_model_files.append(group_name)
+	shared_group_names.sort()
+	unique_model_files.sort()
+
+	share.clear()
+	for group_name in shared_group_names:
+		share.add_icon_item(ICON_GROUP, group_name)
+		collider_groups[group_name].option_idx = share.item_count - 1
+	for model_file in unique_model_files:
+		share.add_item(model_file)
+		collider_groups[model_file].option_idx = share.item_count - 1
+
+	var group := get_current_collider_group()
+	var is_shared := (group.users.size() > 1)
+	rename.disabled = not is_shared
+	unlink.disabled = not is_shared
+	reset .disabled = is_shared
+
+	# In case the name was currently being edited.
+	share.visible = true
+	name_edit.visible = false
 
 
 ## Loads properties from the specified collider and updates the settings widgets with its values.
@@ -402,3 +485,87 @@ func _on_any_value_changed(_value: float) -> void:
 	var collider: AvatarCollider = item.get_meta("collider")
 	_save_to_collider(collider)
 	update_current_model_collider_data()
+
+
+func _on_rename_pressed() -> void:
+	rename.disabled = true
+	unlink.disabled = true
+	reset .disabled = true
+	share    .visible = false
+	name_edit.visible = true
+	name_edit.text = get_current_collider_group().name
+	name_edit.grab_focus()
+
+func _on_share_item_selected(index: int) -> void:
+	var model_name := get_current_model_file_name()
+	var old_group  := get_current_collider_group()
+	_erase_user(old_group, model_name)
+	var new_group_name := share.get_item_text(index)
+	var new_group := collider_groups[new_group_name]
+	new_group.users.append(model_name)
+	model_files[model_name] = new_group
+	_update_share_options()
+	setup_for_current_model()
+
+func _on_name_edit_text_submitted(new_text: String) -> void:
+	var group := get_current_collider_group()
+	var old_group_name := group.name
+	var new_group_name := new_text.strip_edges()
+	if old_group_name != new_group_name:
+		_rename_group(group, new_group_name)
+		_update_share_options()
+	else:
+		name_edit.release_focus()
+
+func _on_name_edit_focus_exited() -> void:
+	rename.disabled = false
+	unlink.disabled = false
+	reset .disabled = true
+	share    .visible = true
+	name_edit.visible = false
+
+func _on_unlink_pressed() -> void:
+	var model_name := get_current_model_file_name()
+	var old_group  := get_current_collider_group()
+	_erase_user(old_group, model_name)
+	var new_group := _create_collider_group(model_name)
+	new_group.data = old_group.data.duplicate(true)
+	new_group.is_default = old_group.is_default
+	_update_share_options()
+	share.select(new_group.option_idx)
+
+func _on_reset_pressed() -> void:
+	var group := get_current_collider_group()
+	group.data = create_default_colliders()
+	group.is_default = true
+	setup_for_current_model()
+
+
+func _create_collider_group(model_name: String) -> ColliderDataGroup:
+	var group := ColliderDataGroup.new()
+	group.name = model_name
+	group.users.append(model_name)
+	collider_groups[model_name] = group
+	model_files[model_name] = group
+	return group
+
+func _erase_user(group: ColliderDataGroup, model_name: String) -> void:
+	group.users.erase(model_name)
+	if group.users.is_empty():
+		collider_groups.erase(group.name)
+	if group.users.size() == 1:
+		_rename_group(group, group.users[0])
+
+func _rename_group(group: ColliderDataGroup, new_name: String) -> void:
+	if group.name == new_name: return
+
+	# Basic protection against reusing existing group/file names.
+	# This isn't idiot proof. One could create a group by one name,
+	# and later load a model with the same name, causing a conflict.
+	var existing_model: ColliderDataGroup = model_files.get(new_name)
+	assert((existing_model == null) or (existing_model == group))
+	assert(not collider_groups.has(new_name))
+
+	collider_groups.erase(group.name)
+	collider_groups[new_name] = group
+	group.name = new_name

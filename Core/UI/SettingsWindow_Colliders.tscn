@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://b3cngtxe4rnc0" path="res://Core/UI/Images/godot/ToolRotate.svg" id="9_k24kv"]
 [ext_resource type="Texture2D" uid="uid://dcjp41hrgidb2" path="res://Core/UI/Images/godot/Unlinked.svg" id="10_rvck2"]
 [ext_resource type="Texture2D" uid="uid://dvp6h3vufgrtw" path="res://Core/UI/Images/godot/Rename.svg" id="13_r0dkm"]
+[ext_resource type="Texture2D" uid="uid://cqb12pjxlu8i3" path="res://Core/UI/Images/godot/Reload.svg" id="14_k8n6t"]
 
 [node name="SettingsWindow_Colliders" unique_id=563047408 instance=ExtResource("1_vhobi")]
 offset_right = 800.0
@@ -569,7 +570,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="ShareContainer" type="VBoxContainer" parent="HSplitContainer/Settings/VBoxContainer" index="3" unique_id=1585008284]
-visible = false
 layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/Settings/VBoxContainer/ShareContainer" index="0" unique_id=141575926]
@@ -583,12 +583,23 @@ text = "Share settings with ..."
 [node name="Rename" type="Button" parent="HSplitContainer/Settings/VBoxContainer/ShareContainer/HBoxContainer" index="1" unique_id=1710768048]
 unique_name_in_owner = true
 layout_mode = 2
+tooltip_text = "Rename this collider group"
+disabled = true
 icon = ExtResource("13_r0dkm")
 
 [node name="Unlink" type="Button" parent="HSplitContainer/Settings/VBoxContainer/ShareContainer/HBoxContainer" index="2" unique_id=1358983029]
 unique_name_in_owner = true
 layout_mode = 2
+tooltip_text = "Unlink this model from the collider group"
+disabled = true
 icon = ExtResource("10_rvck2")
+
+[node name="Reset" type="Button" parent="HSplitContainer/Settings/VBoxContainer/ShareContainer/HBoxContainer" index="3" unique_id=1582107548]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Reset the colliders for this model to default"
+disabled = true
+icon = ExtResource("14_k8n6t")
 
 [node name="Share" type="OptionButton" parent="HSplitContainer/Settings/VBoxContainer/ShareContainer" index="1" unique_id=1179694171]
 unique_name_in_owner = true
@@ -598,6 +609,11 @@ size_flags_horizontal = 3
 text_overrun_behavior = 3
 fit_to_longest_item = false
 search_bar_enabled = true
+
+[node name="NameEdit" type="LineEdit" parent="HSplitContainer/Settings/VBoxContainer/ShareContainer" index="2" unique_id=1570859761]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
 
 [connection signal="toggled" from="HSplitContainer/Bones/HBoxContainer/ShowUnknown" to="." method="_on_show_toggled"]
 [connection signal="toggled" from="HSplitContainer/Bones/HBoxContainer/ShowSpring" to="." method="_on_show_toggled"]
@@ -621,3 +637,9 @@ search_bar_enabled = true
 [connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box/X" to="." method="_on_any_value_changed"]
 [connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box/Y" to="." method="_on_any_value_changed"]
 [connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box/Z" to="." method="_on_any_value_changed"]
+[connection signal="pressed" from="HSplitContainer/Settings/VBoxContainer/ShareContainer/HBoxContainer/Rename" to="." method="_on_rename_pressed"]
+[connection signal="pressed" from="HSplitContainer/Settings/VBoxContainer/ShareContainer/HBoxContainer/Unlink" to="." method="_on_unlink_pressed"]
+[connection signal="pressed" from="HSplitContainer/Settings/VBoxContainer/ShareContainer/HBoxContainer/Reset" to="." method="_on_reset_pressed"]
+[connection signal="item_selected" from="HSplitContainer/Settings/VBoxContainer/ShareContainer/Share" to="." method="_on_share_item_selected"]
+[connection signal="focus_exited" from="HSplitContainer/Settings/VBoxContainer/ShareContainer/NameEdit" to="." method="_on_name_edit_focus_exited"]
+[connection signal="text_submitted" from="HSplitContainer/Settings/VBoxContainer/ShareContainer/NameEdit" to="." method="_on_name_edit_text_submitted"]
