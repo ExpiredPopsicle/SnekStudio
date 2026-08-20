@@ -186,6 +186,10 @@ func save_colliders() -> Array[Dictionary]:
 
 func _ready():
 	register_serializable_subwindow()
+	visibility_changed.connect(func():
+		# Keep collider visibility in sync with settings window.
+		var is_window_visible := is_visible_in_tree()
+		_set_collider_visibility(is_window_visible))
 
 func _get_skeleton() -> Skeleton3D:
 	return _get_app_root().get_skeleton()
@@ -238,7 +242,7 @@ func _add_collider(collider_data: Dictionary) -> TreeItem:
 		item.move_before(bone_item.get_meta("first_bone_item"))
 
 	collider.set_meta("tree_item", item)
-	collider.visible = visible
+	collider.visible = is_visible_in_tree()
 	return item
 
 func _set_collider_visibility(value: bool) -> void:
@@ -251,15 +255,6 @@ func _set_collider_visibility(value: bool) -> void:
 func _set_unknown_visible_recursive(value: bool, item: TreeItem) -> void:
 	item.visible = value or KNOWN_BONES.has(item.get_text(0))
 	for child in item.get_children(): _set_unknown_visible_recursive(value, child)
-
-
-func show_window():
-	super.show_window()
-	_set_collider_visibility(true)
-
-func close_window():
-	super.close_window()
-	_set_collider_visibility(false)
 
 
 ## Loads properties from the specified collider and updates the settings widgets with its values.
