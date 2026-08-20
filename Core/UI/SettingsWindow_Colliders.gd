@@ -25,7 +25,6 @@ const ICON_BOX      := preload("res://Core/UI/Images/godot/BoxShape3D.svg")
 
 const AVATAR_COLLIDER := preload("res://Core/AvatarColliders/AvatarCollider.tscn")
 
-# TODO: Implement toggles to hide unknown and/or physical bones.
 # TODO: Implement shared collider settings.
 # TODO: Improve default collider settings to include body, arms, hands and legs.
 # TODO: Option to mirror changes / added colliders.
@@ -37,7 +36,9 @@ var collider_data_by_model_name: Dictionary[String, Array]
 var items_by_bone_name : Dictionary[String, TreeItem]
 var selected_item      : TreeItem
 
-@onready var hierarchy : Tree = %Hierarchy
+@onready var hierarchy      : Tree   = %Hierarchy
+@onready var toggle_unknown : Button = %ShowUnknown
+@onready var toggle_spring  : Button = %ShowSpring
 
 @onready var bone_options      : Container = %BoneOptions
 @onready var collider_settings : Container = %ColliderSettings
@@ -48,6 +49,11 @@ var selected_item      : TreeItem
 @onready var capsule  : Container = %Capsule
 @onready var cylinder : Container = %Cylinder
 @onready var box      : Container = %Box
+
+var show_unknown: bool:
+	get: return toggle_unknown.button_pressed
+var show_spring: bool:
+	get: return toggle_spring.button_pressed
 
 
 func load_settings(settings: Variant) -> void:
@@ -100,7 +106,7 @@ func setup_for_current_model() -> void:
 	assert(hips_idx >= 0) # TODO: Could the "Hips" bone be missing?
 
 	_add_bone_recursive(skeleton, hips_idx, null)
-	_set_unknown_visible_recursive(true, hierarchy.get_root())
+	_update_bone_visibility_recursive(hierarchy.get_root())
 
 	var app = _get_app_root()
 	var model_name: String = app._get_current_model_base_name()
@@ -266,9 +272,13 @@ func _set_collider_visibility(value: bool) -> void:
 		if child is AvatarCollider:
 			child.visible = value
 
-func _set_unknown_visible_recursive(value: bool, item: TreeItem) -> void:
-	item.visible = value or KNOWN_BONES.has(item.get_text(0))
-	for child in item.get_children(): _set_unknown_visible_recursive(value, child)
+func _update_bone_visibility_recursive(item: TreeItem) -> void:
+	match item.get_icon(0):
+		ICON_BONE_KNOWN   : item.visible = true
+		ICON_BONE_UNKNOWN : item.visible = show_unknown
+		ICON_BONE_SPRING  : item.visible = show_spring
+	for child in item.get_children():
+		_update_bone_visibility_recursive(child)
 
 
 ## Loads properties from the specified collider and updates the settings widgets with its values.
@@ -317,6 +327,9 @@ func _save_to_collider(collider: AvatarCollider) -> void:
 	elif collider.shape is BoxShape3D:
 		collider.shape.size = Vector3(box.get_node("X").value, box.get_node("Y").value, box.get_node("Z").value) / 100
 
+
+func _on_show_toggled(_toggled_on: bool) -> void:
+	_update_bone_visibility_recursive(hierarchy.get_root())
 
 func _on_hierarchy_item_selected() -> void:
 	var item := hierarchy.get_selected()

@@ -3,7 +3,9 @@
 [ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_vhobi"]
 [ext_resource type="Script" uid="uid://c0jjjq1tu0h1m" path="res://Core/UI/SettingsWindow_Colliders.gd" id="2_3cbcj"]
 [ext_resource type="Texture2D" uid="uid://dyuowjkea1s67" path="res://Core/UI/Images/godot/SphereShape3D.svg" id="3_kfxn7"]
+[ext_resource type="Texture2D" uid="uid://c0lelxkmfh6ui" path="res://Core/UI/Images/godot/Bone2D.svg" id="3_vhobi"]
 [ext_resource type="Texture2D" uid="uid://1spu4qcl6d8u" path="res://Core/UI/Images/godot/CapsuleShape3D.svg" id="4_1pd0r"]
+[ext_resource type="Texture2D" uid="uid://wt6bx7wkamgn" path="res://Core/UI/Images/godot/DampedSpringJoint2D.svg" id="4_k8n6t"]
 [ext_resource type="Texture2D" uid="uid://ckain7fl2qf3q" path="res://Core/UI/Images/godot/CylinderShape3D.svg" id="5_tc7pn"]
 [ext_resource type="Texture2D" uid="uid://68b0n7hb38s4" path="res://Core/UI/Images/godot/BoxShape3D.svg" id="6_n30n0"]
 [ext_resource type="Texture2D" uid="uid://bwvgrqt5ymp8" path="res://Core/UI/Images/godot/Remove.svg" id="7_oi7u2"]
@@ -38,9 +40,30 @@ custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Label" type="Label" parent="HSplitContainer/Bones" index="0" unique_id=1965000896]
+[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/Bones" index="0" unique_id=1831788952]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HSplitContainer/Bones/HBoxContainer" index="0" unique_id=1965000896]
 layout_mode = 2
 text = "Bone Hierarchy"
+
+[node name="Control" type="Control" parent="HSplitContainer/Bones/HBoxContainer" index="1" unique_id=2100792038]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ShowUnknown" type="Button" parent="HSplitContainer/Bones/HBoxContainer" index="2" unique_id=260910023]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Show non-standard bones"
+toggle_mode = true
+icon = ExtResource("3_vhobi")
+
+[node name="ShowSpring" type="Button" parent="HSplitContainer/Bones/HBoxContainer" index="3" unique_id=737930916]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Show VRM spring bones"
+toggle_mode = true
+icon = ExtResource("4_k8n6t")
 
 [node name="Hierarchy" type="Tree" parent="HSplitContainer/Bones" index="1" unique_id=1286922166]
 unique_name_in_owner = true
@@ -576,6 +599,8 @@ text_overrun_behavior = 3
 fit_to_longest_item = false
 search_bar_enabled = true
 
+[connection signal="toggled" from="HSplitContainer/Bones/HBoxContainer/ShowUnknown" to="." method="_on_show_toggled"]
+[connection signal="toggled" from="HSplitContainer/Bones/HBoxContainer/ShowSpring" to="." method="_on_show_toggled"]
 [connection signal="item_selected" from="HSplitContainer/Bones/Hierarchy" to="." method="_on_hierarchy_item_selected"]
 [connection signal="pressed" from="HSplitContainer/Settings/VBoxContainer/BoneOptions/AddSphere" to="." method="_on_add_sphere_pressed"]
 [connection signal="pressed" from="HSplitContainer/Settings/VBoxContainer/BoneOptions/AddCapsule" to="." method="_on_add_capsule_pressed"]
