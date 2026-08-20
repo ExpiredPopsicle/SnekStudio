@@ -22,7 +22,6 @@ const ICON_BOX      := preload("res://Core/UI/Images/godot/BoxShape3D.svg")
 
 const AVATAR_COLLIDER := preload("res://Core/AvatarColliders/AvatarCollider.tscn")
 
-# TODO: Click collider to select it.
 # TODO: Differentiate between known, unknown and physical bones with icon.
 # TODO: Implement toggles to hide unknown and/or physical bones.
 # TODO: Implement shared collider settings.
@@ -215,6 +214,7 @@ func _add_bone_recursive(skeleton: Skeleton3D, bone_idx: int, parent: TreeItem) 
 func _add_collider(collider_data: Dictionary) -> TreeItem:
 	var collider: AvatarCollider = AVATAR_COLLIDER.instantiate()
 	collider.load_settings(collider_data)
+	collider.body.input_event.connect(_on_collider_input_event.bind(collider))
 	_get_skeleton().add_child(collider)
 
 	var bone_item: TreeItem = items_by_bone_name.get(collider.bone_name)
@@ -333,6 +333,20 @@ func _on_hierarchy_item_selected() -> void:
 			var collider: AvatarCollider = item.get_meta("collider")
 			collider.selected = true
 			_load_from_collider(collider)
+
+func _on_collider_input_event(
+	_camera: Node, event: InputEvent,
+	_position: Vector3, _normal: Vector3, _shape_idx: int,
+	collider: AvatarCollider,
+) -> void:
+	if not is_visible_in_tree(): return # don't do anything if window isn't visible
+	var mouse := event as InputEventMouseButton
+	if (mouse != null) and (mouse.button_index == MouseButton.MOUSE_BUTTON_LEFT) and mouse.pressed:
+		var item: TreeItem = collider.get_meta("tree_item")
+		hierarchy.set_selected(item, 0)
+		hierarchy.ensure_cursor_is_visible()
+		hierarchy.queue_redraw() # BUG: https://github.com/godotengine/godot/issues/98485
+		collider.get_viewport().set_input_as_handled()
 
 func _on_remove_pressed() -> void:
 	var item := hierarchy.get_selected()
