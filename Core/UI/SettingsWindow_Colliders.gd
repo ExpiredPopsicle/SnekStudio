@@ -128,11 +128,21 @@ func get_current_model_file_name() -> String:
 func get_current_collider_group(create_if_missing := false) -> ColliderDataGroup:
 	var model_name := get_current_model_file_name()
 	var group: ColliderDataGroup = model_files.get(model_name, null)
+
+	# To avoid a theoretical collision when a new model file is added that has
+	# the same name as an existing shared group, just add it to the users of
+	# that existing group.
+	if (group == null) and collider_groups.has(model_name):
+		group = collider_groups[model_name]
+		group.users.append(model_name)
+		model_files[model_name] = group
+
 	if (group == null) and create_if_missing:
 		group = _create_collider_group(model_name)
 		group.data = create_default_colliders()
 		group.is_default = true
 		_update_share_options()
+
 	return group
 
 func create_default_colliders() -> Array[Dictionary]:
@@ -539,10 +549,18 @@ func _on_name_edit_focus_exited() -> void:
 func _on_unlink_pressed() -> void:
 	var model_name := get_current_model_file_name()
 	var old_group  := get_current_collider_group()
+
 	_erase_user(old_group, model_name)
+	if old_group.name == model_name:
+		# In case of conflict, when the model is unlinked from a group that has
+		# the same name, change the group name so it (in practically all cases)
+		# doesn't overlap anymore.
+		_rename_group(old_group, old_group.name + " (old)")
+
 	var new_group := _create_collider_group(model_name)
 	new_group.data = old_group.data.duplicate(true)
 	new_group.is_default = old_group.is_default
+
 	_update_share_options()
 	share.select(new_group.option_idx)
 
