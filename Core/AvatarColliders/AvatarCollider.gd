@@ -17,6 +17,9 @@ var shape: Shape3D:
 
 var mesh_instance: MeshInstance3D:
 	get: return $CharacterBody3D/MeshInstance3D
+var mesh_visible: bool:
+	get: return mesh_instance.visible
+	set(value): mesh_instance.visible = value
 var mesh: PrimitiveMesh:
 	get: return mesh_instance.mesh
 	set(value): mesh_instance.mesh = value

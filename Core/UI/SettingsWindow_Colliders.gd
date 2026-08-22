@@ -338,7 +338,7 @@ func _add_collider(collider_data: Dictionary) -> TreeItem:
 		item.move_before(bone_item.get_meta("first_bone_item"))
 
 	collider.set_meta("tree_item", item)
-	collider.visible = is_visible_in_tree()
+	collider.mesh_visible = is_visible_in_tree()
 	return item
 
 func _set_collider_visibility(value: bool) -> void:
@@ -346,7 +346,7 @@ func _set_collider_visibility(value: bool) -> void:
 	if not skeleton: return
 	for child in skeleton.get_children():
 		if child is AvatarCollider:
-			child.visible = value
+			child.mesh_visible = value
 
 func _update_bone_visibility_recursive(item: TreeItem) -> void:
 	item.visible = true
