@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://bhv86wqqnn3bx" path="res://Core/AvatarColliders/AvatarCollider.gd" id="1_e26wh"]
 
 [node name="AvatarCollider" type="BoneAttachment3D" unique_id=1250149762]
-visible = false
 bone_name = "Head"
 script = ExtResource("1_e26wh")
 
