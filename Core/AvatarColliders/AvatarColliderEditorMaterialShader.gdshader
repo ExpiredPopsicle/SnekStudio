@@ -1,7 +1,7 @@
 shader_type spatial;
 render_mode blend_mix, unshaded, depth_draw_never, depth_test_disabled;
 
-uniform vec3 color : source_color = vec3(0.5, 0.0, 0.0);
+instance uniform vec3 color : source_color = vec3(0.5, 0.0, 0.0);
 uniform sampler2D DEPTH_TEXTURE : hint_depth_texture, filter_linear_mipmap;
 
 varying vec3 viewspace_position;
