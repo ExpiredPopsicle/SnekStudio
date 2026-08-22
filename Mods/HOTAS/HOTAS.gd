@@ -1,7 +1,5 @@
 extends Mod_Base
 
-
-
 # HOTAS.gd handles the position of the Devices and passes Properties from the Settings to the Mod
 # DeviceSlot.gd keeps track of the device, and animates the device. Kept as separate action as the smoothing may happen in HOTAS.gd
 # tickDriver.gd simply keeps track of the AnimationBlendTree and passes parameters to it when its functions are called

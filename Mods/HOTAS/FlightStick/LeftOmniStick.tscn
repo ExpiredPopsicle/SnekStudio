@@ -65,17 +65,17 @@ script = ExtResource("1_81wri")
 
 [node name="OmniStick" parent="." unique_id=1134257696 instance=ExtResource("2_81wri")]
 
-[node name="Skeleton3D" parent="OmniStick/OmniStick" parent_id_path=PackedInt32Array(1134257696, 1831510526) index="0" unique_id=1601409315]
+[node name="Skeleton3D" parent="OmniStick/OmniStick" parent_id_path=PackedInt32Array(1134257696, 705487735) index="0" unique_id=1762230215]
 bones/1/rotation = Quaternion(5.683956e-11, 1.2769998e-07, 4.5082444e-18, 1)
 bones/2/rotation = Quaternion(1.5017543e-15, 1.6912509e-08, 7.759119e-10, 1)
 bones/3/rotation = Quaternion(-1.7551063e-08, -1.509497e-07, 0.5, 0.86602545)
 bones/4/rotation = Quaternion(-1.0460339e-07, -3.2587175e-07, -0.5, 0.86602545)
 
 [node name="BoneAttachment3D" type="BoneAttachment3D" parent="OmniStick/OmniStick/Skeleton3D" index="0" unique_id=534014609]
-transform = Transform3D(1, -1.5518242e-09, 2.4084252e-07, 1.5518201e-09, 1, 1.6984819e-08, -2.4084252e-07, -1.6984819e-08, 1, 0.0021857072, 0.081027135, -0.0011879212)
+transform = Transform3D(0.49999997, -0.8660254, -7.198611e-08, 0.8660254, 0.49999997, -1.0356555e-07, 1.2568344e-07, -1.0559006e-08, 1, 0.08470384, 0.10667209, 0.00048313732)
 visible = false
 bone_name = "omni_twist_left"
-bone_idx = 2
+bone_idx = 3
 
 [node name="wrist" type="MeshInstance3D" parent="OmniStick/OmniStick/Skeleton3D/BoneAttachment3D" unique_id=96620807]
 transform = Transform3D(0.9975316, -0.02517439, 0.06555006, 0.0042752624, 0.9535643, 0.3011569, -0.07008773, -0.3001334, 0.95131826, 0.027717188, 0.118711665, -0.0350482)
@@ -167,19 +167,19 @@ mesh = SubResource("SphereMesh_81wri")
 transform = Transform3D(0.92288357, -0.11054232, -0.3688718, -0.11057997, 0.8414893, -0.52883565, 0.3688604, 0.52884346, 0.76437324, 0.0114982575, 0.024453755, 0.07701525)
 mesh = SubResource("SphereMesh_81wri")
 
-[node name="Base" parent="OmniStick/OmniStick/Skeleton3D" index="1" unique_id=854957987]
+[node name="Base" parent="OmniStick/OmniStick/Skeleton3D" index="1" unique_id=1227599023]
 material_override = ExtResource("3_38goi")
 
-[node name="OmniStickLeft" parent="OmniStick/OmniStick/Skeleton3D" index="2" unique_id=10039183]
+[node name="OmniStickLeft" parent="OmniStick/OmniStick/Skeleton3D" index="2" unique_id=335403754]
 material_override = ExtResource("3_38goi")
 
-[node name="OmniStickRight" parent="OmniStick/OmniStick/Skeleton3D" index="3" unique_id=543370409]
+[node name="OmniStickRight" parent="OmniStick/OmniStick/Skeleton3D" index="3" unique_id=1583817006]
 visible = false
 
-[node name="StickLeft" parent="OmniStick/OmniStick/Skeleton3D" index="4" unique_id=1480817535]
+[node name="StickLeft" parent="OmniStick/OmniStick/Skeleton3D" index="4" unique_id=256573232]
 visible = false
 
-[node name="StickRight" parent="OmniStick/OmniStick/Skeleton3D" index="5" unique_id=931394894]
+[node name="StickRight" parent="OmniStick/OmniStick/Skeleton3D" index="5" unique_id=996395427]
 visible = false
 
 [node name="AnimationTree" type="AnimationTree" parent="." unique_id=1640792490]
