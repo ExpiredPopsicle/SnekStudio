@@ -1,10 +1,6 @@
 # Steps to Making a New Release
 ... Because I always forget.
 
-## Update build script
-
-Open `Build/build_vars.sh` and change VERSION to the version.
-
 ## Update the flatpak metainfo.xml
 
 In `flatpak/com.snekstudio.Snekstudio.metainfo.xml`, add the release notes for the new version.
@@ -38,17 +34,13 @@ git push origin main --tags
 
 ## Go and make an actual release out of it
 
-Go to `https://github.com/ExpiredPopsicle/SnekStudio/tags`.
+Go to `https://github.com/ExpiredPopsicle/SnekStudio/releases`.
 
-Find the new tag. Select it.
+Eventually the draft release will show up because of some actions we have.
 
-Click "Create release from tag".
-
-For "Release title", put the version in the form of "Release v0.1.7".
+Open it up.
 
 Copy the patch notes into the "Release notes" box.
-
-"Release label" should be set to "Latest".
 
 Click "Publish release".
 
