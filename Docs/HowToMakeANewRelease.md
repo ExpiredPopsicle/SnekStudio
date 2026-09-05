@@ -1,6 +1,10 @@
 # Steps to Making a New Release
 ... Because I always forget.
 
+## Update build script
+
+Open `Build/build_vars.sh` and change VERSION to the version.
+
 ## Update the flatpak metainfo.xml
 
 In `flatpak/com.snekstudio.Snekstudio.metainfo.xml`, add the release notes for the new version.
