@@ -39,6 +39,37 @@
         </screenshot>
     </screenshots>
     <releases>
+
+        <release version="v0.1.7" date="2026-09-05">
+            <description>
+                <p>Wooo another long time coming release! We've not really had a
+                lot new features until recently when @copygirl did a big push to
+                get a bunch of things merged. So without fruther adue, here's a
+                list of things people have added or fixed!</p>
+
+                <ul>
+                    <li>Add keybind functionality #120 (@Elliesaur)</li>
+                    <li>The model controller won't error now when secondary model's are missing #148 (@PGComai)</li>
+                    <li>Expose a slider for adjusting head pitch #153 (@PGComai)</li>
+                    <li>Support pattern matching in Model Toggle #169 (@copygirl)</li>
+                    <li>Fixed file filters not working in mods #166 (@the-furry-hubofeverything)</li>
+                    <li>Added an explicit AI policy (@ExpiredPopsicle)</li>
+                    <li>Updated the runtime for the flatpak #171 (@Lunarequest)</li>
+                    <li>Add support for distributing mods as flatpaks #171 (@Lunarequest)</li>
+                    <li>Added a giant throwable estrogen pill (@ExpiredPopsicle)</li>
+                    <li>Updated flatpak resources based on the flathub review #179 (@Lunarequest)</li>
+                    <li>Add a way to filter mods through Mod window #178 (@niri-havex)</li>
+                    <li>Force shutdown the tracker process #180 (@leidenwolcloud)</li>
+                    <li>Refactor settings code #181 (@leidenwolcloud)</li>
+                    <li>Fix mod add window crashing when not filtering #182 (@copygirl)</li>
+                    <li>Update TwitchGD4 and update to godot 4.7 @ExpiredPopsicle)</li>
+                    <li>Various cleanups and refactoring @copygirl</li>
+                </ul>
+
+                <p>Release notes courtesy of @Lunarequest</p>
+            </description>
+        </release>
+
         <release version="v0.1.6" date="2026-04-08">
             <description>
                 <p>This one has been a long time coming! Mainly because we've been waiting on Godot

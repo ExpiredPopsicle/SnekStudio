@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="SnekStudio"
-config/version="0.1.6"
+config/version="0.1.7"
 run/main_scene="res://Core/Main.tscn"
 config/use_custom_user_dir=true
 config/features=PackedStringArray("4.7", "Forward Plus")
