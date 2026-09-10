@@ -7,7 +7,10 @@
     <url type="homepage">https://snekstudio.com</url>
     <metadata_license>CC0-1.0</metadata_license>
     <project_license>GPL-3.0-or-later</project_license>
-    <content_rating type="oars-1.1" />
+    <content_rating type="oars-1.1">
+        <content_attribute id="violence-cartoon">mild</content_attribute>
+        <content_attribute id="violence-bloodshed">mild</content_attribute>
+    </content_rating>
     <developer id="com.expiredpopsicle">
         <name>ExpiredPopsicle</name>
     </developer>
