@@ -327,7 +327,7 @@ func _process(delta : float) -> void:
 	# Arm IK.
 	var x_pole_dist = 10.0
 	var z_pole_dist = 10.0
-	var y_pole_dist = 5.0
+	var y_pole_dist = 25.0
 
 	for chain_name in ["arm_left", "arm_right"]:
 
