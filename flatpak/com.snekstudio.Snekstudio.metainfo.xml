@@ -66,7 +66,7 @@
                     <li>Force shutdown the tracker process #180 (@leidenwolcloud)</li>
                     <li>Refactor settings code #181 (@leidenwolcloud)</li>
                     <li>Fix mod add window crashing when not filtering #182 (@copygirl)</li>
-                    <li>Update TwitchGD4 and update to godot 4.7 @ExpiredPopsicle)</li>
+                    <li>Update TwitchGD4 and update to godot 4.7 (@ExpiredPopsicle)</li>
                     <li>Various cleanups and refactoring @copygirl</li>
                 </ul>
 
