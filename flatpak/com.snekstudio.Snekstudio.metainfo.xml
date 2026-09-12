@@ -7,7 +7,10 @@
     <url type="homepage">https://snekstudio.com</url>
     <metadata_license>CC0-1.0</metadata_license>
     <project_license>GPL-3.0-or-later</project_license>
-    <content_rating type="oars-1.1" />
+    <content_rating type="oars-1.1">
+        <content_attribute id="violence-cartoon">mild</content_attribute>
+        <content_attribute id="violence-bloodshed">mild</content_attribute>
+    </content_rating>
     <developer id="com.expiredpopsicle">
         <name>ExpiredPopsicle</name>
     </developer>
@@ -18,17 +21,18 @@
         <p>
             Features include:
         </p>
-        <p>
-            VRM Support Use a standard model format shared across many tools and applications
-            already. A MediaPipe-based Tracking System Capable of 50 different face blendshapes and
-            hand tracking. VMC Receiver Support For those who would like to import real-time
-            tracking data from other software. Modular Architecture Designed to be easily extended
-            through self-contained modules written in GDScript, or just simple Godot scenes. Twitch
-            Integration Let your viewers throw stuff at your face for channel points! Twitch redeem
-            functionality can be extended in GDScript for other actions. Fully Open-Source It&apos;s
-            free! And you can modify it! Linux Desktop Support Built to fill a gap in the VTubing
-            space, which previously excluded most Linux desktop users.
-        </p>
+        <ul>
+            <li>VRM Support – Use a standard model format shared across many tools and applications already.</li>
+            <li>A MediaPipe-based Tracking System – Capable of 50 different face blendshapes and hand tracking.</li>
+            <li>VMC Receiver Support – For those who would like to import real-time tracking data from other software.</li>
+            <li>Modular Architecture – Designed to be easily extended through self-contained modules written in GDScript,
+                                    or just simple Godot scenes.</li>
+            <li>Twitch Integration – Let your viewers throw stuff at your face for channel points!
+                                    Twitch redeem functionality can be extended in GDScript for other actions.</li>
+            <li>Fully Open-Source – It's free! And you can modify it!</li>
+            <li>Linux Desktop Support – Linux Desktop Support Built to fill a gap in the VTubing space,
+                                        which previously excluded most Linux desktop users.</li>
+        </ul>
     </description>
 
     <launchable type="desktop-id">com.snekstudio.Snekstudio.desktop</launchable>
@@ -62,7 +66,7 @@
                     <li>Force shutdown the tracker process #180 (@leidenwolcloud)</li>
                     <li>Refactor settings code #181 (@leidenwolcloud)</li>
                     <li>Fix mod add window crashing when not filtering #182 (@copygirl)</li>
-                    <li>Update TwitchGD4 and update to godot 4.7 @ExpiredPopsicle)</li>
+                    <li>Update TwitchGD4 and update to godot 4.7 (@ExpiredPopsicle)</li>
                     <li>Various cleanups and refactoring @copygirl</li>
                 </ul>
 
