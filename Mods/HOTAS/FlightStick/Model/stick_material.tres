@@ -1,0 +1,11 @@
+[gd_resource type="ORMMaterial3D" format=3 uid="uid://dih7d1fppu4m7"]
+
+[ext_resource type="Texture2D" uid="uid://v8dppy783i4t" path="res://Mods/HOTAS/FlightStick/Model/stick_albido.png" id="1_2qcl6"]
+[ext_resource type="Texture2D" uid="uid://b15umrgtvswgo" path="res://Mods/HOTAS/FlightStick/Model/stick_normal.png" id="2_of22r"]
+[ext_resource type="Texture2D" uid="uid://ctvakoleybbro" path="res://Mods/HOTAS/FlightStick/Model/stick_orm.png" id="3_1inpg"]
+
+[resource]
+albedo_texture = ExtResource("1_2qcl6")
+orm_texture = ExtResource("3_1inpg")
+normal_enabled = true
+normal_texture = ExtResource("2_of22r")

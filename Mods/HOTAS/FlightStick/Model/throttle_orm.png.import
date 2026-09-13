@@ -2,21 +2,18 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://272ave5wmh47"
-path.s3tc="res://.godot/imported/flightstick6_Untitled.png-8c07d8bd4500dc7ecbb8f343f98a8222.s3tc.ctex"
-path.etc2="res://.godot/imported/flightstick6_Untitled.png-8c07d8bd4500dc7ecbb8f343f98a8222.etc2.ctex"
+uid="uid://bkwufnp1rsth"
+path.s3tc="res://.godot/imported/throttle_orm.png-fdb8c651711c5950688d5c4665e44c97.s3tc.ctex"
+path.etc2="res://.godot/imported/throttle_orm.png-fdb8c651711c5950688d5c4665e44c97.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
-generator_parameters={
-"md5": "8bf43f3388df0aaa73e8460c31cb80b0"
-}
 
 [deps]
 
-source_file="res://Mods/HOTAS/FlightStick/Model/flightstick6_Untitled.png"
-dest_files=["res://.godot/imported/flightstick6_Untitled.png-8c07d8bd4500dc7ecbb8f343f98a8222.s3tc.ctex", "res://.godot/imported/flightstick6_Untitled.png-8c07d8bd4500dc7ecbb8f343f98a8222.etc2.ctex"]
+source_file="res://Mods/HOTAS/FlightStick/Model/throttle_orm.png"
+dest_files=["res://.godot/imported/throttle_orm.png-fdb8c651711c5950688d5c4665e44c97.s3tc.ctex", "res://.godot/imported/throttle_orm.png-fdb8c651711c5950688d5c4665e44c97.etc2.ctex"]
 
 [params]
 
