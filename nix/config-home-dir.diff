@@ -1,0 +1,13 @@
+diff --git a/Core/Main.gd b/Core/Main.gd
+index 37c7a00..89c100f 100644
+--- a/Core/Main.gd
++++ b/Core/Main.gd
+@@ -740,7 +740,7 @@ func get_controller():
+ static func get_saved_location() -> String:
+ 	if OS.has_feature("editor"):
+ 		return "res://Saved"
+-	return OS.get_executable_path().get_base_dir().path_join("Saved")
++	return OS.get_config_dir().path_join("snekstudio")
+ 
+ ## Get the config directory. Will default to the user data directory unless
+ ## overridden by environment variable.

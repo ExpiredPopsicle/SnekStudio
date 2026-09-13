@@ -27,3 +27,10 @@ Build/godot.zip
 Build/godot_templates.tpz
 
 Saved/*
+
+# Ignore build outputs from performing a nix-build or `nix build` command
+result
+result-*
+
+# Ignore automatically generated direnv output
+.direnv
