@@ -15,7 +15,8 @@ func get_selected_mod() -> SnekStudioMods.AvailableMod:
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	popout_modal = true
-	_update_mods_list()
+	if !Engine.is_editor_hint():
+		_update_mods_list()
 
 func _update_mods_list() -> void:
 	var mods_list : ItemList = %Mods_List

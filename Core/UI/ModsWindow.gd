@@ -35,7 +35,8 @@ func show_window():
 	_update_log_text()
 
 func _process(_delta: float) -> void:
-	_update_error_list()
+	if !Engine.is_editor_hint():
+		_update_error_list()
 
 func _update_error_list():
 
@@ -76,17 +77,17 @@ func _update_log_text():
 	var old_scroll_vertical_with_lines = old_scroll_vertical + \
 		%TextEdit_ModLog.get_visible_line_count()
 	var old_line_count = %TextEdit_ModLog.get_line_count()
-	
+
 	if is_instance_valid(selected):
 		%TextEdit_ModLog.text = "\n".join(selected._mod_log)
 	else:
 		%TextEdit_ModLog.text = ""
-	
+
 	if old_line_count == old_scroll_vertical_with_lines:
 		#print(old_line_count, " ", old_scroll_vertical)
 		%TextEdit_ModLog.set_v_scroll(%TextEdit_ModLog.get_line_count())
 	else:
-		%TextEdit_ModLog.set_v_scroll(old_scroll_vertical) 
+		%TextEdit_ModLog.set_v_scroll(old_scroll_vertical)
 
 func _handle_selection_change():
 	# Clear out old mods window.
@@ -129,7 +130,8 @@ func update_mods_list():
 	set_selected_mod(previous_selected)
 
 func _ready():
-	_get_mods_node().mod_list_changed.connect(update_mods_list)
+	if !Engine.is_editor_hint():
+		_get_mods_node().mod_list_changed.connect(update_mods_list)
 
 	# Save default values for both popout and embedded splitter offsets
 	popout_mod_list_offset = $VBoxContainer3/HSplitContainer.split_offset
@@ -138,8 +140,9 @@ func _ready():
 	embed_mod_status_offset = $VBoxContainer3/HSplitContainer/VBoxContainer2/VSplitContainer.split_offset
 
 	register_serializable_subwindow()
-	update_mods_list()
-	_update_error_list()
+	if !Engine.is_editor_hint():
+		update_mods_list()
+		_update_error_list()
 
 func _on_button_move_mod_up_pressed():
 	var selected := get_selected_mod()

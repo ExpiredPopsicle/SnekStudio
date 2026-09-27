@@ -43,7 +43,8 @@ func _ready():
 # savable subwindows in SnekStudioMain. Dimensions,
 # popout, and other state will be saved and restored.
 func register_serializable_subwindow():
-	_get_app_root().subwindows.push_back(self)
+	if !Engine.is_editor_hint():
+		_get_app_root().subwindows.push_back(self)
 	$WindowTitlePanel/PopoutButton.show()
 
 func _process(_delta):
