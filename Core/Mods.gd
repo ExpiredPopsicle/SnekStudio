@@ -78,7 +78,6 @@ func disable_mod(mod: Mod_Base) -> DisabledMod:
 	remove_child(mod)
 	mod.queue_free()
 
-	const DISABLED_MOD_SCENE := preload("res://Mods/DisabledMod/DisabledMod.tscn")
 	var disabled_mod: DisabledMod = DISABLED_MOD_SCENE.instantiate()
 	disabled_mod.name = mod.name
 	disabled_mod.saved_settings = {
@@ -100,6 +99,8 @@ func move_mod(mod: Mod_Base, index: int) -> void:
 	move_child(mod, index)
 	mod_list_changed.emit()
 
+
+const DISABLED_MOD_SCENE := preload("uid://dl1rgodi2xys6")
 
 var _mods_loaded := false
 var _mods_running := false
@@ -162,19 +163,16 @@ func _process_available_mods() -> void:
 			var scene      := load(scene_path) as PackedScene
 			var instance   := scene.instantiate()
 			instance.queue_free() # Gotta free to prevent leaks.
-
-			if instance is DisabledMod:
-				break # special mod, skip
+			if instance is not Mod_Base: continue # not a mod
 
 			# If the scene turns out to be a mod, add it to available mods.
-			if instance is Mod_Base:
-				var mod := AvailableMod.new()
-				mod.name = filename.get_basename() # strip extension
-				mod.path = scene_path
-				mod.icon = instance.icon
-				mod.description = _find_mod_description("res://Mods/" + mod_dir)
-				_available_mods.append(mod)
-				break # skip remaining files in directory
+			var mod := AvailableMod.new()
+			mod.name = filename.get_basename() # strip extension
+			mod.path = scene_path
+			mod.icon = instance.icon
+			mod.description = _find_mod_description("res://Mods/" + mod_dir)
+			_available_mods.append(mod)
+			break # skip remaining files in directory
 
 	# Make sure the available mods are sorted by their names.
 	_available_mods.sort_custom(func(a, b): return a.name.to_lower() < b.name.to_lower() )
@@ -200,7 +198,9 @@ func _load_mods_from_settings(dict: Array) -> void:
 	_clear_mods()
 
 	for mod_definition in dict:
-		var packed_scene: PackedScene = load(mod_definition["scene_path"])
+		var path: String = mod_definition["scene_path"]
+		var is_disabled := path.ends_with("/DisabledMod/DisabledMod.tscn");
+		var packed_scene: PackedScene = DISABLED_MOD_SCENE if is_disabled else load(path)
 		if not packed_scene: continue
 
 		var scene: Mod_Base = packed_scene.instantiate()

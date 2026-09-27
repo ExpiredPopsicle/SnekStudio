@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ccsrfh1nkg1av"
-path="res://.godot/imported/mod_disabled.svg-7aa1a3592c97773d84741a0df237ea60.ctex"
+path="res://.godot/imported/mod_disabled.svg-f791e05b67fcd472bc9d570898e1ef66.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Mods/DisabledMod/mod_disabled.svg"
-dest_files=["res://.godot/imported/mod_disabled.svg-7aa1a3592c97773d84741a0df237ea60.ctex"]
+source_file="res://Core/DisabledMod/mod_disabled.svg"
+dest_files=["res://.godot/imported/mod_disabled.svg-f791e05b67fcd472bc9d570898e1ef66.ctex"]
 
 [params]
 
