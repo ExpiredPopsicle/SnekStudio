@@ -2,21 +2,18 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cgn0ft8s5rl7a"
-path.s3tc="res://.godot/imported/throttle_throttle combined_Bake1_PBR_Diffuse.png-74b375f92dbdbcd5b24fab23411718a2.s3tc.ctex"
-path.etc2="res://.godot/imported/throttle_throttle combined_Bake1_PBR_Diffuse.png-74b375f92dbdbcd5b24fab23411718a2.etc2.ctex"
+uid="uid://v8dppy783i4t"
+path.s3tc="res://.godot/imported/stick_albido.png-6f216b6aadd1331fd2cec4e331e19ad5.s3tc.ctex"
+path.etc2="res://.godot/imported/stick_albido.png-6f216b6aadd1331fd2cec4e331e19ad5.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
-generator_parameters={
-"md5": "e63938e324d960ec255abd618cea11f4"
-}
 
 [deps]
 
-source_file="res://Mods/HOTAS/FlightStick/Model/throttle_throttle combined_Bake1_PBR_Diffuse.png"
-dest_files=["res://.godot/imported/throttle_throttle combined_Bake1_PBR_Diffuse.png-74b375f92dbdbcd5b24fab23411718a2.s3tc.ctex", "res://.godot/imported/throttle_throttle combined_Bake1_PBR_Diffuse.png-74b375f92dbdbcd5b24fab23411718a2.etc2.ctex"]
+source_file="res://Mods/HOTAS/FlightStick/Model/stick_albido.png"
+dest_files=["res://.godot/imported/stick_albido.png-6f216b6aadd1331fd2cec4e331e19ad5.s3tc.ctex", "res://.godot/imported/stick_albido.png-6f216b6aadd1331fd2cec4e331e19ad5.etc2.ctex"]
 
 [params]
 
