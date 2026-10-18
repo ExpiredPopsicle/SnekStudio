@@ -1,130 +1,598 @@
 [gd_scene format=3 uid="uid://y6nky8evh76x"]
 
-[ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_6t81y"]
-[ext_resource type="Script" uid="uid://c0jjjq1tu0h1m" path="res://Core/UI/SettingsWindow_Colliders.gd" id="2_emcxk"]
-[ext_resource type="PackedScene" uid="uid://cwt2oqwri2i5y" path="res://Core/UI/BasicSliderWithNumber.tscn" id="3_iqo7w"]
+[ext_resource type="PackedScene" uid="uid://cq0bbpieyhdug" path="res://Core/UI/BasicSubWindow.tscn" id="1_vhobi"]
+[ext_resource type="Script" uid="uid://c0jjjq1tu0h1m" path="res://Core/UI/SettingsWindow_Colliders.gd" id="2_3cbcj"]
+[ext_resource type="Texture2D" uid="uid://dyuowjkea1s67" path="res://Core/UI/Images/godot/SphereShape3D.svg" id="3_kfxn7"]
+[ext_resource type="Texture2D" uid="uid://1spu4qcl6d8u" path="res://Core/UI/Images/godot/CapsuleShape3D.svg" id="4_1pd0r"]
+[ext_resource type="Texture2D" uid="uid://ckain7fl2qf3q" path="res://Core/UI/Images/godot/CylinderShape3D.svg" id="5_tc7pn"]
+[ext_resource type="Texture2D" uid="uid://68b0n7hb38s4" path="res://Core/UI/Images/godot/BoxShape3D.svg" id="6_n30n0"]
+[ext_resource type="Texture2D" uid="uid://bwvgrqt5ymp8" path="res://Core/UI/Images/godot/Remove.svg" id="7_oi7u2"]
+[ext_resource type="Texture2D" uid="uid://llrnq6pd877" path="res://Core/UI/Images/godot/ToolMove.svg" id="8_e3rct"]
+[ext_resource type="Texture2D" uid="uid://b3cngtxe4rnc0" path="res://Core/UI/Images/godot/ToolRotate.svg" id="9_k24kv"]
+[ext_resource type="Texture2D" uid="uid://dcjp41hrgidb2" path="res://Core/UI/Images/godot/Unlinked.svg" id="10_rvck2"]
+[ext_resource type="Texture2D" uid="uid://dvp6h3vufgrtw" path="res://Core/UI/Images/godot/Rename.svg" id="13_r0dkm"]
 
-[node name="SettingsWindow_Colliders" unique_id=563047408 instance=ExtResource("1_6t81y")]
-offset_right = 397.0
-offset_bottom = 287.0
-script = ExtResource("2_emcxk")
+[node name="SettingsWindow_Colliders" unique_id=563047408 instance=ExtResource("1_vhobi")]
+offset_right = 800.0
+offset_bottom = 450.0
+script = ExtResource("2_3cbcj")
 label_text = "Colliders Settings"
 
 [node name="WindowTitlePanel" parent="." index="1"]
-offset_right = 397.0
+offset_right = 0.0
 
 [node name="WindowTitle" parent="WindowTitlePanel" index="0"]
-offset_right = 365.0
+offset_right = 768.0
 text = "Colliders Settings"
 
 [node name="HSplitContainer" type="HSplitContainer" parent="." index="2" unique_id=319922569]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 0
+offset_right = 800.0
+offset_bottom = 450.0
+size_flags_vertical = 3
+split_offsets = PackedInt32Array(-80)
+split_offset = -80
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer" index="0" unique_id=2039524937]
+[node name="Bones" type="VBoxContainer" parent="HSplitContainer" index="0" unique_id=2039524937]
+custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Label" type="Label" parent="HSplitContainer/VBoxContainer" index="0" unique_id=1965000896]
+[node name="Label" type="Label" parent="HSplitContainer/Bones" index="0" unique_id=1965000896]
 layout_mode = 2
-text = "Bone hierarchy"
+text = "Bone Hierarchy"
 
-[node name="ColliderTree" type="Tree" parent="HSplitContainer/VBoxContainer" index="1" unique_id=1286922166]
+[node name="Hierarchy" type="Tree" parent="HSplitContainer/Bones" index="1" unique_id=1286922166]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/v_separation = 2
+theme_override_constants/draw_guides = 0
+theme_override_constants/draw_relationship_lines = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/VBoxContainer" index="2" unique_id=423426936]
-layout_mode = 2
-
-[node name="Button_Add" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="0" unique_id=189586777]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Add"
-
-[node name="Button_Remove" type="Button" parent="HSplitContainer/VBoxContainer/HBoxContainer" index="1" unique_id=202659823]
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Remove"
-
-[node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer" index="1" unique_id=544138263]
+[node name="Settings" type="VBoxContainer" parent="HSplitContainer" index="1" unique_id=928585915]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Slider_Container" type="VBoxContainer" parent="HSplitContainer/ScrollContainer" index="0" unique_id=1160792073]
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/Settings" index="0" unique_id=663783679]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BoneOptions" type="VBoxContainer" parent="HSplitContainer/Settings/VBoxContainer" index="0" unique_id=839282213]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/BoneOptions" index="0" unique_id=1291306649]
+layout_mode = 2
+text = "Bone Options"
+
+[node name="AddSphere" type="Button" parent="HSplitContainer/Settings/VBoxContainer/BoneOptions" index="1" unique_id=1687882547]
+layout_mode = 2
+text = "Add Sphere Collider"
+icon = ExtResource("3_kfxn7")
+
+[node name="AddCapsule" type="Button" parent="HSplitContainer/Settings/VBoxContainer/BoneOptions" index="2" unique_id=865129893]
+layout_mode = 2
+text = "Add Capsule Collider"
+icon = ExtResource("4_1pd0r")
+
+[node name="AddCylinder" type="Button" parent="HSplitContainer/Settings/VBoxContainer/BoneOptions" index="3" unique_id=189586777]
+layout_mode = 2
+text = "Add Cylinder Collider"
+icon = ExtResource("5_tc7pn")
+
+[node name="AddBox" type="Button" parent="HSplitContainer/Settings/VBoxContainer/BoneOptions" index="4" unique_id=2023125649]
+layout_mode = 2
+text = "Add Box Collider"
+icon = ExtResource("6_n30n0")
+
+[node name="ColliderSettings" type="VBoxContainer" parent="HSplitContainer/Settings/VBoxContainer" index="1" unique_id=1283602251]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings" index="0" unique_id=232758661]
+layout_mode = 2
+text = "Collider Settings"
+
+[node name="Remove" type="Button" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings" index="1" unique_id=202659823]
+layout_mode = 2
+text = "Remove Collider"
+icon = ExtResource("7_oi7u2")
+
+[node name="Position" type="HBoxContainer" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings" index="2" unique_id=1918913568]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Position" index="0" unique_id=2093360069]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("8_e3rct")
+
+[node name="X" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Position" index="1" unique_id=1562452055]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -9999.9
+max_value = 9999.9
+step = 0.1
+value = 0.1000000000003638
+alignment = 2
+update_on_text_changed = true
+suffix = "cm"
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Position/X" index="2" unique_id=1840195949]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 14.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.917647, 0.211765, 0.317647, 1)
+theme_override_font_sizes/font_size = 12
+text = "X"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Y" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Position" index="2" unique_id=268484294]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -9999.9
+max_value = 9999.9
+step = 0.1
+value = 0.1000000000003638
+alignment = 2
+update_on_text_changed = true
+suffix = "cm"
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Position/Y" index="2" unique_id=1690653430]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 14.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.529412, 0.839216, 0.0117647, 1)
+theme_override_font_sizes/font_size = 12
+text = "Y"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Z" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Position" index="3" unique_id=1353323450]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -9999.9
+max_value = 9999.9
+step = 0.1
+value = 0.1000000000003638
+alignment = 2
+update_on_text_changed = true
+suffix = "cm"
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Position/Z" index="2" unique_id=1406991555]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 13.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.180392, 0.529412, 0.917647, 1)
+theme_override_font_sizes/font_size = 12
+text = "Z"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Rotation" type="HBoxContainer" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings" index="3" unique_id=1452104663]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Rotation" index="0" unique_id=1931619338]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("9_k24kv")
+
+[node name="X" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Rotation" index="1" unique_id=171201281]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -180.0
+max_value = 180.0
+step = 0.1
+allow_greater = true
+allow_lesser = true
+alignment = 2
+update_on_text_changed = true
+suffix = "°"
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Rotation/X" index="2" unique_id=1603265929]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 14.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.917647, 0.211765, 0.317647, 1)
+theme_override_font_sizes/font_size = 12
+text = "X"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Y" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Rotation" index="2" unique_id=189703368]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -180.0
+max_value = 180.0
+step = 0.1
+allow_greater = true
+allow_lesser = true
+alignment = 2
+update_on_text_changed = true
+suffix = "°"
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Rotation/Y" index="2" unique_id=1666791568]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 14.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.529412, 0.839216, 0.0117647, 1)
+theme_override_font_sizes/font_size = 12
+text = "Y"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Z" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Rotation" index="3" unique_id=326999673]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = -180.0
+max_value = 180.0
+step = 0.1
+allow_greater = true
+allow_lesser = true
+alignment = 2
+update_on_text_changed = true
+suffix = "°"
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Rotation/Z" index="2" unique_id=1114006122]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 13.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.180392, 0.529412, 0.917647, 1)
+theme_override_font_sizes/font_size = 12
+text = "Z"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Sphere" type="HBoxContainer" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings" index="4" unique_id=2053213657]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Sphere" index="0" unique_id=553677001]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("3_kfxn7")
+
+[node name="X" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Sphere" index="1" unique_id=1940096410]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 9999.9
+step = 0.1
+value = 10.0
+alignment = 2
+update_on_text_changed = true
+suffix = "cm"
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Sphere/X" index="2" unique_id=1007904344]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 14.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.917647, 0.211765, 0.317647, 1)
+theme_override_font_sizes/font_size = 12
+text = "X"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Sphere" index="2" unique_id=825809988]
+layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CheckBox_Enabled" type="CheckBox" parent="HSplitContainer/ScrollContainer/Slider_Container" index="0" unique_id=1357616097]
+[node name="Spacer2" type="Control" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Sphere" index="3" unique_id=768574385]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Capsule" type="HBoxContainer" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings" index="5" unique_id=605830081]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Enabled"
 
-[node name="Label" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container" index="1" unique_id=1914737752]
+[node name="Icon" type="TextureRect" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Capsule" index="0" unique_id=230038267]
 layout_mode = 2
-text = "Position"
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("4_1pd0r")
 
-[node name="GridContainer" type="GridContainer" parent="HSplitContainer/ScrollContainer/Slider_Container" index="2" unique_id=912562167]
+[node name="X" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Capsule" index="1" unique_id=1286398494]
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
-columns = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 9999.9
+step = 0.1
+value = 10.0
+alignment = 2
+update_on_text_changed = true
+suffix = "cm"
+custom_arrow_step = 1.0
 
-[node name="Label" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="0" unique_id=1823926830]
-layout_mode = 2
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Capsule/X" index="2" unique_id=895399725]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 14.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.917647, 0.211765, 0.317647, 1)
+theme_override_font_sizes/font_size = 12
 text = "X"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Position_Slider_X" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="1" unique_id=1265502311 instance=ExtResource("3_iqo7w")]
-unique_name_in_owner = true
+[node name="Y" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Capsule" index="2" unique_id=447484270]
+custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
-min_value = -2.0
-max_value = 2.0
-value = 0.0
-step = 0.01
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 9999.9
+step = 0.1
+value = 10.0
+alignment = 2
+update_on_text_changed = true
+suffix = "cm"
+custom_arrow_step = 1.0
 
-[node name="Label2" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="2" unique_id=478082586]
-layout_mode = 2
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Capsule/Y" index="2" unique_id=1344389426]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 14.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.529412, 0.839216, 0.0117647, 1)
+theme_override_font_sizes/font_size = 12
 text = "Y"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Position_Slider_Y" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="3" unique_id=386604511 instance=ExtResource("3_iqo7w")]
+[node name="Spacer" type="Control" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Capsule" index="3" unique_id=1839748372]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Cylinder" type="HBoxContainer" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings" index="6" unique_id=860915099]
 unique_name_in_owner = true
 layout_mode = 2
-min_value = -2.0
-max_value = 2.0
-value = 0.0
-step = 0.01
 
-[node name="Label3" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="4" unique_id=763886011]
+[node name="Icon" type="TextureRect" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Cylinder" index="0" unique_id=846946308]
 layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("5_tc7pn")
+
+[node name="X" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Cylinder" index="1" unique_id=1210207686]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 9999.9
+step = 0.1
+value = 10.0
+alignment = 2
+update_on_text_changed = true
+suffix = "cm"
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Cylinder/X" index="2" unique_id=1034347533]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 14.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.917647, 0.211765, 0.317647, 1)
+theme_override_font_sizes/font_size = 12
+text = "X"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Y" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Cylinder" index="2" unique_id=840439622]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 9999.9
+step = 0.1
+value = 10.0
+alignment = 2
+update_on_text_changed = true
+suffix = "cm"
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Cylinder/Y" index="2" unique_id=1301003821]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 14.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.529412, 0.839216, 0.0117647, 1)
+theme_override_font_sizes/font_size = 12
+text = "Y"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Spacer" type="Control" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Cylinder" index="3" unique_id=1044729064]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Box" type="HBoxContainer" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings" index="7" unique_id=225419901]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box" index="0" unique_id=1465688871]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = ExtResource("6_n30n0")
+
+[node name="X" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box" index="1" unique_id=1604552451]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 9999.9
+step = 0.1
+value = 10.0
+alignment = 2
+update_on_text_changed = true
+suffix = "cm"
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box/X" index="2" unique_id=1492123855]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 14.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.917647, 0.211765, 0.317647, 1)
+theme_override_font_sizes/font_size = 12
+text = "X"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Y" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box" index="2" unique_id=1781057702]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 9999.9
+step = 0.1
+value = 10.0
+alignment = 2
+update_on_text_changed = true
+suffix = "cm"
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box/Y" index="2" unique_id=1820842856]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 14.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.529412, 0.839216, 0.0117647, 1)
+theme_override_font_sizes/font_size = 12
+text = "Y"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Z" type="SpinBox" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box" index="3" unique_id=1335735252]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 1.0
+max_value = 9999.9
+step = 0.1
+value = 10.0
+alignment = 2
+update_on_text_changed = true
+suffix = "cm"
+custom_arrow_step = 1.0
+
+[node name="Label" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box/Z" index="2" unique_id=227542773]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_right = 13.0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.180392, 0.529412, 0.917647, 1)
+theme_override_font_sizes/font_size = 12
 text = "Z"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Position_Slider_Z" parent="HSplitContainer/ScrollContainer/Slider_Container/GridContainer" index="5" unique_id=837521025 instance=ExtResource("3_iqo7w")]
+[node name="Spacer" type="Control" parent="HSplitContainer/Settings/VBoxContainer" index="2" unique_id=1609676225]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ShareContainer" type="VBoxContainer" parent="HSplitContainer/Settings/VBoxContainer" index="3" unique_id=1585008284]
+visible = false
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HSplitContainer/Settings/VBoxContainer/ShareContainer" index="0" unique_id=141575926]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HSplitContainer/Settings/VBoxContainer/ShareContainer/HBoxContainer" index="0" unique_id=496932973]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Share settings with ..."
+
+[node name="Rename" type="Button" parent="HSplitContainer/Settings/VBoxContainer/ShareContainer/HBoxContainer" index="1" unique_id=1710768048]
 unique_name_in_owner = true
 layout_mode = 2
-min_value = -2.0
-max_value = 2.0
-value = 0.0
-step = 0.01
+icon = ExtResource("13_r0dkm")
 
-[node name="Label4" type="Label" parent="HSplitContainer/ScrollContainer/Slider_Container" index="3" unique_id=404570862]
-layout_mode = 2
-text = "Radius"
-
-[node name="Radius_Slider" parent="HSplitContainer/ScrollContainer/Slider_Container" index="4" unique_id=172520427 instance=ExtResource("3_iqo7w")]
+[node name="Unlink" type="Button" parent="HSplitContainer/Settings/VBoxContainer/ShareContainer/HBoxContainer" index="2" unique_id=1358983029]
 unique_name_in_owner = true
 layout_mode = 2
-max_value = 5.0
-step = 0.01
+icon = ExtResource("10_rvck2")
 
-[connection signal="item_selected" from="HSplitContainer/VBoxContainer/ColliderTree" to="." method="_on_collider_tree_item_selected"]
-[connection signal="pressed" from="HSplitContainer/VBoxContainer/HBoxContainer/Button_Add" to="." method="_on_button_add_pressed"]
-[connection signal="pressed" from="HSplitContainer/VBoxContainer/HBoxContainer/Button_Remove" to="." method="_on_button_remove_pressed"]
-[connection signal="pressed" from="HSplitContainer/ScrollContainer/Slider_Container/CheckBox_Enabled" to="." method="_on_check_box_enabled_pressed"]
-[connection signal="value_changed" from="HSplitContainer/ScrollContainer/Slider_Container/GridContainer/Position_Slider_X" to="." method="_on_slider_value_changed"]
-[connection signal="value_changed" from="HSplitContainer/ScrollContainer/Slider_Container/GridContainer/Position_Slider_Y" to="." method="_on_slider_value_changed"]
-[connection signal="value_changed" from="HSplitContainer/ScrollContainer/Slider_Container/GridContainer/Position_Slider_Z" to="." method="_on_slider_value_changed"]
-[connection signal="value_changed" from="HSplitContainer/ScrollContainer/Slider_Container/Radius_Slider" to="." method="_on_slider_value_changed"]
+[node name="Share" type="OptionButton" parent="HSplitContainer/Settings/VBoxContainer/ShareContainer" index="1" unique_id=1179694171]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 31)
+layout_mode = 2
+size_flags_horizontal = 3
+text_overrun_behavior = 3
+fit_to_longest_item = false
+search_bar_enabled = true
+
+[connection signal="item_selected" from="HSplitContainer/Bones/Hierarchy" to="." method="_on_hierarchy_item_selected"]
+[connection signal="pressed" from="HSplitContainer/Settings/VBoxContainer/BoneOptions/AddSphere" to="." method="_on_add_sphere_pressed"]
+[connection signal="pressed" from="HSplitContainer/Settings/VBoxContainer/BoneOptions/AddCapsule" to="." method="_on_add_capsule_pressed"]
+[connection signal="pressed" from="HSplitContainer/Settings/VBoxContainer/BoneOptions/AddCylinder" to="." method="_on_add_cylinder_pressed"]
+[connection signal="pressed" from="HSplitContainer/Settings/VBoxContainer/BoneOptions/AddBox" to="." method="_on_add_box_pressed"]
+[connection signal="pressed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Remove" to="." method="_on_remove_pressed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Position/X" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Position/Y" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Position/Z" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Rotation/X" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Rotation/Y" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Rotation/Z" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Sphere/X" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Capsule/X" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Capsule/Y" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Cylinder/X" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Cylinder/Y" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box/X" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box/Y" to="." method="_on_any_value_changed"]
+[connection signal="value_changed" from="HSplitContainer/Settings/VBoxContainer/ColliderSettings/Box/Z" to="." method="_on_any_value_changed"]
