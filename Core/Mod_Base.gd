@@ -375,11 +375,8 @@ func add_autodelete_object(ob : Node):
 	ob.add_to_group(_get_autodelete_group_name())
 
 ## Get the main app (Main.gd) class instance.
-func get_app():
-	var current = self
-	while current.name != "SnekStudio_Main":
-		current = current.get_parent()
-	return current
+func get_app() -> SnekStudioMain:
+	return find_parent("SnekStudio_Main")
 
 ## Get the VTuber model's skeleton.
 func get_skeleton() -> Skeleton3D:

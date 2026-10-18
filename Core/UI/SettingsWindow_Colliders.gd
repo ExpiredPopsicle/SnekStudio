@@ -60,7 +60,8 @@ func _update_colliders_to_app(colliders):
 
 func _ready():
 	register_serializable_subwindow()
-	_update_sliders()
+	if !Engine.is_editor_hint():
+		_update_sliders()
 
 func _get_selected_bone():
 	var selected_item : TreeItem = %ColliderTree.get_selected()
