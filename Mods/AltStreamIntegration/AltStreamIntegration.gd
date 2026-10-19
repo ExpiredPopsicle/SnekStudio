@@ -186,7 +186,7 @@ func _on_event_received(_event: String, data: String) -> void:
 					var reward_name := _try_get_string(obj, "rewardName")
 					var user_input  := _try_get_string(obj, "userInput") # optional
 					if user.username and user.display_name and reward_name:
-						reward_redeemed.emit(user, message, reward_name, user_input)
+						reward_redeemed.emit(user, message.id, reward_name, user_input)
 
 				"[SHOUTOUT]":
 					var target := User.new()
