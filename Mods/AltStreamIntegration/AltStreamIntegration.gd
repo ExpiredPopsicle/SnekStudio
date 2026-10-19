@@ -39,8 +39,12 @@ signal raid_outgoing_cancel()
 signal reward_redeemed(user: User, message_id: int, reward_name: String, user_input: String)
 signal shoutout(target: User, game_name: String, game_cover_url: String, shouted_by: User)
 
+@export var autoconnect := true
 @export var channel := ""
 
+var has_initialized := false
+var status_label := Label.new()
+var connect_button := Button.new()
 var client := EventStreamClient.new()
 var timer: SceneTreeTimer
 
@@ -58,22 +62,46 @@ func _init() -> void:
 		get_app()._on_handle_channel_raid(user.username, user.display_name, raider_count))
 
 func _ready():
+	add_tracked_setting("autoconnect", "Auto-connect on startup")
 	add_tracked_setting("channel", "AltStream Channel")
 
-func load_after(_old: Dictionary, _new: Dictionary) -> void:
-	# Introduce a 3 second delay between changing the input and connecting to the API.
-	# TODO: Ideally, we'd instead instantly connect when settings load, and have a
-	#       button or checkbox to reconnect / disconnect, with a status indicator.
-	if timer: timer.timeout.disconnect(_update_client)
-	timer = get_tree().create_timer(3.0)
-	timer.timeout.connect(_update_client)
+	var settings: Container = get_settings_window()
+	settings.add_child(status_label)
+	settings.add_child(connect_button)
+	connect_button.pressed.connect(_on_connect_pressed)
 
-func _update_client() -> void:
-	if channel.is_empty(): client.close()
-	else: client.connect_to_host(HOST, ENDPOINT % channel)
+	var channel_widget: LineEdit = _settings_widgets_by_setting_name["channel"]
+	channel_widget.text_changed.connect(func(_text: String): client.close())
+	channel_widget.text_submitted.connect(func(_text: String):
+		if client.status == EventStreamClient.Status.DISCONNECTED:
+			_on_connect_pressed())
+
+func scene_init() -> void:
+	# This is called once when the mod is enabled, after settings have loaded,
+	# but also when the model is changed, which we don't care about.
+	if has_initialized: return
+	has_initialized = true
+	if autoconnect: _on_connect_pressed()
 
 func _process(_delta: float) -> void:
 	client.poll()
+	match client.status:
+		EventStreamClient.Status.CONNECTED:
+			status_label.text = "Status: ✅ Connected"
+			connect_button.text = "Disconnect"
+		EventStreamClient.Status.CONNECTING:
+			status_label.text = "Status: ⏳ Connecting ..."
+			connect_button.text = "Disconnect"
+		EventStreamClient.Status.DISCONNECTED:
+			status_label.text = "Status: ❌ Disconnected"
+			connect_button.text = "Connect"
+
+func _on_connect_pressed() -> void:
+	if client.status == EventStreamClient.Status.DISCONNECTED:
+		if not channel.is_empty():
+			client.connect_to_host(HOST, ENDPOINT % channel)
+	else:
+		client.close()
 
 func _on_connected() -> void:
 	print_log("Connected!")
