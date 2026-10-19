@@ -31,7 +31,6 @@ func close() -> void:
 	_on_disconnected()
 
 
-const NEWLINE := ord("\n")
 var _http := HTTPClient.new()
 var _request_sent := false
 var _buffer: PackedByteArray
@@ -70,16 +69,12 @@ func poll() -> void:
 			if chunk.is_empty(): return
 			_buffer += chunk
 
-			# Look for a "\n\n" sequence in the buffer.
-			var i := _buffer.size() - 1
 			while true:
-				i = _buffer.rfind(NEWLINE, i) - 1
-				if i < 0: return # not found anywhere
-				if _buffer[i] == NEWLINE: break
-
-			var message := _buffer.slice(0, i).get_string_from_utf8()
-			_buffer = _buffer.slice(i + 2)
-			_on_message(message)
+				var i := _find_double_newline(_buffer)
+				if i == -1: return
+				var message := _buffer.slice(0, i).get_string_from_utf8()
+				_buffer = _buffer.slice(i + 2)
+				_process_message(message)
 
 func _on_disconnected(error_message := "") -> void:
 	if status == Status.DISCONNECTED: return
@@ -93,19 +88,30 @@ func _on_disconnected(error_message := "") -> void:
 	if was_connected: disconnected.emit(error_message)
 	else: connection_failed.emit(error_message)
 
-func _on_message(message: String) -> void:
+func _process_message(message: String) -> void:
 	var event := ""
 	var data  := ""
 
 	for line in message.split("\n"):
+		assert(not line.is_empty())
 		var split := line.split(":", true, 1)
 		var field := split[0]
 		var value := split[1].trim_prefix(" ") if (split.size() > 1) else ""
 
 		match field:
-			"": pass # this is a comment
+			""      : pass # this is a comment
 			"event" : event = value
 			"data"  : data += value + "\n"
 
 	if event or data:
 		event_received.emit(event, data.trim_suffix("\n"))
+
+const NEWLINE := ord("\n")
+static func _find_double_newline(buffer: PackedByteArray) -> int:
+	var i := 0
+	while true:
+		i = buffer.find(NEWLINE, i)
+		if (i == -1) or (i == buffer.size() - 1): break
+		if buffer[i + 1] == NEWLINE: return i
+		i += 2
+	return -1
