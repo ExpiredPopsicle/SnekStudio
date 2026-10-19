@@ -133,11 +133,15 @@ func _on_event_received(_event: String, data: String) -> void:
 		# also just be "system", so we'll just ignore it for this.
 		var special := _special_regex.search(message.text)
 		if special:
-			message.text = "" # Don't expose this in our API.
+			var kind  := special.get_string(1)
+			var value := special.get_string(2)
+			message.text = "" # Don't ever expose this in our API.
+
 			# Most of these hold a stringified JSON object which we're parsing
 			# here, but there are exceptions, like `[DELETE]` and `[CLEAR_CHAT]`.
-			var obj: Variant = JSON.parse_string(special.get_string(2))
-			match special.get_string(1):
+			var obj: Dictionary = JSON.parse_string(value) if value.begins_with("{") else {}
+
+			match kind:
 				"[HIGHLIGHT]":
 					user.username    = _try_get_string(obj, "from")
 					message.text     = _try_get_string(obj, "text")
@@ -158,9 +162,7 @@ func _on_event_received(_event: String, data: String) -> void:
 					chat_message_unpinned.emit()
 
 				"[DELETE]":
-					# JSON parsing would make this an int, we need a string.
-					# (The API uses strings for message IDs in other places.)
-					var message_id := special.get_string(2)
+					var message_id := value
 					chat_message_deleted.emit(message_id)
 
 				"[CLEAR_CHAT]":
