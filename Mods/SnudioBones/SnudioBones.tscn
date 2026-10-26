@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://bxawjesycctts"]
+
+[ext_resource type="Script" uid="uid://4oq2y3okh57f" path="res://Mods/SnudioBones/SnudioBones.gd" id="1_i43jl"]
+
+[node name="SnudioBones" type="Node3D" unique_id=616144927]
+script = ExtResource("1_i43jl")
+metadata/_custom_type_script = "uid://bsjotf2wtnmeq"

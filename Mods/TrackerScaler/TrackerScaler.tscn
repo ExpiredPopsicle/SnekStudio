@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://bc1svu2oh28dy"]
+
+[ext_resource type="Script" uid="uid://bptq11h0wyofg" path="res://Mods/TrackerScaler/TrackerScaler.gd" id="1_ktdh2"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_4e0ao"]
+size = Vector3(0.5, 0.5, 0.5)
+
+[node name="TrackerScaler" type="Node3D" unique_id=1154208943]
+script = ExtResource("1_ktdh2")
+metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
+
+[node name="DebugHead" type="MeshInstance3D" parent="." unique_id=664859126]
+mesh = SubResource("BoxMesh_4e0ao")
+
+[node name="DebugLeftHand" type="MeshInstance3D" parent="." unique_id=1897009312]
+mesh = SubResource("BoxMesh_4e0ao")
+
+[node name="DebugRightHand" type="MeshInstance3D" parent="." unique_id=1890531430]
+mesh = SubResource("BoxMesh_4e0ao")
