@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   sodipodi:docname="mockup.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     showgrid="false"
+     showguides="true"
+     inkscape:zoom="0.99906609"
+     inkscape:cx="538.00244"
+     inkscape:cy="305.78558"
+     inkscape:window-width="1920"
+     inkscape:window-height="995"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       id="grid3"
+       units="mm"
+       originx="0"
+       originy="0"
+       spacingx="0.99999998"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       enabled="true"
+       visible="false" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1">
+    <rect
+       x="142.96909"
+       y="-93.425346"
+       width="646.05384"
+       height="270.33138"
+       id="rect5" />
+    <rect
+       x="241.88977"
+       y="181.41732"
+       width="124.72441"
+       height="64.251967"
+       id="rect4" />
+    <rect
+       x="241.88977"
+       y="181.41731"
+       width="124.72441"
+       height="64.251968"
+       id="rect4-7" />
+    <rect
+       x="142.96909"
+       y="-93.425346"
+       width="405.06241"
+       height="229.48833"
+       id="rect5-1" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#ffffff;stroke:#d5d5d5;stroke-width:8.46667;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="rect2"
+       width="393.62799"
+       height="202.9937"
+       x="-36.703659"
+       y="-35.580074" />
+    <rect
+       style="fill:#ffffff;stroke:#d5d5d5;stroke-width:9.12549;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="rect1"
+       width="155"
+       height="15.580074"
+       x="29.250946"
+       y="64.194199" />
+    <rect
+       style="fill:#ff0d0d;fill-opacity:1;stroke:none;stroke-width:7.02668;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       id="rect3"
+       width="70"
+       height="15.580075"
+       x="29.250946"
+       y="64.194199" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:8.46667;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       d="m 65.250948,80.194198 -3.000001,5 h 2 v 4 h 2.000001 v -4 h 2 z"
+       id="path3"
+       sodipodi:nodetypes="cccccccc" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.10282528,0,0,0.10282528,37.378476,71.305651)"
+       id="text3"
+       style="font-size:48px;font-family:'Comic Sans MS';-inkscape-font-specification:'Comic Sans MS';writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect4);fill:#000000;fill-opacity:1;stroke:none;stroke-width:32;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"><tspan
+         x="241.89062"
+         y="222.59649"
+         id="tspan2">0.0</tspan></text>
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:8.46667;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"
+       d="m 144.25095,80.194198 -3,5 h 2 v 4 h 2 v -4 h 2 z"
+       id="path3-5"
+       sodipodi:nodetypes="cccccccc" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.10282528,0,0,0.10282528,116.37848,71.305651)"
+       id="text3-6"
+       style="font-size:48px;font-family:'Comic Sans MS';-inkscape-font-specification:'Comic Sans MS';writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect4-7);fill:#000000;fill-opacity:1;stroke:none;stroke-width:32;stroke-linecap:round;stroke-linejoin:round;paint-order:markers stroke fill"><tspan
+         x="241.89062"
+         y="222.59649"
+         id="tspan3">1.0</tspan></text>
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1, 2;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       d="M 106.75095,64.194199 V 79.774272"
+       id="path4" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#3511ff;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       d="m 69.287516,23.595208 31.273014,0.374527 6.1797,31.647541 -6.1797,-2.434426 11.04855,-1.872636 -5.24338,4.119798"
+       id="path5" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.11049473,0,0,0.11049473,-6.2247448,23.946612)"
+       id="text5"
+       style="font-size:48px;font-family:'Comic Sans MS';-inkscape-font-specification:'Comic Sans MS';writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect5);fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.77953;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"><tspan
+         x="142.96875"
+         y="-52.247258"
+         id="tspan4">activation threshold for </tspan><tspan
+         x="142.96875"
+         y="7.7527422"
+         id="tspan6">booleans (calculated as </tspan><tspan
+         x="142.96875"
+         y="67.752742"
+         id="tspan7">midway between 0.0 and 1.0)</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.11049473,0,0,0.11049473,70.683662,124.59216)"
+       id="text5-0"
+       style="font-size:48px;font-family:'Comic Sans MS';-inkscape-font-specification:'Comic Sans MS';writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect5-1);fill:#000000;fill-opacity:1;stroke:none;stroke-width:3.77953;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"><tspan
+         x="142.96875"
+         y="-52.247258"
+         id="tspan8">draggable</tspan></text>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#3511ff;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       d="M 91.384614,108.23834 73.969104,94.755359 73.22005,100.186 78.276166,95.317149 73.594578,94.942623"
+       id="path6" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#3511ff;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       d="m 107.67655,108.98739 26.2169,-13.857505 -7.67781,2.62169 6.36696,2.434425 1.49811,-4.494323"
+       id="path7" />
+  </g>
+</svg>
