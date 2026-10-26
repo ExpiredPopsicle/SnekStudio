@@ -4,6 +4,7 @@ var eyes_link_vertical : bool = false
 var eyes_link_horizontal : bool = false
 var eyes_link_blink : bool = false
 var eyes_prevent_opposite_directions : bool = true
+var eyes_link_wide : bool = false
 
 func check_configuration() -> PackedStringArray:
 
@@ -29,6 +30,8 @@ func _ready() -> void:
 		"eyes_link_horizontal", "Link eyes horizontal direction")
 	add_tracked_setting(
 		"eyes_link_blink", "Link eyes blinking")
+	add_tracked_setting(
+		"eyes_link_wide", "Link eyes wide")
 	
 	update_settings_ui()
 
@@ -128,6 +131,11 @@ func fixup_eyes(shape_dict_new : Dictionary) -> Dictionary:
 			# Finally, override our blink values with the ones we calculated.
 			shape_dict_new["eyeBlinkRight"] = eye_blink_new
 			shape_dict_new["eyeBlinkLeft"] = eye_blink_new
+
+	if eyes_link_wide and shape_dict_new.has("eyeWideLeft") and shape_dict_new.has("eyeWideRight"):
+		var avg: float = (shape_dict_new["eyeWideLeft"] + shape_dict_new["eyeWideRight"]) / 2.0
+		shape_dict_new["eyeWideLeft"] = avg
+		shape_dict_new["eyeWideRight"] = avg
 
 	# Clamp some eye values now that we've messed with them.
 	for shape : String in [
