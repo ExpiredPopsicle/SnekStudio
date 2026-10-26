@@ -273,8 +273,6 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 
 func scene_init():
 
-	_start_process()
-
 	# Find a port number that's open to use. Must be done before start_tracker.
 	# OR call the set port number RPC after changing it.
 	assert(!udp_server)
@@ -285,6 +283,8 @@ func scene_init():
 		udp_error = udp_server.bind(_udp_port, "127.0.0.1")
 		if udp_error != OK:
 			_udp_port += 1
+
+	_start_process()
 
 	_start_tracker()
 
