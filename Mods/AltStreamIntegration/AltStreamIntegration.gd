@@ -36,7 +36,7 @@ signal raid_incoming(from: User, raider_count: int)
 signal raid_outgoing_start(target: User, viewer_count: int, countdown: int)
 signal raid_outgoing_cancel()
 
-signal reward_redeemed(user: User, message_id: int, reward_name: String, user_input: String)
+signal reward_redeemed(user: User, message_id: String, reward_name: String, user_input: String)
 signal shoutout(target: User, game_name: String, game_cover_url: String, shouted_by: User)
 
 @export var autoconnect := true
@@ -56,7 +56,7 @@ func _init() -> void:
 
 	chat_message.connect(func(user: User, message: Message, _reward_name: String):
 		get_app()._on_handle_channel_chat_message(user.username, user.display_name, message.text, 0))
-	reward_redeemed.connect(func(user: User, _message_id: int, reward_name: String, user_input: String):
+	reward_redeemed.connect(func(user: User, _message_id: String, reward_name: String, user_input: String):
 		get_app()._on_handle_channel_points_redeem(user.username, user.display_name, reward_name, user_input))
 	raid_incoming.connect(func(user: User, raider_count: int):
 		get_app()._on_handle_channel_raid(user.username, user.display_name, raider_count))
