@@ -1062,15 +1062,16 @@ func _update_hand_tracker(
 
 	if time_since_last_update > arm_reset_time:
 		
-		var reference_ob = hand_data["rest_reference_object"]
-		# Move hand to rest position.
-		tracker_ob.global_transform.origin = tracker_ob.global_transform.origin.lerp(
-			reference_ob.global_transform.origin, arm_reset_speed) # FIXME: Hardcoded value.
-		
-		var rot_quat1 = tracker_ob.global_transform.basis.get_rotation_quaternion()
-		var rot_quat2 = reference_ob.global_transform.basis.get_rotation_quaternion()
-		tracker_ob.global_transform.basis = Basis(rot_quat1.slerp(rot_quat2, arm_reset_speed)) # FIXME: Hardcoded value
-		tracker_ob.global_transform.basis = tracker_ob.global_transform.basis.orthonormalized()
+		pass
+		#var reference_ob = hand_data["rest_reference_object"]
+		## Move hand to rest position.
+		#tracker_ob.global_transform.origin = tracker_ob.global_transform.origin.lerp(
+			#reference_ob.global_transform.origin, arm_reset_speed) # FIXME: Hardcoded value.
+		#
+		#var rot_quat1 = tracker_ob.global_transform.basis.get_rotation_quaternion()
+		#var rot_quat2 = reference_ob.global_transform.basis.get_rotation_quaternion()
+		#tracker_ob.global_transform.basis = Basis(rot_quat1.slerp(rot_quat2, arm_reset_speed)) # FIXME: Hardcoded value
+		#tracker_ob.global_transform.basis = tracker_ob.global_transform.basis.orthonormalized()
 
 	elif time_since_last_missing > 0.1: # FIXME: Hardcoded value.
 

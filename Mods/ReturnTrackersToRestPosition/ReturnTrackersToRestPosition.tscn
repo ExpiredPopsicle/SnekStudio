@@ -5,15 +5,37 @@
 [sub_resource type="BoxMesh" id="BoxMesh_8guj7"]
 size = Vector3(0.25, 0.25, 0.25)
 
+[sub_resource type="BoxMesh" id="BoxMesh_hf7qb"]
+size = Vector3(0.2, 0.2, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hf7qb"]
+albedo_color = Color(1, 0, 1, 1)
+
 [node name="ReturnTrackersToRestPosition" type="Node3D" unique_id=1318524387]
 script = ExtResource("1_hf7qb")
 metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
 
 [node name="LeftHandRestReference" type="MeshInstance3D" parent="." unique_id=1446332512]
 transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0.25, 1.1, 0)
+visible = false
 mesh = SubResource("BoxMesh_8guj7")
 
 [node name="RightHandRestReference" type="MeshInstance3D" parent="." unique_id=282423629]
 transform = Transform3D(-4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0, 1, -0.25, 1.1, 0)
+visible = false
 mesh = SubResource("BoxMesh_8guj7")
 skeleton = NodePath("../LeftHandRestReference")
+
+[node name="Head" type="MeshInstance3D" parent="." unique_id=1075477455]
+visible = false
+mesh = SubResource("BoxMesh_hf7qb")
+
+[node name="Hand_Left" type="MeshInstance3D" parent="." unique_id=398172433]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1, 0)
+mesh = SubResource("BoxMesh_8guj7")
+surface_material_override/0 = SubResource("StandardMaterial3D_hf7qb")
+
+[node name="Hand_Right" type="MeshInstance3D" parent="." unique_id=1103787885]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 1, 0)
+mesh = SubResource("BoxMesh_8guj7")
+surface_material_override/0 = SubResource("StandardMaterial3D_hf7qb")
