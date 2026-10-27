@@ -27,6 +27,7 @@ signal connected
 signal disconnected
 
 signal chat_message(user: User, message: Message, reward_name: String)
+signal chat_message_sticker(user: User, message_id: String, _name: String, url: String) # name currently unvailable
 signal chat_message_pinned(user: User, message: Message, pinned_by: String)
 signal chat_message_unpinned()
 signal chat_message_deleted(message_id: String)
@@ -124,8 +125,11 @@ func _on_event_received(_event: String, data: String) -> void:
 		var user    := _user_from_msg(msg)
 
 		if source == "local":
-			if user.username and user.display_name and message.text:
-				chat_message.emit(user, message, "")
+			if user.username and user.display_name:
+				if message.text:
+					chat_message.emit(user, message, "")
+				elif message.sticker_url:
+					chat_message_sticker.emit(user, message.id, "", message.sticker_url)
 			return
 
 		# "Special" messages (for the lack of an official name) typically come
