@@ -26,19 +26,21 @@ class Message:
 signal connected
 signal disconnected
 
-signal chat_message(user: User, message: Message, reward_name: String)
-signal chat_message_sticker(user: User, message_id: String, _name: String, url: String) # name currently unvailable
+## Regular or highlighted chat message received.
+## When `reward_name` is not empty, a "highlight message" reward was redeemed.
+signal chat_message_received(user: User, message: Message, reward_name: String)
+signal chat_sticker_received(user: User, message_id: String, _name: String, url: String) # name currently unvailable
 signal chat_message_pinned(user: User, message: Message, pinned_by: String)
 signal chat_message_unpinned()
 signal chat_message_deleted(message_id: String)
-signal chat_clear()
+signal chat_cleared()
 
 signal raid_incoming(from: User, raider_count: int)
-signal raid_outgoing_start(target: User, viewer_count: int, countdown: int)
-signal raid_outgoing_cancel()
+signal raid_outgoing_started(target: User, viewer_count: int, countdown: int)
+signal raid_outgoing_cancelled()
 
 signal reward_redeemed(user: User, message_id: String, reward_name: String, user_input: String)
-signal shoutout(target: User, game_name: String, game_cover_url: String, shouted_by: User)
+signal user_shouted_out(target: User, game_name: String, game_cover_url: String, shouted_by: User)
 
 @export var autoconnect := true
 @export var channel := ""
@@ -55,7 +57,7 @@ func _init() -> void:
 	client.connection_failed.connect(_on_connection_failed)
 	client.event_received.connect(_on_event_received)
 
-	chat_message.connect(func(user: User, message: Message, _reward_name: String):
+	chat_message_received.connect(func(user: User, message: Message, _reward_name: String):
 		get_app()._on_handle_channel_chat_message(user.username, user.display_name, message.text, 0))
 	reward_redeemed.connect(func(user: User, _message_id: String, reward_name: String, user_input: String):
 		get_app()._on_handle_channel_points_redeem(user.username, user.display_name, reward_name, user_input))
@@ -127,9 +129,9 @@ func _on_event_received(_event: String, data: String) -> void:
 		if source == "local":
 			if user.username and user.display_name:
 				if message.text:
-					chat_message.emit(user, message, "")
+					chat_message_received.emit(user, message, "")
 				elif message.sticker_url:
-					chat_message_sticker.emit(user, message.id, "", message.sticker_url)
+					chat_sticker_received.emit(user, message.id, "", message.sticker_url)
 			return
 
 		# "Special" messages (for the lack of an official name) typically come
@@ -153,7 +155,7 @@ func _on_event_received(_event: String, data: String) -> void:
 					if user.username and user.display_name and message.text and reward_name:
 						# Highlighted messages show up mostly as regular
 						# chat messages, so we'll emit them as such.
-						chat_message.emit(user, message, reward_name)
+						chat_message_received.emit(user, message, reward_name)
 
 				"[CHAT_PIN]":
 					user    = _user_from_msg(obj)
@@ -170,7 +172,7 @@ func _on_event_received(_event: String, data: String) -> void:
 					chat_message_deleted.emit(message_id)
 
 				"[CLEAR_CHAT]":
-					chat_clear.emit()
+					chat_cleared.emit()
 
 				"[RAID_START]":
 					var target := User.new()
@@ -180,10 +182,10 @@ func _on_event_received(_event: String, data: String) -> void:
 					var viewers   := _try_get_int(obj, "viewers")
 					var countdown := _try_get_int(obj, "countdownSeconds")
 					if target.username and target.display_name:
-						raid_outgoing_start.emit(target, viewers, countdown)
+						raid_outgoing_started.emit(target, viewers, countdown)
 
 				"[RAID_CANCEL]":
-					raid_outgoing_cancel.emit()
+					raid_outgoing_cancelled.emit()
 
 				"[REDEMPTION]":
 					user.username    = _try_get_string(obj, "from")
@@ -200,7 +202,7 @@ func _on_event_received(_event: String, data: String) -> void:
 					var game_name      := _try_get_string(obj, "gameName")
 					var game_cover_url := _try_get_string(obj, "gameCover")
 					if target.username and target.display_name:
-						shoutout.emit(user, game_name, game_cover_url, user)
+						user_shouted_out.emit(user, game_name, game_cover_url, user)
 			return
 
 		# Incoming raid notifications have a unique text format that
