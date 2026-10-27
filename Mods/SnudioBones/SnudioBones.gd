@@ -87,7 +87,7 @@ func _point_bone_to_other_bone(skel: Skeleton3D, top: int, bottom: int):
 	var angle: float = acos(dp)
 	#print(perpendicular_axis, " ", angle)
 
-	var new_tx: Transform3D = Transform3D(Basis(perpendicular_axis, angle))
+	var new_tx: Transform3D = Transform3D(Basis(perpendicular_axis.normalized(), angle))
 	skel.set_bone_pose(top, skel.get_bone_rest(top) * new_tx)
 	#if (new_tx.origin).length() > 0.0:
 	#	print("NOT MATCH")

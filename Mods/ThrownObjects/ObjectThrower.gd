@@ -209,7 +209,8 @@ func save_settings():
 
 func load_settings(settings_dict):
 	bit_redeem = settings_dict["bit_redeem"]
-	throws_per_bit = settings_dict["throws_per_bit"]
+	#throws_per_bit = settings_dict["throws_per_bit"]
+	throws_per_bit = 1 # FIXME: HACK
 	redeem_name = settings_dict["redeem_name"]
 	count_multiplier = settings_dict["count_multiplier"]
 	selected_throwables = []

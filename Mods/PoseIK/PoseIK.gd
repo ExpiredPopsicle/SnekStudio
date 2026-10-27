@@ -325,19 +325,18 @@ func _process(delta : float) -> void:
 	# IK stuff starts here
 
 	# Arm IK.
-	var x_pole_dist = 10.0
-	var z_pole_dist = 10.0
-	var y_pole_dist = 25.0
+	# FIXME: Parameterize this (and the scale!)
+	var pole_dist: Vector3 = Vector3(10.0, 10.0, 5.0) * 20.0
 
 	for chain_name in ["arm_left", "arm_right"]:
 
 		var tracker_to_use = $Hand_Left
 		var compensation_alpha_scale = 1.0
-		var pole_target_x = x_pole_dist
+		var pole_target_x = pole_dist[0]
 		if chain_name == "arm_right": # FIXME: Hack.
 			tracker_to_use = $Hand_Right
 			compensation_alpha_scale *= -1.0
-			pole_target_x = -x_pole_dist
+			pole_target_x = -pole_dist[0]
 
 		var tracker_local_position = \
 			skel.get_global_transform().inverse() * tracker_to_use.get_global_transform()
@@ -353,7 +352,9 @@ func _process(delta : float) -> void:
 
 				# FIXME: We really need to parameterize this all in a less
 				# silly way.
-				var rotation_scale = 1.0
+				# FIXME: Gross harcoded values ewwwwwwwwwwwww
+				var rotation_scale: float = 0.25
+				var rotation_max: float = 45.0 * (180.0/PI)
 				var shoulder_bone = "LeftShoulder"
 				if tracker_to_use == $Hand_Right:
 					shoulder_bone = "RightShoulder"
@@ -367,20 +368,25 @@ func _process(delta : float) -> void:
 					var tracker_local_chest = chest_pose_inv * tracker_local_position
 					if tracker_local_chest.origin.y > shoulder_y:
 						#print(tracker_local_chest.origin.y - shoulder_y)
+						
+						var shoulder_rotation_angle: float = (tracker_local_chest.origin.y - shoulder_y) * 2.0 * rotation_scale
+						# FIXME: Hardcoded 90-degree limit
+						shoulder_rotation_angle = clampf(shoulder_rotation_angle, -rotation_max, rotation_max)
+						
 						skel.set_bone_pose_rotation(shoulder_bone_index,
-							Quaternion(Vector3(0.0, 0.0, 1.0), (tracker_local_chest.origin.y - shoulder_y) * 2.0 * rotation_scale) *
+							Quaternion(Vector3(0.0, 0.0, 1.0), shoulder_rotation_angle) *
 							skel.get_bone_rest(shoulder_bone_index).basis.get_rotation_quaternion())
 
-		var pole_target_y = -y_pole_dist
-		var pole_target_z = -z_pole_dist
+		var pole_target_y = -pole_dist[1]
+		var pole_target_z = -pole_dist[2]
 
 		# Rotate pole target upwards when the arm reaches across the
 		# chest.
 		if (tracker_local_position.origin.x - base_bone_position.x) * compensation_alpha_scale < 0:
 			var alpha = -(tracker_local_position.origin.x - base_bone_position.x) * 3.0 * compensation_alpha_scale
 			#print(alpha)
-			pole_target_y = lerp(-y_pole_dist, 0.0, alpha)
-			pole_target_z = lerp(-z_pole_dist, 0.0, alpha)
+			pole_target_y = lerp(-pole_dist[1], 0.0, alpha)
+			pole_target_z = lerp(-pole_dist[2], 0.0, alpha)
 		
 		# Move pole target backwards when the arm is lowered.
 		#
@@ -451,9 +457,8 @@ func _setup_ik_chains():
 
 	_ikchains_dict["spine"] = chain_spine
 
-	var x_pole_dist = 10.0
-	var z_pole_dist = 10.0
-	var y_pole_dist = 5.0
+	# FIXME: Parameterize this (and the scale!)
+	var pole_dist: Vector3 = Vector3(10.0, 10.0, 5.0) * 20.0
 	
 	var arm_rotation_axis = Vector3(0.0, 1.0, 0.0).normalized()
 
@@ -476,13 +481,13 @@ func _setup_ik_chains():
 		if side == "Left":
 			chain_hand.main_axis_of_rotation = -arm_rotation_axis
 			chain_hand.pole_direction_target = Vector3(
-				x_pole_dist, -y_pole_dist, -z_pole_dist)
+				pole_dist[0], -pole_dist[1], -pole_dist[2])
 			chain_hand.tracker_object = hand_tracker_left
 			_ikchains_dict["arm_left"] = chain_hand
 		else:
 			chain_hand.main_axis_of_rotation = arm_rotation_axis
 			chain_hand.pole_direction_target = Vector3(
-				-x_pole_dist, -y_pole_dist, -z_pole_dist)
+				-pole_dist[0], -pole_dist[1], -pole_dist[2])
 			chain_hand.tracker_object = hand_tracker_right
 			_ikchains_dict["arm_right"] = chain_hand
 
