@@ -40,9 +40,9 @@ func set_camera_fov(new_camera_fov : float) -> void:
 func get_camera_fov() -> float:
 	return $Camera3D.fov
 
-func zoom_camera(offset : float):
+func zoom_camera(scale_offset : float):
 	var camera_distance = get_camera_distance()
-	camera_distance -= offset
+	camera_distance *= scale_offset
 	if camera_distance < 0.01:
 		camera_distance = 0.01
 	set_camera_distance(camera_distance)
