@@ -16,6 +16,8 @@ func _process(delta: float) -> void:
 	for finger_name: String in trackers["finger_positions"]:
 		trackers["finger_positions"][finger_name] *= tracker_scale
 
-	$DebugHead.transform = trackers["head"].transform
-	$DebugLeftHand.transform = trackers["hand_left"].transform
-	$DebugRightHand.transform = trackers["hand_right"].transform
+	$DebugHead.global_transform = trackers["head"].transform
+	$DebugLeftHand.global_transform = trackers["hand_left"].transform
+	$DebugRightHand.global_transform = trackers["hand_right"].transform
+
+	#print($DebugRightHand.global_transform.origin)
