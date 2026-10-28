@@ -21,7 +21,6 @@ var mirrored_last_frame = true
 ## haven't received recent tracking data for.
 var blend_shape_last_values = {}
 
-var hand_rest_trackers = {}
 var _init_complete = false
 
 var frames_missing_before_spine_reset = 6.0
@@ -215,9 +214,6 @@ func _ready():
 		#"Hack: Reset shoulders every frame (prevent shoulder drift)", {},
 		#"advanced")
 
-	hand_rest_trackers["Left"] = $LeftHandRestReference
-	hand_rest_trackers["Right"] = $RightHandRestReference
-
 	set_status("Waiting to start")
 
 	update_settings_ui()
@@ -235,7 +231,6 @@ func _ready():
 	_reinit()
 
 func _reinit():
-	_update_arm_rest_positions()
 	_reset_hand_landmarks()
 
 func check_configuration() -> PackedStringArray:
@@ -264,7 +259,6 @@ static func _vec3_to_array(vec : Vector3):
 
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	super.load_after(_settings_old, _settings_new)
-	_update_arm_rest_positions()
 	_send_settings_to_tracker()
 
 	var reset_blend_shapes = false
@@ -297,15 +291,6 @@ func scene_init():
 	blend_shape_last_values = {}
 	last_parsed_data = {}
 
-	# Move hand "rest" trackers into the scene.
-	var root = get_skeleton().get_parent()
-	var left_rest = $LeftHandRestReference
-	var right_rest = $RightHandRestReference
-	remove_child(left_rest)
-	remove_child(right_rest)
-	root.add_child(left_rest)
-	root.add_child(right_rest)
-
 	# Set the head tracker to match the model's head position.
 	var head_bone_index = get_skeleton().find_bone("Head")
 
@@ -329,15 +314,6 @@ func scene_shutdown():
 	udp_server.close()
 	udp_server = null
 
-	var root = get_skeleton().get_parent()
-	var left_rest = root.get_node("LeftHandRestReference")
-	var right_rest = root.get_node("RightHandRestReference")
-
-	root.remove_child(left_rest)
-	root.remove_child(right_rest)
-	add_child(left_rest)
-	add_child(right_rest)
-
 	# Reset pose and blendshapes.
 	get_app().get_controller().reset_skeleton_to_rest_pose()
 	get_app().get_controller().reset_blend_shapes()
@@ -349,29 +325,6 @@ func scene_shutdown():
 
 #region Post-Load Model Setup
 
-func _update_arm_rest_positions():
-	var skel : Skeleton3D = get_skeleton()
-	
-	if skel:
-		
-		for side in [ "Left", "Right" ]:
-			
-			var rotation_axis : Vector3 = Vector3(0.0, 0.0, 1.0)
-			if side == "Left":
-				rotation_axis *= -1
-
-			# Rotate the shoulder down so the arm is resting at a specific angle
-			# on the Z axis.
-			# on the Z axis.
-			var shoulder_index = skel.find_bone(side + "Shoulder")
-			var hand_index = skel.find_bone(side + "Hand")
-			var shoulder_origin : Vector3 = skel.get_bone_global_rest(shoulder_index).origin
-			var hand_origin : Vector3 = skel.get_bone_global_rest(hand_index).origin
-			var rotation_basis = Basis(rotation_axis, deg_to_rad(arm_rest_angle))
-			var new_offset : Vector3 = (hand_origin - shoulder_origin).rotated(
-					rotation_axis, deg_to_rad(arm_rest_angle))
-			hand_rest_trackers[side].transform.origin = shoulder_origin + new_offset
-			hand_rest_trackers[side].transform.basis = rotation_basis
 
 func _calibrate_face():
 	var data = {}
@@ -699,21 +652,15 @@ func _process(delta):
 		# -----------------------------------------------------------------------------------------
 		# Hand packets
 
-		# Pick hand rest references based on mirroring.
-		var hand_rest_reference_left = hand_rest_trackers["Left"]
-		var hand_rest_reference_right = hand_rest_trackers["Right"]
-
 		# FIXME: Code smell. Replace with a function call.
 		var per_hand_data = [
 			{
 				"side" : "Left",
 				"tracker_object" : tracker_left,
-				"rest_reference_object" : hand_rest_reference_left,
 				"index" : 0
 			}, {
 				"side" : "Right",
 			  	"tracker_object" : tracker_right,
-				"rest_reference_object" : hand_rest_reference_right,
 				"index" : 1
 			}
 		 ]
