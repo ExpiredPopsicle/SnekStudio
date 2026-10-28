@@ -1,6 +1,9 @@
 class_name AltStreamIntegration
 extends Mod_Base
 
+@warning_ignore("shadowed_global_identifier") # required for runtime mod loading
+static var EventStreamClient: GDScript = preload("res://Mods/AltStreamIntegration/EventStreamClient.gd")
+
 # NOTE: Internal API, subject to change.
 # Reference: https://github.com/MachaCeleste/AltStreamLib
 const HOST     := "https://altstream.online"
@@ -48,7 +51,7 @@ signal user_shouted_out(target: User, game_name: String, game_cover_url: String,
 var has_initialized := false
 var status_label := Label.new()
 var connect_button := Button.new()
-var client := EventStreamClient.new()
+var client = EventStreamClient.new()
 var timer: SceneTreeTimer
 
 func _init() -> void:
