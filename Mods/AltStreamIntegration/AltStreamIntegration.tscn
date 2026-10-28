@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://boc64vxmfj6p1"]
+
+[ext_resource type="Script" uid="uid://cba4t00b5mlnh" path="res://Mods/AltStreamIntegration/AltStreamIntegration.gd" id="1_jpfc6"]
+
+[node name="AltStreamIntegration" type="Node3D" unique_id=282699300]
+script = ExtResource("1_jpfc6")
+channel = null
