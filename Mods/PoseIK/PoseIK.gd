@@ -13,6 +13,8 @@ var hack_reset_shoulders_every_frame : bool = true
 var hip_adjustment_speed : float = 1.0
 var head_vertical_offset : float = -0.2
 var hips_vertical_blend_speed : float = 6.0
+var shoulder_raise_max_angle: float = 35.0
+var shoulder_rotation_scale: float = 0.25
 
 # FIXME: This should be a dictionary.
 var _ikchains_dict : Dictionary = {
@@ -326,7 +328,7 @@ func _process(delta : float) -> void:
 
 	# Arm IK.
 	# FIXME: Parameterize this (and the scale!)
-	var pole_dist: Vector3 = Vector3(10.0, 10.0, 5.0) * 20.0
+	var pole_dist: Vector3 = Vector3(10.0, 10.0, 5.0) # * 20.0
 
 	for chain_name in ["arm_left", "arm_right"]:
 
@@ -353,8 +355,8 @@ func _process(delta : float) -> void:
 				# FIXME: We really need to parameterize this all in a less
 				# silly way.
 				# FIXME: Gross harcoded values ewwwwwwwwwwwww
-				var rotation_scale: float = 0.25
-				var rotation_max: float = 45.0 * (180.0/PI)
+				var rotation_scale: float = shoulder_rotation_scale
+				var rotation_max: float = shoulder_raise_max_angle * (180.0/PI)
 				var shoulder_bone = "LeftShoulder"
 				if tracker_to_use == $Hand_Right:
 					shoulder_bone = "RightShoulder"
@@ -383,25 +385,72 @@ func _process(delta : float) -> void:
 		# Rotate pole target upwards when the arm reaches across the
 		# chest.
 		if (tracker_local_position.origin.x - base_bone_position.x) * compensation_alpha_scale < 0:
-			var alpha = -(tracker_local_position.origin.x - base_bone_position.x) * 3.0 * compensation_alpha_scale
-			#print(alpha)
-			pole_target_y = lerp(-pole_dist[1], 0.0, alpha)
-			pole_target_z = lerp(-pole_dist[2], 0.0, alpha)
-		
-		# Move pole target backwards when the arm is lowered.
-		#
-		# FIXME: Hardcoded values.
-		var arm_below_factor = (tracker_local_position.origin.y - base_bone_position.y) + 0.25
-		arm_below_factor *= 1.0
-		if arm_below_factor < 0.0:
-			var alpha = arm_below_factor
-			# FIXME: Hardcoded values.
-			pole_target_z = lerp(pole_target_z, 100.0, alpha)
-			pole_target_x = lerp(pole_target_x, 100.0 * compensation_alpha_scale, alpha)
+			var chest_bone_index: int = skel.find_bone("Chest")
+			var chest_bone_tx: Transform3D = skel.global_transform * skel.get_bone_global_pose(chest_bone_index)
+			var chest_bone_tx_inv = chest_bone_tx.inverse()
+			var pole_target_in_chest_space: Vector3 = chest_bone_tx_inv * Vector3(pole_target_x, pole_target_y, pole_target_z)
 
-		
-		_ikchains_dict[chain_name].pole_direction_target = Vector3(
+			# FIXME: Code smell! Clean it up!
+			var side: String = "Left"
+			if chain_name == "arm_right":
+				side = "Right"
+
+			var upper_arm_index: int = skel.find_bone(side + "UpperArm")
+			var upper_arm_rest_pos_global: Vector3 = skel.global_transform * skel \
+				.get_bone_global_rest(upper_arm_index) \
+				.origin
+			var upper_arm_rest_pos_chest_space: Vector3 = chest_bone_tx_inv * \
+				upper_arm_rest_pos_global
+
+			var tracker_in_chest_space: Vector3 = \
+				chest_bone_tx_inv * \
+				tracker_to_use.get_global_transform().origin
+			
+			# For the right side, tracker_in_chest_space.x will be negative, but
+			# upper_arm_rest_pos_chest_space.x will *also* be negative, therefor
+			# inverting it back.
+			var x = (tracker_in_chest_space.x - upper_arm_rest_pos_chest_space.x) / \
+				(0 - upper_arm_rest_pos_chest_space.x)
+
+			var front_vec: Vector3 = chest_bone_tx * Vector3(0.0, 0.0, 1.0)
+
+			
+			# In the chest coordinate space...
+			# - bring the pole target Y up to level with the shoulder...
+			# - by a ratio based on the x distance from the rest position to 0 
+			#var alpha = -(tracker_local_position.origin.x - base_bone_position.x) * 3.0 * compensation_alpha_scale
+			var alpha: float = clamp(x, 0.0, 1.0) *0.87 # FIXME: Add adjustment setting for this.
+
+
+			#pole_target_y = lerp(-pole_dist[1], 0.0, alpha)
+			pole_target_y = lerp(-pole_dist[1], chest_bone_tx.origin.y, alpha)
+			#print(pole_target_y)
+			#print(pole_target_y)
+			#pole_target_z = lerp(-pole_dist[2], 0.0, alpha)
+			# FIXME: Replace this 20 with a setting?
+			# FIXME: front_vec needs to be negated on JunkRaven mech model but not Kiri
+			pole_target_z = lerp(pole_target_z, -front_vec.z * 20.0, alpha)
+
+		## Move pole target backwards when the arm is lowered.
+		##
+		## FIXME: Hardcoded values.
+		#var arm_below_factor = (tracker_local_position.origin.y - base_bone_position.y) + 0.25
+		#arm_below_factor *= 1.0
+		#if arm_below_factor < 0.0:
+			#var alpha = arm_below_factor
+			## FIXME: Hardcoded values.
+			#pole_target_z = lerp(pole_target_z, 100.0, alpha)
+			#pole_target_x = lerp(pole_target_x, 100.0 * compensation_alpha_scale, alpha)
+
+		var pole_target_vec: Vector3 = Vector3(
 			pole_target_x, pole_target_y, pole_target_z)
+
+		if chain_name == "arm_left":
+			$PoleTargetElbowDebugLeft.transform.origin = pole_target_vec
+		else:
+			$PoleTargetElbowDebugRight.transform.origin = pole_target_vec
+
+		_ikchains_dict[chain_name].pole_direction_target = pole_target_vec
 
 	# FIXME: Fix this comment.
 	# Do hand stuff.
