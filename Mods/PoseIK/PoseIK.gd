@@ -327,34 +327,35 @@ func _process(delta : float) -> void:
 	# IK stuff starts here
 
 	# FIXME: Make these configurable!
-	# Euler angles to use with Basis.from_euler() with EULER_ORDER_ZYX
-	var pole_target_angle_arms_down:    Vector3 = Vector3(0.0, PI*0.9, 0.0)
-	var pole_target_angle_hands_up:     Vector3 = Vector3(45.0 * PI/180.0, PI/2.0, 0.0)
-	var pole_target_angle_hands_across: Vector3 = Vector3(0.0, 15.0 * PI/180.0, 0.0)
+	# Euler angles to use with Basis.from_euler().
+	var pole_target_angle_arms_down:    Vector3 = Vector3(0.0,             PI*0.9,          0.0)
+	var pole_target_angle_hands_up:     Vector3 = Vector3(45.0 * PI/180.0, PI/2.0,          0.0)
+	var pole_target_angle_hands_across: Vector3 = Vector3(-5.0 * PI/180.0, 15.0 * PI/180.0, 0.0)
 
 	# Arm IK.
-	# FIXME: Parameterize this (and the scale!)
-	var pole_dist: Vector3 = Vector3(10.0, 10.0, 5.0) # * 20.0
 
 	for chain_name in ["arm_left", "arm_right"]:
 
+		var arm_across_chest_alpha: float = 0.0
+		var arms_down_alpha: float = 0.0
+
+		var chest_bone_index: int = skel.find_bone("Chest")
+		var chest_bone_tx: Transform3D = skel.global_transform * skel.get_bone_global_pose(chest_bone_index)
+		var chest_bone_tx_inv = chest_bone_tx.inverse()
+
+		# Figure out left/right strings and trackers based on which side we're
+		# on.
 		var tracker_to_use = $Hand_Left
-		var compensation_alpha_scale = 1.0
-		var pole_target_x = pole_dist[0]
+		var side: String = "Left"
 		if chain_name == "arm_right": # FIXME: Hack.
 			tracker_to_use = $Hand_Right
-			compensation_alpha_scale *= -1.0
-			pole_target_x = -pole_dist[0]
+			side = "Right"
 
 		var tracker_local_position = \
 			skel.get_global_transform().inverse() * tracker_to_use.get_global_transform()
-		var base_bone_position = skel.get_bone_global_pose(
-			skel.find_bone(_ikchains_dict[chain_name].base_bone)).origin
-		#print(tracker_local_position.origin.x - bone_position.x)
 		
 		# See if we can raise the shoulders for when arms go too far up.
 		if chain_name == "arm_left" or chain_name == "arm_right":
-			var chest_bone_index : int = skel.find_bone("Chest")
 			if chest_bone_index != -1:
 				var chest_pose = skel.get_bone_global_pose(chest_bone_index)
 
@@ -385,49 +386,32 @@ func _process(delta : float) -> void:
 							Quaternion(Vector3(0.0, 0.0, 1.0), shoulder_rotation_angle) *
 							skel.get_bone_rest(shoulder_bone_index).basis.get_rotation_quaternion())
 
-		var pole_target_y = -pole_dist[1]
-		var pole_target_z = -pole_dist[2]
-
-		var arm_across_chest_alpha: float = 0.0
-		var arms_down_alpha: float = 0.0
-
-		var chest_bone_index: int = skel.find_bone("Chest")
-		var chest_bone_tx: Transform3D = skel.global_transform * skel.get_bone_global_pose(chest_bone_index)
-		var chest_bone_tx_inv = chest_bone_tx.inverse()
-
-		# FIXME: Code smell! Clean it up!
-		var side: String = "Left"
-		if chain_name == "arm_right":
-			side = "Right"
-
-		# Rotate pole target upwards when the arm reaches across the
-		# chest.
-		if (tracker_local_position.origin.x - base_bone_position.x) * compensation_alpha_scale < 0:
-			var pole_target_in_chest_space: Vector3 = chest_bone_tx_inv * Vector3(pole_target_x, pole_target_y, pole_target_z)
 
 
-			var upper_arm_index: int = skel.find_bone(side + "UpperArm")
-			var upper_arm_rest_pos_global: Vector3 = skel.global_transform * skel \
-				.get_bone_global_rest(upper_arm_index) \
-				.origin
-			var upper_arm_rest_pos_chest_space: Vector3 = chest_bone_tx_inv * \
-				upper_arm_rest_pos_global
+		var upper_arm_index: int = skel.find_bone(side + "UpperArm")
+		var upper_arm_rest_pos_global: Vector3 = skel.global_transform * skel \
+			.get_bone_global_rest(upper_arm_index) \
+			.origin
+		var upper_arm_rest_pos_chest_space: Vector3 = chest_bone_tx_inv * \
+			upper_arm_rest_pos_global
 
-			var tracker_in_chest_space: Vector3 = \
-				chest_bone_tx_inv * \
-				tracker_to_use.get_global_transform().origin
-			
-			# For the right side, tracker_in_chest_space.x will be negative, but
-			# upper_arm_rest_pos_chest_space.x will *also* be negative, therefor
-			# inverting it back.
-			#
-			# Alpha for "arm across chest" is going to be the percentage between
-			# the x-axis location of the hand from the shoulder/upper arm joint
-			# and the center of the chest.
-			arm_across_chest_alpha = clamp(
-				(tracker_in_chest_space.x - upper_arm_rest_pos_chest_space.x) / \
-				(0 - upper_arm_rest_pos_chest_space.x), 0.0, 1.0)
+		var tracker_in_chest_space: Vector3 = \
+			chest_bone_tx_inv * \
+			tracker_to_use.get_global_transform().origin
 
+		# Alpha for "arm across chest" is going to be the percentage between
+		# the x-axis location of the hand from the shoulder/upper arm joint
+		# and the center of the chest.
+		#
+		# For the right side, tracker_in_chest_space.x will be negative, but
+		# upper_arm_rest_pos_chest_space.x will *also* be negative, therefor
+		# inverting it back.
+		arm_across_chest_alpha = clamp(
+			(tracker_in_chest_space.x - upper_arm_rest_pos_chest_space.x) / \
+			(0 - upper_arm_rest_pos_chest_space.x), 0.0, 1.0)
+
+		# Move pole target backwards when the arm is lowered.
+		#
 		# FIXME: Make configurable!
 		# Number from 0 to 1, indicating how far down an arm must be for the
 		# elbows-back pole target to kick in.
@@ -444,9 +428,6 @@ func _process(delta : float) -> void:
 				skel.find_bone(_ikchains_dict[chain_name].base_bone)).origin
 		var arm_length: float = (hand_rest_position - base_bone_rest_position).length()
 		
-		var tracker_in_chest_space: Vector3 = \
-			chest_bone_tx_inv * tracker_to_use.get_global_transform().origin
-
 		var base_bone_in_chest_space = chest_bone_tx_inv * \
 			skel.global_transform * \
 			skel.get_bone_global_pose(
@@ -454,39 +435,11 @@ func _process(delta : float) -> void:
 
 		var t = (base_bone_in_chest_space.y - tracker_in_chest_space.y) / arm_length
 		arms_down_alpha = smoothstep(arm_lowered_threshold, arm_lowered_max, t)
-		print(arms_down_alpha)
 
-		#var arm_below_factor: float = (tracker_local_position.origin.y - base_bone_position.y) + 0.25
-
-
-
-
-
-
-
-
-		## Move pole target backwards when the arm is lowered.
-		##
-		## FIXME: Hardcoded values.
-		#var arm_below_factor = (tracker_local_position.origin.y - base_bone_position.y) + 0.25
-		#arm_below_factor *= 1.0
-		#if arm_below_factor < 0.0:
-			#var alpha = arm_below_factor
-			## FIXME: Hardcoded values.
-			#pole_target_z = lerp(pole_target_z, 100.0, alpha)
-			#pole_target_x = lerp(pole_target_x, 100.0 * compensation_alpha_scale, alpha)
-
-
-
-
-
-
+		# Figure out final pole target location.
 		var adjusted_pole_target_angle_arms_down:    Vector3 = pole_target_angle_arms_down
 		var adjusted_pole_target_angle_hands_up:     Vector3 = pole_target_angle_hands_up
 		var adjusted_pole_target_angle_hands_across: Vector3 = pole_target_angle_hands_across
-
-		print("alpha across: ", arm_across_chest_alpha)
-		print("alpha down:   ", arms_down_alpha)
 
 		# FIXME: Code smell! Clean it up!
 		if side == "Right":
@@ -502,7 +455,8 @@ func _process(delta : float) -> void:
 			.slerp(pole_target_basis_arms_down, arms_down_alpha) \
 			.slerp(pole_target_basis_hands_across, arm_across_chest_alpha)
 
-		var pole_target_vec: Vector3 = chest_bone_tx * (final_basis * Vector3(0.0, 0.0, 10.0))
+		# FIXME: Change the hardcoded value for distance here.
+		var pole_target_vec: Vector3 = chest_bone_tx * (final_basis * Vector3(0.0, 0.0, 100.0))
 
 		if chain_name == "arm_left":
 			$PoleTargetElbowDebugLeft.transform.origin = pole_target_vec
