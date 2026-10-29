@@ -326,6 +326,12 @@ func _process(delta : float) -> void:
 	# ---------------------------------------------------------------------
 	# IK stuff starts here
 
+	# FIXME: Make these configurable!
+	# Euler angles to use with Basis.from_euler() with EULER_ORDER_ZYX
+	var pole_target_angle_arms_down:    Vector3 = Vector3(0.0, PI*0.9, 0.0)
+	var pole_target_angle_hands_up:     Vector3 = Vector3(45.0 * PI/180.0, PI/2.0, 0.0)
+	var pole_target_angle_hands_across: Vector3 = Vector3(0.0, 15.0 * PI/180.0, 0.0)
+
 	# Arm IK.
 	# FIXME: Parameterize this (and the scale!)
 	var pole_dist: Vector3 = Vector3(10.0, 10.0, 5.0) # * 20.0
@@ -382,18 +388,23 @@ func _process(delta : float) -> void:
 		var pole_target_y = -pole_dist[1]
 		var pole_target_z = -pole_dist[2]
 
+		var arm_across_chest_alpha: float = 0.0
+		var arms_down_alpha: float = 0.0
+
+		var chest_bone_index: int = skel.find_bone("Chest")
+		var chest_bone_tx: Transform3D = skel.global_transform * skel.get_bone_global_pose(chest_bone_index)
+		var chest_bone_tx_inv = chest_bone_tx.inverse()
+
+		# FIXME: Code smell! Clean it up!
+		var side: String = "Left"
+		if chain_name == "arm_right":
+			side = "Right"
+
 		# Rotate pole target upwards when the arm reaches across the
 		# chest.
 		if (tracker_local_position.origin.x - base_bone_position.x) * compensation_alpha_scale < 0:
-			var chest_bone_index: int = skel.find_bone("Chest")
-			var chest_bone_tx: Transform3D = skel.global_transform * skel.get_bone_global_pose(chest_bone_index)
-			var chest_bone_tx_inv = chest_bone_tx.inverse()
 			var pole_target_in_chest_space: Vector3 = chest_bone_tx_inv * Vector3(pole_target_x, pole_target_y, pole_target_z)
 
-			# FIXME: Code smell! Clean it up!
-			var side: String = "Left"
-			if chain_name == "arm_right":
-				side = "Right"
 
 			var upper_arm_index: int = skel.find_bone(side + "UpperArm")
 			var upper_arm_rest_pos_global: Vector3 = skel.global_transform * skel \
@@ -419,17 +430,55 @@ func _process(delta : float) -> void:
 			# - bring the pole target Y up to level with the shoulder...
 			# - by a ratio based on the x distance from the rest position to 0 
 			#var alpha = -(tracker_local_position.origin.x - base_bone_position.x) * 3.0 * compensation_alpha_scale
-			var alpha: float = clamp(x, 0.0, 1.0) *0.87 # FIXME: Add adjustment setting for this.
+			#var alpha: float = clamp(x, 0.0, 1.0) *0.87 # FIXME: Add adjustment setting for this.
+			arm_across_chest_alpha = clamp(x, 0.0, 1.0) # *0.87 # FIXME: Add adjustment setting for this.
+
+			##pole_target_y = lerp(-pole_dist[1], 0.0, alpha)
+			#pole_target_y = lerp(-pole_dist[1], chest_bone_tx.origin.y, alpha)
+			##print(pole_target_y)
+			##print(pole_target_y)
+			##pole_target_z = lerp(-pole_dist[2], 0.0, alpha)
+			## FIXME: Replace this 20 with a setting?
+			## FIXME: front_vec needs to be negated on JunkRaven mech model but not Kiri
+			#pole_target_z = lerp(pole_target_z, -front_vec.z * 20.0, alpha)
 
 
-			#pole_target_y = lerp(-pole_dist[1], 0.0, alpha)
-			pole_target_y = lerp(-pole_dist[1], chest_bone_tx.origin.y, alpha)
-			#print(pole_target_y)
-			#print(pole_target_y)
-			#pole_target_z = lerp(-pole_dist[2], 0.0, alpha)
-			# FIXME: Replace this 20 with a setting?
-			# FIXME: front_vec needs to be negated on JunkRaven mech model but not Kiri
-			pole_target_z = lerp(pole_target_z, -front_vec.z * 20.0, alpha)
+		# FIXME: Make configurable!
+		# Number from 0 to 1, indicating how far down an arm must be for the
+		# elbows-back pole target to kick in.
+		var arm_lowered_threshold: float = 0.5
+		# Same as above, but what point the pole target direction should max
+		# out.
+		var arm_lowered_max: float = 1.0
+
+		var hand_rest_position: Vector3 = \
+			skel.get_bone_global_rest(
+				skel.find_bone(_ikchains_dict[chain_name].tip_bone)).origin
+		var base_bone_rest_position: Vector3 = \
+			skel.get_bone_global_rest(
+				skel.find_bone(_ikchains_dict[chain_name].base_bone)).origin
+		var arm_length: float = (hand_rest_position - base_bone_rest_position).length()
+		
+		var tracker_in_chest_space: Vector3 = \
+			chest_bone_tx_inv * tracker_to_use.get_global_transform().origin
+
+		var base_bone_in_chest_space = chest_bone_tx_inv * \
+			skel.global_transform * \
+			skel.get_bone_global_pose(
+				skel.find_bone(_ikchains_dict[chain_name].base_bone)).origin
+
+		var t = (base_bone_in_chest_space.y - tracker_in_chest_space.y) / arm_length
+		arms_down_alpha = smoothstep(arm_lowered_threshold, arm_lowered_max, t)
+		print(arms_down_alpha)
+
+		#var arm_below_factor: float = (tracker_local_position.origin.y - base_bone_position.y) + 0.25
+
+
+
+
+
+
+
 
 		## Move pole target backwards when the arm is lowered.
 		##
@@ -442,8 +491,33 @@ func _process(delta : float) -> void:
 			#pole_target_z = lerp(pole_target_z, 100.0, alpha)
 			#pole_target_x = lerp(pole_target_x, 100.0 * compensation_alpha_scale, alpha)
 
-		var pole_target_vec: Vector3 = Vector3(
-			pole_target_x, pole_target_y, pole_target_z)
+
+
+
+
+
+		var adjusted_pole_target_angle_arms_down:    Vector3 = pole_target_angle_arms_down
+		var adjusted_pole_target_angle_hands_up:     Vector3 = pole_target_angle_hands_up
+		var adjusted_pole_target_angle_hands_across: Vector3 = pole_target_angle_hands_across
+
+		print("alpha across: ", arm_across_chest_alpha)
+		print("alpha down:   ", arms_down_alpha)
+
+		# FIXME: Code smell! Clean it up!
+		if side == "Right":
+			adjusted_pole_target_angle_arms_down.y *= -1.0
+			adjusted_pole_target_angle_hands_up.y *= -1.0
+			adjusted_pole_target_angle_hands_across *= -1.0
+
+		var pole_target_basis_arms_down: Basis = Basis.from_euler(adjusted_pole_target_angle_arms_down)
+		var pole_target_basis_hands_up: Basis = Basis.from_euler(adjusted_pole_target_angle_hands_up)
+		var pole_target_basis_hands_across: Basis = Basis.from_euler(adjusted_pole_target_angle_hands_across)
+
+		var final_basis: Basis = pole_target_basis_hands_up \
+			.slerp(pole_target_basis_arms_down, arms_down_alpha) \
+			.slerp(pole_target_basis_hands_across, arm_across_chest_alpha)
+
+		var pole_target_vec: Vector3 = chest_bone_tx * (final_basis * Vector3(0.0, 0.0, 10.0))
 
 		if chain_name == "arm_left":
 			$PoleTargetElbowDebugLeft.transform.origin = pole_target_vec
