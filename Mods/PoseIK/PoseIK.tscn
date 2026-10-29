@@ -2,6 +2,10 @@
 
 [ext_resource type="Script" uid="uid://bhwmfiiu0cips" path="res://Mods/PoseIK/PoseIK.gd" id="1_nrhi5"]
 
+[sub_resource type="BoxMesh" id="BoxMesh_4e0ao"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_8guj7"]
+
 [node name="PoseIk" type="Node3D" unique_id=453228202]
 script = ExtResource("1_nrhi5")
 
@@ -10,3 +14,9 @@ script = ExtResource("1_nrhi5")
 [node name="Hand_Right" type="Node3D" parent="." unique_id=775644197]
 
 [node name="Hand_Left" type="Node3D" parent="." unique_id=1640401503]
+
+[node name="PoleTargetElbowDebugLeft" type="MeshInstance3D" parent="." unique_id=19795105]
+mesh = SubResource("BoxMesh_4e0ao")
+
+[node name="PoleTargetElbowDebugRight" type="MeshInstance3D" parent="." unique_id=201897687]
+mesh = SubResource("BoxMesh_8guj7")
