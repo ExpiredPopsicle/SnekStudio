@@ -420,28 +420,13 @@ func _process(delta : float) -> void:
 			# For the right side, tracker_in_chest_space.x will be negative, but
 			# upper_arm_rest_pos_chest_space.x will *also* be negative, therefor
 			# inverting it back.
-			var x = (tracker_in_chest_space.x - upper_arm_rest_pos_chest_space.x) / \
-				(0 - upper_arm_rest_pos_chest_space.x)
-
-			var front_vec: Vector3 = chest_bone_tx * Vector3(0.0, 0.0, 1.0)
-
-			
-			# In the chest coordinate space...
-			# - bring the pole target Y up to level with the shoulder...
-			# - by a ratio based on the x distance from the rest position to 0 
-			#var alpha = -(tracker_local_position.origin.x - base_bone_position.x) * 3.0 * compensation_alpha_scale
-			#var alpha: float = clamp(x, 0.0, 1.0) *0.87 # FIXME: Add adjustment setting for this.
-			arm_across_chest_alpha = clamp(x, 0.0, 1.0) # *0.87 # FIXME: Add adjustment setting for this.
-
-			##pole_target_y = lerp(-pole_dist[1], 0.0, alpha)
-			#pole_target_y = lerp(-pole_dist[1], chest_bone_tx.origin.y, alpha)
-			##print(pole_target_y)
-			##print(pole_target_y)
-			##pole_target_z = lerp(-pole_dist[2], 0.0, alpha)
-			## FIXME: Replace this 20 with a setting?
-			## FIXME: front_vec needs to be negated on JunkRaven mech model but not Kiri
-			#pole_target_z = lerp(pole_target_z, -front_vec.z * 20.0, alpha)
-
+			#
+			# Alpha for "arm across chest" is going to be the percentage between
+			# the x-axis location of the hand from the shoulder/upper arm joint
+			# and the center of the chest.
+			arm_across_chest_alpha = clamp(
+				(tracker_in_chest_space.x - upper_arm_rest_pos_chest_space.x) / \
+				(0 - upper_arm_rest_pos_chest_space.x), 0.0, 1.0)
 
 		# FIXME: Make configurable!
 		# Number from 0 to 1, indicating how far down an arm must be for the
