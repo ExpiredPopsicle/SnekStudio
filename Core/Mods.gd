@@ -131,10 +131,8 @@ func _load_mod_zips() -> void:
 	# When running a release version (not running from the editor),
 	# make sure we add mods next to the binary by default.
 	if not OS.has_feature("editor"):
-		var executable_dir := OS.get_executable_path().get_base_dir()
-		if OS.get_name() == "macOS" and executable_dir.ends_with(".app/Contents/MacOS"):
-			executable_dir = SnekStudioMain.get_app_directory()
-		var default_mods_dir := executable_dir.path_join("Mods")
+		var app_dir := SnekStudioMain.get_app_directory()
+		var default_mods_dir := app_dir.path_join("Mods")
 		mods_paths.append(default_mods_dir)
 	# Add other environment-variable-defined mod locations.
 	mods_paths.append_array(SnekStudioMain.get_added_mods_locations())
