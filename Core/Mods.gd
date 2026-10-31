@@ -128,15 +128,12 @@ func _process(_delta: float) -> void:
 ## This function just adds the zip files to the project tree.
 func _load_mod_zips() -> void:
 	var mods_paths: PackedStringArray
-	print("_load_mod_zips")
 	# When running a release version (not running from the editor),
 	# make sure we add mods next to the binary by default.
 	if not OS.has_feature("editor"):
 		var executable_dir := OS.get_executable_path().get_base_dir()
 		if OS.get_name() == "macOS" and executable_dir.ends_with(".app/Contents/MacOS"):
-			# Walk up out of the bundle
-			executable_dir = executable_dir.get_base_dir().get_base_dir().get_base_dir()
-			print("Executable dir for Mac: ",executable_dir)
+			executable_dir = SnekStudioMain.get_app_directory()
 		var default_mods_dir := executable_dir.path_join("Mods")
 		mods_paths.append(default_mods_dir)
 	# Add other environment-variable-defined mod locations.
