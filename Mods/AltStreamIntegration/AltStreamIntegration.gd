@@ -1,44 +1,71 @@
 class_name AltStreamIntegration
 extends Mod_Base
 
-@warning_ignore("shadowed_global_identifier") # required for runtime mod loading
+@warning_ignore("shadowed_global_identifier") # required for SnekStudio runtime mod loading
 static var EventStreamClient: GDScript = preload("res://Mods/AltStreamIntegration/EventStreamClient.gd")
 
-# NOTE: Internal API, subject to change.
-# Reference: https://github.com/MachaCeleste/AltStreamLib
+# The message type is handled internally, but it gives
+# you a good idea of what kind of messages the API sends.
+enum Type {
+	MESSAGE,      ## Regular chat message.
+	HIGHLIGHT,    ## Highlighted chat message.
+	REDEMPTION,   ## Reward redemption.
+	TIP,          ## Ko-Fi tip received.
+	SHOP,         ## Ko-Fi shop purchase.
+	SUBSCRIPTION, ## New Ko-Fi membership.
+	PIN,          ## Message being pinned.
+	UNPIN,        ## Currently active pin removed.
+	SHOUTOUT,     ## Another user shouted out.
+	RAID,         ## Incoming / outgoing raids.
+	DELETE,       ## Chat message deleted.
+	CLEAR,        ## Chat cleared.
+	SYSTEM,       ## Some messages don't have a unique message type.
+}
+
+enum Role {
+	BROADCASTER, # The streamer.
+	MODERATOR,   # Channel moderator.
+	SUBSCRIBER,  # Platform supporter.
+	SUPPORTER,   # Channel supporter.
+	# NOTE: Yes this is confusing. Hopefully it'll will get fixed.
+}
+
 const HOST     := "https://altstream.online"
 const ENDPOINT := "/api/chat/stream?channel=%s"
 
+# Note that some fields are available depending on the message type.
+# For example, `username` and `roles` might not be set as expected.
+
 class User:
-	var username: String
-	var display_name: String
-	var avatar_url: String
-	var user_color: Color
+	var username     : String
+	var display_name : String # "author" in the API
+	var pronouns     : String
+	var roles        : Dictionary[Role, bool]
+	var badges       : Array[Role]
+	var avatar_url   : String
+	var user_color   : Color
 	func _to_string() -> String: return display_name
 
 class Message:
-	var id: String
-	var text: String
-	var sent_at: int
-	var sticker_url: String
-	var reply_to_id: String
-	var reply_to_username: String
-	var reply_to_display_name: String
+	var id      : String
+	var text    : String
+	var sent_at : int
+	var reply_to_id           : String
+	var reply_to_username     : String
+	var reply_to_display_name : String
 	func _to_string() -> String: return text
 
 signal connected
 signal disconnected
 
-## Regular or highlighted chat message received.
-## When `reward_name` is not empty, a "highlight message" reward was redeemed.
-signal chat_message_received(user: User, message: Message, reward_name: String)
-signal chat_sticker_received(user: User, message_id: String, _name: String, url: String) # name currently unvailable
+signal chat_message_received(user: User, message: Message, highlight_reward_name: String)
+signal chat_sticker_received(user: User, message_id: String, name: String, url: String)
 signal chat_message_pinned(user: User, message: Message, pinned_by: String)
 signal chat_message_unpinned()
 signal chat_message_deleted(message_id: String)
 signal chat_cleared()
 
-signal raid_incoming(from: User, raider_count: int)
+signal raid_incoming(from: User, _raider_count: int) # raider count currently unavailable
 signal raid_outgoing_started(target: User, viewer_count: int, countdown: int)
 signal raid_outgoing_cancelled()
 
@@ -120,107 +147,87 @@ func _on_connection_failed(error: String) -> void:
 	if error: print_log("Failed to connect: " + error)
 	else: print_log("Failed to connect!")
 
-func _on_event_received(_event: String, data: String) -> void:
-	var messages := JSON.parse_string(data) as Array
-	if not messages: return
+func _on_event_received(_event: String, event_data: String) -> void:
+	for msg in JSON.parse_string(event_data):
+		print(msg) # TODO: Remove debug print!
 
-	for msg: Dictionary in messages:
-		var source  := _try_get_string(msg, "source")
 		var message := _message_from_msg(msg)
 		var user    := _user_from_msg(msg)
+		var data: Dictionary[String, Variant]
+		data.assign(msg.get("data", {}))
 
-		if source == "local":
-			if user.username and user.display_name:
-				if message.text:
-					chat_message_received.emit(user, message, "")
-				elif message.sticker_url:
-					chat_sticker_received.emit(user, message.id, "", message.sticker_url)
-			return
+		match _type_lookup.get(msg.get("type")):
+			Type.MESSAGE      : _handle_message(message, user, msg)
+			Type.HIGHLIGHT    : _handle_highlight(message, user, data)
+			Type.REDEMPTION   : _handle_redemption(message, user, data)
+			Type.TIP          : pass
+			Type.SHOP         : pass # TODO: Implement Ko-Fi events.
+			Type.SUBSCRIPTION : pass
+			Type.PIN          : _handle_pin(data)
+			Type.UNPIN        : chat_message_unpinned.emit()
+			Type.SHOUTOUT     : _handle_shoutout(user, data)
+			Type.RAID         : _handle_raid(user, data)
+			Type.DELETE       : _handle_delete(msg)
+			Type.CLEAR        : chat_cleared.emit()
 
-		# "Special" messages (for the lack of an official name) typically come
-		# in the format "[KIND]:{...}". While `source` may match kind, it may
-		# also just be "system", so we'll just ignore it for this.
-		var special := _special_regex.search(message.text)
-		if special:
-			var kind  := special.get_string(1)
-			var value := special.get_string(2)
-			message.text = "" # Don't ever expose this in our API.
-
-			# Most of these hold a stringified JSON object which we're parsing
-			# here, but there are exceptions, like `[DELETE]` and `[CLEAR_CHAT]`.
-			var obj: Dictionary = JSON.parse_string(value) if value.begins_with("{") else {}
-
-			match kind:
-				"[HIGHLIGHT]":
-					user.username    = _try_get_string(obj, "from")
-					message.text     = _try_get_string(obj, "text")
-					var reward_name := _try_get_string(obj, "rewardName")
-					if user.username and user.display_name and message.text and reward_name:
-						# Highlighted messages show up mostly as regular
-						# chat messages, so we'll emit them as such.
-						chat_message_received.emit(user, message, reward_name)
-
-				"[CHAT_PIN]":
-					user    = _user_from_msg(obj)
-					message = _message_from_msg(obj)
-					var pinned_by := _try_get_string(obj, "pinnedBy")
-					if user.username and user.display_name and message.text and pinned_by:
-						chat_message_pinned.emit(user, message, pinned_by)
-
-				"[CHAT_UNPIN]":
-					chat_message_unpinned.emit()
-
-				"[DELETE]":
-					var message_id := value
-					chat_message_deleted.emit(message_id)
-
-				"[CLEAR_CHAT]":
-					chat_cleared.emit()
-
-				"[RAID_START]":
-					var target := User.new()
-					target.username     = _try_get_string(obj, "targetUsername")
-					target.display_name = _try_get_string(obj, "targetDisplayName")
-					target.avatar_url   = _try_get_string(obj, "targetImage")
-					var viewers   := _try_get_int(obj, "viewers")
-					var countdown := _try_get_int(obj, "countdownSeconds")
-					if target.username and target.display_name:
-						raid_outgoing_started.emit(target, viewers, countdown)
-
-				"[RAID_CANCEL]":
+			Type.SYSTEM:
+				if message.text.begins_with("[RAID_CANCEL]"):
 					raid_outgoing_cancelled.emit()
 
-				"[REDEMPTION]":
-					user.username    = _try_get_string(obj, "from")
-					var reward_name := _try_get_string(obj, "rewardName")
-					var user_input  := _try_get_string(obj, "userInput") # optional
-					if user.username and user.display_name and reward_name:
-						reward_redeemed.emit(user, message.id, reward_name, user_input)
+func _handle_message(message: Message, user: User, raw_msg: Dictionary) -> void:
+	var sticker_name := _try_get_string(raw_msg, "stickerName")
+	var sticker_url  := _try_get_string(raw_msg, "stickerUrl")
+	if message.text: chat_message_received.emit(user, message, "")
+	if sticker_name: chat_sticker_received.emit(user, message.id, sticker_name, sticker_url)
 
-				"[SHOUTOUT]":
-					var target := User.new()
-					target.username     = _try_get_string(obj, "targetUsername")
-					target.display_name = _try_get_string(obj, "targetDisplayName")
-					target.avatar_url   = _try_get_string(obj, "targetAvatar")
-					var game_name      := _try_get_string(obj, "gameName")
-					var game_cover_url := _try_get_string(obj, "gameCover")
-					if target.username and target.display_name:
-						user_shouted_out.emit(user, game_name, game_cover_url, user)
-			return
+# Highlighted messages show up mostly as regular chat messages, so we'll emit them as such.
+func _handle_highlight(message: Message, user: User, data: Dictionary[String, Variant]) -> void:
+	message.text     = _try_get_string(data, "text")
+	var reward_name := _try_get_string(data, "rewardName")
+	chat_message_received.emit(user, message, reward_name)
 
-		# Incoming raid notifications have a unique text format that
-		# we need to manually match and parse (see `_raid_regex`).
-		var raid := _raid_regex.search(message.text)
-		if raid:
-			user.username = raid.get_string(1)
-			var raider_count := int(raid.get_string(2))
-			if user.username and user.display_name:
-				raid_incoming.emit(user, raider_count)
-			return
+func _handle_redemption(message: Message, user: User, data: Dictionary[String, Variant]) -> void:
+	var reward_name := _try_get_string(data, "rewardName")
+	var user_input  := _try_get_string(data, "userInput") # optional
+	reward_redeemed.emit(user, message.id, reward_name, user_input)
+
+func _handle_pin(data: Dictionary[String, Variant]) -> void:
+	var user      := _user_from_msg(data)
+	var message   := _message_from_msg(data)
+	var pinned_by := _try_get_string(data, "pinnedBy")
+	chat_message_pinned.emit(user, message, pinned_by)
+
+func _handle_shoutout(user: User, data: Dictionary[String, Variant]) -> void:
+	var target := User.new()
+	target.username     = _try_get_string(data, "targetUsername")
+	target.display_name = _try_get_string(data, "targetDisplayName")
+	target.avatar_url   = _try_get_string(data, "targetAvatar")
+	var game_name      := _try_get_string(data, "gameName")
+	var game_cover_url := _try_get_string(data, "gameCover")
+	user_shouted_out.emit(target, game_name, game_cover_url, user)
+
+func _handle_raid(user: User, data: Dictionary[String, Variant]) -> void:
+	if data.has("targetUsername"):
+		var target := User.new()
+		target.username     = _try_get_string(data, "targetUsername")
+		target.display_name = _try_get_string(data, "targetDisplayName")
+		target.avatar_url   = _try_get_string(data, "targetImage")
+		var viewers   := _try_get_int(data, "viewers")
+		var countdown := _try_get_int(data, "countdownSeconds")
+		raid_outgoing_started.emit(target, viewers, countdown)
+	else:
+		raid_incoming.emit(user, 0)
+
+func _handle_delete(raw_msg: Dictionary) -> void:
+	var target_id := _try_get_string(raw_msg, "targetId")
+	chat_message_deleted.emit(target_id)
 
 
-static var _special_regex := RegEx.create_from_string("^(\\[\\w+\\])(?:\\:(.*))?$")
-static var _raid_regex    := RegEx.create_from_string("^@(\\w+) is raiding with a party of \"(\\d+)\"")
+static var _type_lookup: Dictionary[String, Type]
+static var _role_lookup: Dictionary[String, Role]
+static func _static_init() -> void:
+	for key: String in Type: _type_lookup[key.to_lower()] = Type[key]
+	for key: String in    Role: _role_lookup[key.to_lower()] =    Role[key]
 
 ## Returns the value associated with `key` from this `Dictionary` as a `String`,
 ## or `default` if it's missing or a different data type (such as `TYPE_NIL`).
@@ -243,17 +250,29 @@ static func _user_from_msg(msg: Dictionary) -> User:
 	var user := User.new()
 	user.username     = _try_get_string(msg, "authorUsername")
 	user.display_name = _try_get_string(msg, "author")
+	user.pronouns     = _try_get_string(msg, "authorPronouns")
 	user.avatar_url   = _try_get_string(msg, "authorImage")
-	user.user_color   = _parse_color(
-		_try_get_string(msg, "userColor"))
+	user.user_color   = _parse_color(_try_get_string(msg, "userColor"))
+
+	for role: int in Role.values():
+		user.roles[role] = false
+	if msg.get("roles") is Dictionary:
+		for role: String in msg.roles:
+			if _role_lookup.has(role):
+				user.roles[_role_lookup[role]] = (msg.roles[role] == true)
+
+	if msg.get("badges") is Array:
+		for badge: String in msg.badges:
+			if _role_lookup.has(badge):
+				user.badges.append(_role_lookup[badge])
+
 	return user
 
 static func _message_from_msg(msg: Dictionary) -> Message:
 	var message := Message.new()
-	message.id          = _try_get_string(msg, "id")
-	message.text        = _try_get_string(msg, "text")
-	message.sent_at     = _try_get_int(msg, "sentAt")
-	message.sticker_url = _try_get_string(msg, "stickerUrl")
+	message.id      = _try_get_string(msg, "id")
+	message.text    = _try_get_string(msg, "text")
+	message.sent_at = _try_get_int   (msg, "sentAt")
 	message.reply_to_id           = _try_get_string(msg, "replyToId")
 	message.reply_to_username     = _try_get_string(msg, "replyToUsername")
 	message.reply_to_display_name = _try_get_string(msg, "replyToAuthor")
