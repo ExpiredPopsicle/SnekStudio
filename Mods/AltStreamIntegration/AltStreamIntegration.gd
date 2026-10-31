@@ -255,6 +255,6 @@ static func _message_from_msg(msg: Dictionary) -> Message:
 	message.sent_at     = _try_get_int(msg, "sentAt")
 	message.sticker_url = _try_get_string(msg, "stickerUrl")
 	message.reply_to_id           = _try_get_string(msg, "replyToId")
-	message.reply_to_username     = _try_get_string(msg, "replyToAuthor")
-	message.reply_to_display_name = _try_get_string(msg, "replyToUsername")
+	message.reply_to_username     = _try_get_string(msg, "replyToUsername")
+	message.reply_to_display_name = _try_get_string(msg, "replyToAuthor")
 	return message
