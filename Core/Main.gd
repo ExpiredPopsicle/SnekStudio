@@ -17,6 +17,12 @@ var subwindows : Array[BasicSubWindow] = []
 func _process(_delta):
 	$DebugMesh.mesh.clear_surfaces()
 
+static func get_app_directory() -> String:
+	var exe_dir := OS.get_executable_path().get_base_dir()
+	if OS.get_name() == "macOS" and exe_dir.ends_with(".app/Contents/MacOS"):
+		# Walk up three levels to get the Mods and SampleModels stuff.
+		return exe_dir.get_base_dir().get_base_dir().get_base_dir()
+	return exe_dir
 
 func get_background_color():
 	var current_style : StyleBoxFlat = %BackgroundPanel.get("theme_override_styles/panel")
@@ -505,7 +511,7 @@ func get_controller():
 static func get_saved_location() -> String:
 	if OS.has_feature("editor"):
 		return "res://Saved"
-	return OS.get_executable_path().get_base_dir().path_join("Saved")
+	return get_app_directory().path_join("Saved")
 
 ## Get the config directory. Will default to the user data directory unless
 ## overridden by environment variable.
@@ -520,7 +526,9 @@ static func get_sample_location() -> String:
 	var env_path : String = OS.get_environment("SNEKSTUDIO_SAMPLE_PATH")
 	if env_path != "":
 		return ProjectSettings.localize_path(env_path)
-	return "res://SampleModels"
+	if OS.has_feature("editor"):
+		return "res://SampleModels"
+	return get_app_directory().path_join("SampleModels")
 
 ## Get the cache location. Mainly this is where Python gets unpacked to.
 ## Defaults to saved user data directory unless overridden.

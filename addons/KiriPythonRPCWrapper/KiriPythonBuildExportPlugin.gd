@@ -29,7 +29,8 @@ func _export_begin(
 	if "windows" in features:
 		if "x86_64" in features:
 			platform_list.append("Windows-x86_64")
-	# FIXME: MacOS stuff?
+	if "macos" in features and "arm64" in features:
+		platform_list.append("macOS-arm64")
 	
 	for platform in platform_list:
 		var archive_to_export = build_wrangler._detect_archive_for_build(platform)
