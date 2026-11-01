@@ -469,13 +469,15 @@ func send_global_mod_message(key : String, values : Dictionary, skip_current : b
 
 ## Check whether a required mod comes before or after this mod.
 ##
+## The mod can be either a String to match class_name (not always available),
+## a Script instance (get using preload), or a direct reference to a mod node
+## (get with get_node("../ModName"), though this can be changed by the user).
+##
 ## If should_come_after is set to true, the named mod must appear after this
 ## mod. This is useful in situations like requiring AnimationApplier for
 ## animations to be applied from a MediaPipeController module, which generates
 ## the blend shapes.
-func check_mod_dependency(
-	mod_or_classname_before : Variant,
-	should_come_after : bool = false) -> bool:
+func check_mod_dependency(mod: Variant, should_come_after := false) -> bool:
 
 	var found_me : bool = false
 
@@ -486,12 +488,14 @@ func check_mod_dependency(
 
 		# Is this our target? Match typename and exact reference.
 		var found_target : bool = false
-		if mod_or_classname_before is String:
+		if mod is String:
 			# FIXME: This won't match child classes of the named class.
-			if child.get_script().get_global_name() == mod_or_classname_before:
+			if child.get_script().get_global_name() == mod:
 				found_target = true
-			pass
-		elif mod_or_classname_before == child:
+		elif mod is Script:
+			if child.get_script() == mod:
+				found_target = true
+		elif mod == child:
 			found_target = true
 
 		if found_target:
