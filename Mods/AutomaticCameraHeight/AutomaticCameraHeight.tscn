@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://bnmk5v3e77awj"]
+
+[ext_resource type="Script" uid="uid://18d0vokdtes4" path="res://Mods/AutomaticCameraHeight/AutomaticCameraHeight.gd" id="1_qhnsi"]
+
+[node name="AutomaticCameraHeight" type="Node3D" unique_id=112350038]
+script = ExtResource("1_qhnsi")
+metadata/_custom_type_script = "uid://bsjotf2wtnmeq"

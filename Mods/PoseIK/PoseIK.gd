@@ -222,14 +222,14 @@ func scene_init() -> void:
 	polemodifier_left_arm.angle_offset = -PI/2
 	polemodifier_left_arm.root_bone = "LeftUpperArm"
 	polemodifier_left_arm.target_bone = "LeftHand"
-	polemodifier_left_arm.pole_target_node = polemodifier_left_arm.get_path_to($PoleTargetElbowDebugLeft)
+	polemodifier_left_arm.pole_target_node = polemodifier_left_arm.get_path_to($PoleTargetElbowLeft)
 	polemodifier_left_arm.active = false
 	polemodifier_right_arm = KiriPoleTargetModifier3D.new()
 	skel.add_child(polemodifier_right_arm)
 	polemodifier_right_arm.angle_offset = PI/2
 	polemodifier_right_arm.root_bone = "RightUpperArm"
 	polemodifier_right_arm.target_bone = "RightHand"
-	polemodifier_right_arm.pole_target_node = polemodifier_right_arm.get_path_to($PoleTargetElbowDebugRight)
+	polemodifier_right_arm.pole_target_node = polemodifier_right_arm.get_path_to($PoleTargetElbowRight)
 	polemodifier_right_arm.active = false
 
 func scene_shutdown() -> void:
@@ -390,9 +390,9 @@ func _process(delta : float) -> void:
 		var pole_target_vec: Vector3 = _calculate_final_pole_target_position(chain_name, arms_down_alpha, arm_across_chest_alpha)
 
 		if chain_name == "arm_left":
-			$PoleTargetElbowDebugLeft.transform.origin = pole_target_vec
+			$PoleTargetElbowLeft.transform.origin = pole_target_vec
 		else:
-			$PoleTargetElbowDebugRight.transform.origin = pole_target_vec
+			$PoleTargetElbowRight.transform.origin = pole_target_vec
 
 	# FIXME: Fix this comment.
 	# Do hand stuff.
@@ -860,9 +860,9 @@ func _update_debug_draw_pole_targets() -> void:
 			var lower_pos: Vector3 = skel.global_transform * skel.get_bone_global_pose(skel.find_bone(side + "Hand")).origin
 			var midpoint: Vector3 = (upper_pos + lower_pos) / 2.0
 			
-			var target: Node3D = $PoleTargetElbowDebugLeft
+			var target: Node3D = $PoleTargetElbowLeft
 			if side == "Right":
-				target = $PoleTargetElbowDebugRight
+				target = $PoleTargetElbowRight
 
 			# Line from top of arm to hand.
 			debug_mesh.surface_set_color(Color.RED)
@@ -880,5 +880,5 @@ func _update_debug_draw_pole_targets() -> void:
 
 		debug_mesh.surface_end()
 
-	$PoleTargetElbowDebugRight.visible = debug_pole_targets
-	$PoleTargetElbowDebugLeft.visible = debug_pole_targets
+	$PoleTargetElbowRight.visible = debug_pole_targets
+	$PoleTargetElbowLeft.visible = debug_pole_targets

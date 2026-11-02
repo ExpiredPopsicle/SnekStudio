@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dq62o1q7l83ro"]
 
-[ext_resource type="Script" uid="uid://d07abqeoxw0co" path="res://Core/CameraBoom/CameraBoom.gd" id="1_dxg52"]
+[ext_resource type="Script" uid="uid://br24fa3ct4n62" path="res://Core/CameraBoom/CameraBoom.gd" id="1_dxg52"]
 
 [node name="CameraBoom" type="Node3D" unique_id=759231147]
 script = ExtResource("1_dxg52")
