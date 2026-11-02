@@ -361,20 +361,17 @@ func _process(delta : float) -> void:
 	for chain_name in ["spine"]:
 		_ikchains_dict[chain_name].do_ik_chain()
 
-	# ---------------------------------------------------------------------------------------------
-	# Handle Leaning
-
-	# FIXME(GIANTESS): scale this by model height somehow (for giant/tiny models)
-	var lean_check_axis : Vector3 = (skel.transform * skel.get_bone_global_pose(skel.find_bone("Hips"))).basis * Vector3(1.0, 0.0, 0.0)
-	lean_check_axis = lean_check_axis.normalized()
-	var head_offset : Vector3 = tracker_dict["head"]["transform"].origin - model_root.transform.origin
-	var lean_amount : float = sin(lean_check_axis.dot(head_offset))
-	handle_lean(skel, lean_amount * lean_scale)
-
 	# Solve arms.
 	for chain_name in ["arm_left", "arm_right"]:
 		_ikchains_dict[chain_name].do_ik_chain()
 
+	# ---------------------------------------------------------------------------------------------
+	# Handle Leaning
+
+	# Lean the entire model based on the head rotation/
+	var head_rotation: float = skel.get_bone_pose_rotation(skel.find_bone("Head")).get_euler(EULER_ORDER_XYZ).z
+	var lean_amount = head_rotation * lean_scale
+	handle_lean(skel, lean_amount)
 
 func _reinit() -> void:
 	_reset_hand_landmarks()
@@ -623,47 +620,56 @@ func _calculate_arm_across_chest_alpha(chain_name: String) -> float:
 
 	var skel: Skeleton3D = get_skeleton()
 
-	var arm_across_chest_alpha: float = 0.0
-
-	var chest_bone_index: int = skel.find_bone("Chest")
-	var chest_bone_tx: Transform3D = skel.global_transform * skel.get_bone_global_pose(chest_bone_index)
-	var chest_bone_tx_inv = chest_bone_tx.inverse()
-
 	# Figure out left/right strings and trackers based on which side we're
 	# on.
 	var tracker_to_use: Node3D = $Hand_Left
 	var side: String = "Left"
+	var otherside: String = "Right"
 	if chain_name == "arm_right":
 		tracker_to_use = $Hand_Right
 		side = "Right"
+		otherside = "Left"
 
 	# Adjust shoulders upward when the arm is raised up past a certain
 	# point.
 	_adjust_shoulders_for_arms_up(chain_name)
 
+	# Get the position of this shoulder.
 	var upper_arm_index: int = skel.find_bone(side + "UpperArm")
-	var upper_arm_rest_pos_global: Vector3 = skel.global_transform * skel \
-		.get_bone_global_rest(upper_arm_index) \
+	var upper_arm_pos_global: Vector3 = skel.global_transform * skel \
+		.get_bone_global_pose(upper_arm_index) \
 		.origin
-	var upper_arm_rest_pos_chest_space: Vector3 = chest_bone_tx_inv * \
-		upper_arm_rest_pos_global
 
-	var tracker_in_chest_space: Vector3 = \
-		chest_bone_tx_inv * \
-		tracker_to_use.get_global_transform().origin
+	# Get the position of the OTHER shoulder.
+	var other_upper_arm_index: int = skel.find_bone(otherside + "UpperArm")
+	var other_upper_arm_pos_global: Vector3 = skel.global_transform * skel \
+		.get_bone_global_pose(other_upper_arm_index) \
+		.origin
 
-	# Alpha for "arm across chest" is going to be the percentage between
-	# the x-axis location of the hand from the shoulder/upper arm joint
-	# and the center of the chest.
-	#
-	# For the right side, tracker_in_chest_space.x will be negative, but
-	# upper_arm_rest_pos_chest_space.x will *also* be negative, therefor
-	# inverting it back.
-	arm_across_chest_alpha = clamp(
-		(tracker_in_chest_space.x - upper_arm_rest_pos_chest_space.x) / \
-		(0 - upper_arm_rest_pos_chest_space.x), 0.0, 1.0)
+	# Get the midpoint between the two upper arms. Should end up in the base of
+	# the next/top of the chest area.
+	var midpoint: Vector3 = (other_upper_arm_pos_global + upper_arm_pos_global) / 2.0
 
-	return arm_across_chest_alpha
+	# Get the offset from that midpoint for THIS arm.
+	var upper_arm_offset_from_center: Vector3 = upper_arm_pos_global - midpoint
+
+	# Create a normalized axis to check against.
+	var axis_to_check: Vector3 = upper_arm_offset_from_center.normalized()
+	
+	# Get the offset of the hand tracker from the midpoint.
+	var vector_to_check_against_axis: Vector3 = \
+		tracker_to_use.get_global_transform().origin - midpoint
+
+	# Project the tracker onto that axis to figure out how far between the two
+	# shoulders we are. Or, more specifically, how far we are between this
+	# shoulder and the center of the two shoulders.
+	var dp: float = vector_to_check_against_axis.dot(axis_to_check)
+
+	# Convert that to percentage based on the breadth of the shoulders.
+	var dp_percentage: float = dp / upper_arm_offset_from_center.length()
+
+	# That's our output.
+	return clamp(-dp_percentage, 0.0, 1.0)
 
 func _calculate_arms_down_alpha(chain_name: String) -> float:
 
