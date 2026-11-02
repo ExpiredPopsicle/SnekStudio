@@ -16,6 +16,8 @@ var hips_vertical_blend_speed : float = 6.0
 var shoulder_raise_max_angle: float = 60.0
 var shoulder_rotation_scale: float = 1.0
 
+var debug_pole_targets: bool = false
+
 var _ikchains_dict : Dictionary = {
 	"arm_left" : null,
 	"arm_right" : null,
@@ -148,6 +150,8 @@ const finger_bone_array_array : Array[Array] = [
 	]
 ]
 
+var polemodifier_left_arm: KiriPoleTargetModifier3D = null
+var polemodifier_right_arm: KiriPoleTargetModifier3D = null
 
 func _clear_ik_chains() -> void:
 	for key in _ikchains_dict.keys():
@@ -200,14 +204,45 @@ func _ready() -> void:
 		"shoulder_rotation_scale", "Shoulder rotation scale", { "min" : 0.0, "max" : 10.0 },
 		"advanced")
 
+	add_tracked_setting("debug_pole_targets", "Show pole targts for debugging", {}, "advanced")
+
 	_reinit()
 
 func scene_init() -> void:
 	_reinit()
 
+	var skel: Skeleton3D = get_skeleton()
+
+	# Set up pole target modifiers for left/right arms.
+	#
+	# Set them to inactive so we can trigger their modification at a specific
+	# point in the PoseIK process.
+	polemodifier_left_arm = KiriPoleTargetModifier3D.new()
+	skel.add_child(polemodifier_left_arm)
+	polemodifier_left_arm.angle_offset = -PI/2
+	polemodifier_left_arm.root_bone = "LeftUpperArm"
+	polemodifier_left_arm.target_bone = "LeftHand"
+	polemodifier_left_arm.pole_target_node = polemodifier_left_arm.get_path_to($PoleTargetElbowDebugLeft)
+	polemodifier_left_arm.active = false
+	polemodifier_right_arm = KiriPoleTargetModifier3D.new()
+	skel.add_child(polemodifier_right_arm)
+	polemodifier_right_arm.angle_offset = PI/2
+	polemodifier_right_arm.root_bone = "RightUpperArm"
+	polemodifier_right_arm.target_bone = "RightHand"
+	polemodifier_right_arm.pole_target_node = polemodifier_right_arm.get_path_to($PoleTargetElbowDebugRight)
+	polemodifier_right_arm.active = false
+
 func scene_shutdown() -> void:
 	_init_complete = false
 	_clear_ik_chains()
+
+	if polemodifier_left_arm:
+		polemodifier_left_arm.queue_free()
+		polemodifier_left_arm = null
+
+	if polemodifier_right_arm:
+		polemodifier_right_arm.queue_free()
+		polemodifier_right_arm = null
 
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 	_reinit()
@@ -359,8 +394,6 @@ func _process(delta : float) -> void:
 		else:
 			$PoleTargetElbowDebugRight.transform.origin = pole_target_vec
 
-		_ikchains_dict[chain_name].pole_direction_target = pole_target_vec
-
 	# FIXME: Fix this comment.
 	# Do hand stuff.
 	if do_hands:
@@ -374,6 +407,13 @@ func _process(delta : float) -> void:
 	# Solve arms.
 	for chain_name in ["arm_left", "arm_right"]:
 		_ikchains_dict[chain_name].do_ik_chain()
+
+	# Do pole target stuff.
+	polemodifier_left_arm._do_rotation_update(delta, true)
+	polemodifier_right_arm._do_rotation_update(delta, true)
+
+	# Debug display of pole targets.
+	_update_debug_draw_pole_targets()
 
 	# ---------------------------------------------------------------------------------------------
 	# Handle Leaning
@@ -403,7 +443,6 @@ func _setup_ik_chains():
 	chain_spine.do_yaw = true
 	chain_spine.main_axis_of_rotation = Vector3(1.0, 0.0, 0.0)
 	chain_spine.secondary_axis_of_rotation = Vector3(0.0, 1.0, 0.0)
-	chain_spine.pole_direction_target = Vector3(0.0, 0.0, 0.0) # No pole target
 	chain_spine.tracker_object = $Head
 	chain_spine.yaw_scale = chest_yaw_scale
 
@@ -436,14 +475,10 @@ func _setup_ik_chains():
 
 		if side == "Left":
 			chain_hand.main_axis_of_rotation = -arm_rotation_axis
-			chain_hand.pole_direction_target = Vector3(
-				pole_dist[0], -pole_dist[1], -pole_dist[2])
 			chain_hand.tracker_object = hand_tracker_left
 			_ikchains_dict["arm_left"] = chain_hand
 		else:
 			chain_hand.main_axis_of_rotation = arm_rotation_axis
-			chain_hand.pole_direction_target = Vector3(
-				-pole_dist[0], -pole_dist[1], -pole_dist[2])
 			chain_hand.tracker_object = hand_tracker_right
 			_ikchains_dict["arm_right"] = chain_hand
 
@@ -809,3 +844,41 @@ func _adjust_shoulders_for_arms_up(chain_name: String) -> void:
 			skel.set_bone_pose_rotation(shoulder_bone_index,
 				Quaternion(Vector3(0.0, 0.0, 1.0), shoulder_rotation_angle) *
 				skel.get_bone_rest(shoulder_bone_index).basis.get_rotation_quaternion())
+
+# Debug display of pole targets.
+func _update_debug_draw_pole_targets() -> void:
+
+	var skel: Skeleton3D = get_skeleton()
+
+	if debug_pole_targets:
+
+		var debug_mesh: ImmediateMesh = get_app().get_debug_mesh()
+		debug_mesh.surface_begin(Mesh.PRIMITIVE_LINES)
+		for side: String in ["Left", "Right"]:
+
+			var upper_pos: Vector3 = skel.global_transform * skel.get_bone_global_pose(skel.find_bone(side + "UpperArm")).origin
+			var lower_pos: Vector3 = skel.global_transform * skel.get_bone_global_pose(skel.find_bone(side + "Hand")).origin
+			var midpoint: Vector3 = (upper_pos + lower_pos) / 2.0
+			
+			var target: Node3D = $PoleTargetElbowDebugLeft
+			if side == "Right":
+				target = $PoleTargetElbowDebugRight
+
+			# Line from top of arm to hand.
+			debug_mesh.surface_set_color(Color.RED)
+			debug_mesh.surface_add_vertex(upper_pos)
+			debug_mesh.surface_set_color(Color.GREEN)
+			debug_mesh.surface_add_vertex(lower_pos)
+
+			# Line from midpoint to pole target.
+			var midpoint_offset: Vector3 = target.global_transform.origin - midpoint
+			midpoint_offset = midpoint_offset.normalized() * get_model_height_scale()
+			debug_mesh.surface_set_color(Color.BLUE)
+			debug_mesh.surface_add_vertex(midpoint)
+			debug_mesh.surface_set_color(Color.CYAN)
+			debug_mesh.surface_add_vertex(midpoint + midpoint_offset)
+
+		debug_mesh.surface_end()
+
+	$PoleTargetElbowDebugRight.visible = debug_pole_targets
+	$PoleTargetElbowDebugLeft.visible = debug_pole_targets

@@ -19,10 +19,6 @@ var main_axis_of_rotation : Vector3 = Vector3(1.0, 0.0, 0.0)
 # If do_yaw is true, then this is the "yaw" rotation axis.
 var secondary_axis_of_rotation : Vector3 = Vector3(0.0, 1.0, 0.0)
 
-# Set to 0,0,0 if no pole target.
-var pole_direction_target : Vector3 = Vector3(0.0, 0.0, 0.0)
-var pole_direction_rotation_object : Node3D = null
-
 var _calculated_distance_to_angle_mappings = null
 var _calculated_max_extension_angle = 0.0
 var _calculated_min_extension_angle = 2.0 * PI
@@ -34,7 +30,6 @@ var _calculated_min_extension_distance = 0.0
 var do_ik_curve = true
 var do_yaw_global = true
 var do_point_tracker = true
-var do_pole_targets = true
 var do_rotate_to_match_tracker = true
 
 var yaw_scale : float = 0.25
@@ -106,76 +101,6 @@ func rotate_chain_so_tip_points_in_direction(
 	var root_transform_worldspace = skel.get_global_transform() * skel.get_bone_global_pose(root_index)
 	var new_hips_transform = root_transform_worldspace.inverse() * hips_transform_worldspace
 	skel.set_bone_pose_rotation(hips_index, new_hips_transform.basis.get_rotation_quaternion())
-
-func rotate_chain_to_pole_target(
-	skel : Skeleton3D,
-	base_bone_index : int,
-	tip_bone_index : int,
-	pole_direction_target_skeleton_space : Vector3):
-
-	# If we have a reference rotation object, use that now.
-	if pole_direction_rotation_object:
-		var pole_direction_rotation_skeleton_space : Transform3D = \
-			skel.global_transform.inverse() * pole_direction_rotation_object.global_transform
-		pole_direction_target_skeleton_space = \
-			pole_direction_rotation_skeleton_space * pole_direction_target_skeleton_space
-
-	# Get average bone direction.
-	var current_bone_index = skel.get_bone_parent(tip_bone_index)
-	var total_bone_offset = Vector3(0.0, 0.0, 0.0)
-	var base_bone_origin = skel.get_bone_global_pose(base_bone_index).origin
-	while current_bone_index != base_bone_index:
-		total_bone_offset += skel.get_bone_global_pose(current_bone_index).origin - base_bone_origin
-		current_bone_index = skel.get_bone_parent(current_bone_index)
-	
-	# Get pole direction.
-	var pole_direction = \
-		skel.get_bone_global_pose(tip_bone_index).origin - \
-		skel.get_bone_global_pose(base_bone_index).origin
-	
-	#if (pole_direction.length() - head_dist_target) > - 0.01:
-	if true:
-		
-		#print(skel.get_bone_name(base_bone_index), " ", pole_direction.length() - head_dist_target)
-
-		pole_direction = pole_direction.normalized()
-
-		# Project average bone displacement onto rotation plane.
-		var s = total_bone_offset.normalized().dot(pole_direction)
-		var direction_offset = total_bone_offset.normalized() - pole_direction * s
-		direction_offset = direction_offset.normalized()
-		assert(abs(direction_offset.dot(pole_direction)) < 0.001)
-		
-		# Project pole target direction onto rotation plane.
-		var pole_direction_target_offset = pole_direction_target_skeleton_space - \
-			(skel.get_bone_global_pose(base_bone_index).origin + 
-			skel.get_bone_global_pose(tip_bone_index).origin) / 2.0
-			
-		s = pole_direction_target_offset.dot(pole_direction)
-		var target_direction_offset = pole_direction_target_offset - pole_direction * s
-		target_direction_offset = target_direction_offset.normalized()
-		assert(abs(target_direction_offset.dot(pole_direction)) < 0.001)
-
-#			print(skel.get_bone_name(tip_bone_index))
-#			print(direction_offset)
-#			print(target_direction_offset)
-		
-		var rotation_direction = sign(direction_offset.cross(target_direction_offset).dot(pole_direction))
-		var rotation_amount = acos(direction_offset.dot(target_direction_offset))
-
-		var parent_space = skel.get_bone_global_pose(skel.get_bone_parent(base_bone_index)).basis
-		
-		# Find second-to-last bone.
-#			current_bone_index = tip_bone_index
-#			while skel.get_bone_parent(current_bone_index) != base_bone_index:
-#				current_bone_index = skel.get_bone_parent(current_bone_index)
-		current_bone_index = base_bone_index
-			
-		var new_global_pose = \
-			skel.get_bone_global_pose(current_bone_index).basis.rotated(pole_direction, rotation_amount * rotation_direction)
-		skel.set_bone_pose_rotation(current_bone_index, (parent_space.inverse() * new_global_pose))
-
-
 
 func chain_distribute_bone_roll(
 	base_bone_index : int,
@@ -435,13 +360,6 @@ func do_ik_chain():
 	
 	if do_point_tracker:
 		rotate_chain_so_tip_points_in_direction(skeleton, base_bone_index, tip_bone_index, target_transform.origin)
-
-	# -----------------------------------------------------------------------------------------
-	# Aim at pole target
-
-	if do_pole_targets:
-		if pole_direction_target != Vector3(0.0, 0.0, 0.0):	
-			rotate_chain_to_pole_target(skeleton, base_bone_index, tip_bone_index, pole_direction_target)
 
 	# -----------------------------------------------------------------------------------------
 	# Rotate the head to face the same direction as the head tracker.

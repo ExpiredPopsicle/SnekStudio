@@ -14,9 +14,20 @@ var module_global_data : Dictionary = {}
 # Array of all serializable BasicSubWindows
 var subwindows : Array[BasicSubWindow] = []
 
-func _process(_delta):
-	$DebugMesh.mesh.clear_surfaces()
+var debug_mesh_buffers: Array[ImmediateMesh] = [
+	ImmediateMesh.new(),
+	ImmediateMesh.new()
+]
+var debug_mesh_current_buffer: int = 0
 
+func _process(_delta):
+
+	# Cycle immediate meshes for debugging.
+	var new_mesh: ImmediateMesh = debug_mesh_buffers[debug_mesh_current_buffer]
+	$DebugMesh.mesh.clear_surfaces()
+	$DebugMesh.mesh = new_mesh
+	debug_mesh_current_buffer += 1
+	debug_mesh_current_buffer %= debug_mesh_buffers.size()
 
 func get_background_color():
 	var current_style : StyleBoxFlat = %BackgroundPanel.get("theme_override_styles/panel")
@@ -57,6 +68,11 @@ func get_background_transparency() -> bool:
 
 
 func _ready():
+
+	# Set up materials on debug mesh.
+	$DebugMesh.material_override = \
+		load("res://Core/Materials/DebugMesh.tres")
+
 	set_background_transparency(true)
 	load_settings() # Auto-load on startup.
 	$AudioStreamRecord.play()
@@ -547,4 +563,4 @@ static func get_added_mods_locations() -> PackedStringArray:
 ## The mesh is cleared every frame, so this is for immediate-mode style debug
 ## rendering.
 func get_debug_mesh() -> ImmediateMesh:
-	return $DebugMesh.mesh
+	return debug_mesh_buffers[debug_mesh_current_buffer]

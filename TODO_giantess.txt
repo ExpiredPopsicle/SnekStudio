@@ -1,6 +1,6 @@
 - modify the default scene to include the ReturnTrackersToRestPosition mod
 x fix arm pole target going wrong direction
-- fix arm pole forward/backward being different on JunkRaven vs Kiri
+x fix arm pole forward/backward being different on JunkRaven vs Kiri
 - add scaling setting for elbow-forward pole target Z axis
 - add alpha scaling setting for pole target for arm-across-chest
 x fix lean

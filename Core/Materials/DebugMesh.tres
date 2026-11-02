@@ -1,0 +1,7 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://mt01sgy8fkho"]
+
+[ext_resource type="Shader" uid="uid://ccatui4mwp4m2" path="res://Core/Materials/debug_mesh_ontop.gdshader" id="1_3is6m"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_3is6m")
