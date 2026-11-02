@@ -714,7 +714,7 @@ func _process(delta):
 			[ "Left", hand_landmarks_left, $Hand_Left, Basis() ], # FIXME: Remove the last value.
 			[ "Right", hand_landmarks_right, $Hand_Right, Basis() ]]  # FIXME: Remove the last value.
 		for hand in hands:
-			_update_hand(hand, parsed_data, skel)
+			_update_hand(hand, parsed_data)
 
 	# ---------------------------------------------------------------------------------------------
 	# Send tracker data down the pipe.
@@ -813,7 +813,7 @@ func _reset_hand_landmarks():
 	assert(len(hand_landmarks_left) == 21)
 	assert(len(hand_landmarks_right) == 21)
 
-func _update_hand(hand, parsed_data, _skel : Skeleton3D):
+func _update_hand(hand, parsed_data):
 	var mark_counter = 0
 
 	var which_hand = hand[0].to_lower()
@@ -899,23 +899,6 @@ func _update_hand_tracker(
 		hand_origin_array[1],
 		hand_origin_array[2]) * hand_origin_multiplier)
 	
-	# Attempt to move hand in front of model. Reaching behind is
-	# *usually* the results of bad data.
-	#
-	# FIXME: Ugly hack.
-	#   If we're going to do this, we need to make sure we do it in the model's forward
-	#   direction.
-	#
-	var chest_transform_global_pose = skel.get_bone_global_pose(skel.find_bone("Chest"))
-	var min_z = (skel.global_transform * chest_transform_global_pose).origin
-	if target_origin.z < min_z.z + minimum_hand_z:
-		target_origin.z = min_z.z + minimum_hand_z
-
-	# FIXME: THIS IS BAD CODE AND YOU (KIRI) SHOULD FEEL BAD ABOUT IT.
-	var tracker_in_chest_space = chest_transform_global_pose.inverse() * target_origin
-
-	target_origin = chest_transform_global_pose * tracker_in_chest_space
-
 	var rotation_basis_array = parsed_data[hand_rotation_str]
 
 	var rotation_basis = Basis(

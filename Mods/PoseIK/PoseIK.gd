@@ -734,7 +734,7 @@ func _calculate_final_pole_target_position(
 
 	# FIXME(GIANTESS): Make these configurable!
 	# Euler angles to use with Basis.from_euler().
-	var pole_target_angle_arms_down:    Vector3 = Vector3(0.0,             PI*0.9,          0.0)
+	var pole_target_angle_arms_down:    Vector3 = Vector3(0.0,             PI,              0.0)
 	var pole_target_angle_hands_up:     Vector3 = Vector3(45.0 * PI/180.0, PI/2.0,          0.0)
 	var pole_target_angle_hands_across: Vector3 = Vector3(-5.0 * PI/180.0, 15.0 * PI/180.0, 0.0)
 

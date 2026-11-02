@@ -1,8 +1,15 @@
 - modify the default scene to include the ReturnTrackersToRestPosition mod
-- fix arm pole target going wrong direction
+x fix arm pole target going wrong direction
 - fix arm pole forward/backward being different on JunkRaven vs Kiri
 - add scaling setting for elbow-forward pole target Z axis
 - add alpha scaling setting for pole target for arm-across-chest
 x fix lean
-- fix shoulder-up thing being broken on Kiri's model
+x fix shoulder-up thing being broken on Kiri's model
 - get rid of debug display objects
+- add KeepHandsInFront to our default mod list
+- see if you can track down that weird glitch that makes thing twitch.
+- document all the new modules
+- add the dependency order check stuff for them
+- fix fingers when returning to rest pose
+  - fingers probably not rotating to new position
+- search for TODO(GIANTESS) for anything that didn't end up in this list!

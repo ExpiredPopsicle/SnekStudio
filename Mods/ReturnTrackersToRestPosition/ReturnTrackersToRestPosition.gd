@@ -11,11 +11,13 @@ var visible_trackers: bool = false
 var arm_rest_angle: float = 60
 #var arm_reset_time: float = 0.5
 var arm_reset_speed: float = 6.0
+var arm_length_scale: float = 1.0
 
 func _ready() -> void:
 	add_tracked_setting("visible_trackers", "Visible trackers")
-	add_tracked_setting("arm_rest_angle", "Arm rest angle", { "min" : 0.0, "max" : 180.0 })
-	add_tracked_setting("arm_reset_speed", "Arm reset speed", { "min" : 0.0, "max" : 50.0 })
+	add_tracked_setting("arm_rest_angle", "Arm rest angle", { "min": 0.0, "max": 180.0 })
+	add_tracked_setting("arm_reset_speed", "Arm reset speed", { "min": 0.0, "max": 50.0 })
+	add_tracked_setting("arm_length_scale", "Arm length scale", { "min": 0.0, "max": 5.0, "step": 0.01 })
 	update_settings_ui()
 
 func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
@@ -52,7 +54,7 @@ func _update_single_arm_rest_position(side: String, rotation_axis: Vector3, rest
 		var rotation_basis = Basis(rotation_axis, deg_to_rad(arm_rest_angle))
 		var new_offset : Vector3 = (hand_origin - shoulder_origin).rotated(
 				rotation_axis, deg_to_rad(arm_rest_angle))
-		rest_tracker.transform.origin = shoulder_origin + new_offset
+		rest_tracker.transform.origin = shoulder_origin + new_offset * arm_length_scale
 		rest_tracker.transform.basis = rotation_basis
 
 func _update_arm_rest_positions():
