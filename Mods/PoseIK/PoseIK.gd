@@ -153,6 +153,15 @@ const finger_bone_array_array : Array[Array] = [
 var polemodifier_left_arm: KiriPoleTargetModifier3D = null
 var polemodifier_right_arm: KiriPoleTargetModifier3D = null
 
+# Euler angles to use with Basis.from_euler().
+# FIXME(GIANTESS): Make these degrees. Convert to radians later.
+# FIXME(GIANTESS): Set better defaults based on our tweaking.
+var pole_target_angle_arms_down:            Vector3 = Vector3(0.0,             PI,              0.0)
+var pole_target_angle_hands_up:             Vector3 = Vector3(45.0 * PI/180.0, PI/2.0,          0.0)
+var pole_target_angle_hands_across:         Vector3 = Vector3(-5.0 * PI/180.0, 15.0 * PI/180.0, 0.0)
+var pole_target_angle_hands_above_shoulder: Vector3 = Vector3(45.0 * PI/180.0, PI/2.0,          0.0)
+var pole_target_alpha_scale_hands_above_shoulder: float = 2.0
+
 func _clear_ik_chains() -> void:
 	for key in _ikchains_dict.keys():
 		_ikchains_dict[key] = null
@@ -204,7 +213,14 @@ func _ready() -> void:
 		"shoulder_rotation_scale", "Shoulder rotation scale", { "min" : 0.0, "max" : 10.0 },
 		"advanced")
 
-	add_tracked_setting("debug_pole_targets", "Show pole targts for debugging", {}, "advanced")
+	# Euler angles to use with Basis.from_euler().
+	add_setting_group("pole_targets", "Pole Target pitch/yaw/roll")
+	add_tracked_setting("debug_pole_targets", "Show pole targts for debugging", {}, "pole_targets")
+	add_tracked_setting("pole_target_angle_arms_down", "Arms down", {}, "pole_targets")
+	add_tracked_setting("pole_target_angle_hands_up", "Hands up", {}, "pole_targets")
+	add_tracked_setting("pole_target_angle_hands_across", "Reaching across the chest", {}, "pole_targets")
+	add_tracked_setting("pole_target_angle_hands_above_shoulder", "Hands above shoulders", {}, "pole_targets")
+	add_tracked_setting("pole_target_alpha_scale_hands_above_shoulder", "Hands above shoulder alpha scale", {"min": 0.0, "max": 5.0, "step": 0.01}, "pole_targets")
 
 	_reinit()
 
@@ -387,7 +403,11 @@ func _process(delta : float) -> void:
 		# targets backwards, so the elbows face back.
 		var arms_down_alpha: float = _calculate_arms_down_alpha(chain_name)
 
-		var pole_target_vec: Vector3 = _calculate_final_pole_target_position(chain_name, arms_down_alpha, arm_across_chest_alpha)
+		var arms_above_shoulder_alpha: float = _calculate_arms_above_shoulders_alpha(chain_name)
+
+		var pole_target_vec: Vector3 = _calculate_final_pole_target_position(
+			chain_name, arms_down_alpha, arm_across_chest_alpha,
+			arms_above_shoulder_alpha)
 
 		if chain_name == "arm_left":
 			$PoleTargetElbowLeft.transform.origin = pole_target_vec
@@ -762,16 +782,57 @@ func _calculate_arms_down_alpha(chain_name: String) -> float:
 	var t = (base_bone_in_chest_space.y - tracker_in_chest_space.y) / arm_length
 	return smoothstep(arm_lowered_threshold, arm_lowered_max, t)
 
+func _calculate_arms_above_shoulders_alpha(chain_name: String) -> float:
+
+	var skel: Skeleton3D = get_skeleton()
+
+	# Figure out left/right strings and trackers based on which side we're
+	# on.
+	var tracker_to_use: Node3D = $Hand_Left
+	var side: String = "Left"
+	var otherside: String = "Right"
+	if chain_name == "arm_right":
+		tracker_to_use = $Hand_Right
+		side = "Right"
+		otherside = "Left"
+
+	# Get the position of this shoulder.
+	var upper_arm_index: int = skel.find_bone(side + "UpperArm")
+	var upper_arm_pos_global: Vector3 = skel.global_transform * skel \
+		.get_bone_global_pose(upper_arm_index) \
+		.origin
+
+	# Get the position of the OTHER shoulder.
+	var other_upper_arm_index: int = skel.find_bone(otherside + "UpperArm")
+	var other_upper_arm_pos_global: Vector3 = skel.global_transform * skel \
+		.get_bone_global_pose(other_upper_arm_index) \
+		.origin
+
+	var chest_bone_index: int = skel.find_bone("Chest")
+	var chest_bone_tx: Transform3D = skel.global_transform * skel.get_bone_global_pose(chest_bone_index)
+	var chest_bone_tx_inv = chest_bone_tx.inverse()
+
+	# Get the midpoint between the two upper arms. Should end up in the base of
+	# the next/top of the chest area.
+	var midpoint: Vector3 = (other_upper_arm_pos_global + upper_arm_pos_global) / 2.0
+
+	var midpoint_in_chest_space: Vector3 = chest_bone_tx_inv * midpoint
+	var hand_tracker_in_chest_space: Vector3 = chest_bone_tx_inv * tracker_to_use.global_transform.origin
+
+	var offset_from_shoulder_mid: Vector3 = \
+		hand_tracker_in_chest_space - midpoint_in_chest_space
+
+	offset_from_shoulder_mid /= get_model_height_scale()
+
+	return clamp(
+		offset_from_shoulder_mid.y * pole_target_alpha_scale_hands_above_shoulder,
+		0.0, 1.0)
+
 func _calculate_final_pole_target_position(
 	chain_name: String,
 	arms_down_alpha: float,
-	arm_across_chest_alpha: float) -> Vector3:
-
-	# FIXME(GIANTESS): Make these configurable!
-	# Euler angles to use with Basis.from_euler().
-	var pole_target_angle_arms_down:    Vector3 = Vector3(0.0,             PI,              0.0)
-	var pole_target_angle_hands_up:     Vector3 = Vector3(45.0 * PI/180.0, PI/2.0,          0.0)
-	var pole_target_angle_hands_across: Vector3 = Vector3(-5.0 * PI/180.0, 15.0 * PI/180.0, 0.0)
+	arm_across_chest_alpha: float,
+	arms_above_shoulder_alpha: float) -> Vector3:
 
 	var skel: Skeleton3D = get_skeleton()
 	var chest_bone_index: int = skel.find_bone("Chest")
@@ -781,6 +842,7 @@ func _calculate_final_pole_target_position(
 	var adjusted_pole_target_angle_arms_down:    Vector3 = pole_target_angle_arms_down
 	var adjusted_pole_target_angle_hands_up:     Vector3 = pole_target_angle_hands_up
 	var adjusted_pole_target_angle_hands_across: Vector3 = pole_target_angle_hands_across
+	var adjusted_pole_target_angle_hands_above_shoulder: Vector3 = pole_target_angle_hands_above_shoulder
 
 	# Figure out left/right strings and trackers based on which side we're
 	# on.
@@ -788,14 +850,17 @@ func _calculate_final_pole_target_position(
 		adjusted_pole_target_angle_arms_down.y *= -1.0
 		adjusted_pole_target_angle_hands_up.y *= -1.0
 		adjusted_pole_target_angle_hands_across *= -1.0
+		adjusted_pole_target_angle_hands_above_shoulder *= -1.0
 
 	var pole_target_basis_arms_down: Basis = Basis.from_euler(adjusted_pole_target_angle_arms_down)
 	var pole_target_basis_hands_up: Basis = Basis.from_euler(adjusted_pole_target_angle_hands_up)
 	var pole_target_basis_hands_across: Basis = Basis.from_euler(adjusted_pole_target_angle_hands_across)
+	var pole_target_basis_hands_above_shoulders: Basis = Basis.from_euler(adjusted_pole_target_angle_hands_above_shoulder)
 
 	var final_basis: Basis = pole_target_basis_hands_up \
 		.slerp(pole_target_basis_arms_down, arms_down_alpha) \
-		.slerp(pole_target_basis_hands_across, arm_across_chest_alpha)
+		.slerp(pole_target_basis_hands_across, arm_across_chest_alpha) \
+		.slerp(pole_target_basis_hands_above_shoulders, arms_above_shoulder_alpha)
 
 	# FIXME(GIANTESS): Change the hardcoded value for distance here.
 	var pole_target_vec: Vector3 = chest_bone_tx * (final_basis * Vector3(0.0, 0.0, 100.0))
