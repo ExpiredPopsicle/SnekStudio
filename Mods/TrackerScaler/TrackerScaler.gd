@@ -5,10 +5,12 @@ extends Mod_Base
 
 var tracker_scale: float = 1.0
 var should_use_automatic_scale: bool = true
+var show_debug_trackers: bool = false
 
 func _ready() -> void:
 	add_tracked_setting("tracker_scale", "Scale", { "min": 0.0, "max": 100.0 });
 	add_tracked_setting("should_use_automatic_scale", "Use automatic height scale");
+	add_tracked_setting("show_debug_trackers", "Show debug trackers")
 
 func _process(_delta: float) -> void:
 	
@@ -34,4 +36,7 @@ func _process(_delta: float) -> void:
 	$DebugLeftHand.global_transform.basis *= scaling_basis
 	$DebugRightHand.global_transform.basis *= scaling_basis
 
-	#print($DebugRightHand.global_transform.origin)
+	# Update visibility.
+	$DebugLeftHand.visible = show_debug_trackers
+	$DebugRightHand.visible = show_debug_trackers
+	$DebugHead.visible = show_debug_trackers
