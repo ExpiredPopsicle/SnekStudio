@@ -520,6 +520,14 @@ func check_mod_dependency(mod: Variant, should_come_after := false) -> bool:
 	# Did not find the mod at all.
 	return false
 
+func get_model_height_scale() -> float:
+	var skel: Skeleton3D = get_skeleton()
+	var head_pos: Vector3 = skel.get_bone_global_rest(skel.find_bone("Head")).origin
+	var model_height_approx = head_pos.y
+	# Arbitrary scale value here determined by the result of this math from
+	# Kiri's snake model. :P
+	return model_height_approx / 1.8
+
 #endregion
 
 # -----------------------------------------------------------------------------

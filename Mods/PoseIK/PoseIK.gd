@@ -224,7 +224,7 @@ func _update_local_trackers() -> void:
 	if tracker_dict.has("head"):
 		$Head.global_transform = tracker_dict["head"].transform
 		
-		var head_offset: Vector3 = Vector3(0.0, head_vertical_offset * _get_model_height_scale(), 0.0)
+		var head_offset: Vector3 = Vector3(0.0, head_vertical_offset * get_model_height_scale(), 0.0)
 		$Head.global_transform.origin += head_offset * tracker_dict["head"].transform.basis
 	if tracker_dict.has("hand_left"):
 		$Hand_Left.global_transform = tracker_dict["hand_left"].transform
@@ -802,29 +802,10 @@ func _adjust_shoulders_for_arms_up(chain_name: String) -> void:
 				(tracker_local_chest.origin.y - shoulder_y) * 2.0 * rotation_scale
 
 			# Apply scale based on height of model.
-			shoulder_rotation_angle /= _get_model_height_scale()
+			shoulder_rotation_angle /= get_model_height_scale()
 
 			shoulder_rotation_angle = clampf(shoulder_rotation_angle, -rotation_max, rotation_max)
 			# Actually rotate the thing!
 			skel.set_bone_pose_rotation(shoulder_bone_index,
 				Quaternion(Vector3(0.0, 0.0, 1.0), shoulder_rotation_angle) *
 				skel.get_bone_rest(shoulder_bone_index).basis.get_rotation_quaternion())
-
-#func _get_model_height_scale() -> float:
-	#var skel: Skeleton3D = get_skeleton()
-	#var head_pos: Vector3 = skel.get_bone_global_rest(skel.find_bone("Head")).origin
-	#var foot_left_pos: Vector3 = skel.get_bone_global_rest(skel.find_bone("LeftFoot")).origin
-	#var foot_right_pos: Vector3 = skel.get_bone_global_rest(skel.find_bone("RightFoot")).origin
-	#var foot_mid_pos: Vector3 = (foot_left_pos + foot_right_pos) / 2.0
-	#var model_height_approx: float = (head_pos - foot_mid_pos).length()
-	## Arbitrary scale value here determined by the result of this math from
-	## Kiri's snake model. :P
-	#return model_height_approx / 1.76
-
-func _get_model_height_scale() -> float:
-	var skel: Skeleton3D = get_skeleton()
-	var head_pos: Vector3 = skel.get_bone_global_rest(skel.find_bone("Head")).origin
-	var model_height_approx = head_pos.y
-	# Arbitrary scale value here determined by the result of this math from
-	# Kiri's snake model. :P
-	return model_height_approx / 1.8

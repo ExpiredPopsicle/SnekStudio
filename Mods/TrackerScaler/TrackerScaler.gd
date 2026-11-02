@@ -13,7 +13,7 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	
 	var tracker_scale_to_use: float = tracker_scale
-	var model_height_scale: float = _get_model_height_scale()
+	var model_height_scale: float = get_model_height_scale()
 	if should_use_automatic_scale:
 		tracker_scale_to_use *= model_height_scale
 	
@@ -35,11 +35,3 @@ func _process(_delta: float) -> void:
 	$DebugRightHand.global_transform.basis *= scaling_basis
 
 	#print($DebugRightHand.global_transform.origin)
-
-func _get_model_height_scale() -> float:
-	var skel: Skeleton3D = get_skeleton()
-	var head_pos: Vector3 = skel.get_bone_global_rest(skel.find_bone("Head")).origin
-	var model_height_approx = head_pos.y
-	# Arbitrary scale value here determined by the result of this math from
-	# Kiri's snake model. :P
-	return model_height_approx / 1.8
