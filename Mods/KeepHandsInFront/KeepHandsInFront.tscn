@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://bsbdvrg6mb3b5"]
+
+[ext_resource type="Script" uid="uid://bsfdb52mg2gsk" path="res://Mods/KeepHandsInFront/KeepHandsInFront.gd" id="1_kptxj"]
+
+[node name="KeepHandsInFront" type="Node3D" unique_id=1001716524]
+script = ExtResource("1_kptxj")
+metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
