@@ -564,3 +564,7 @@ static func get_added_mods_locations() -> PackedStringArray:
 ## rendering.
 func get_debug_mesh() -> ImmediateMesh:
 	return debug_mesh_buffers[debug_mesh_current_buffer]
+
+## Get the CameraBoom for use in mods and stuff.
+func get_cameraboom() -> Node3D:
+	return $CameraBoom
