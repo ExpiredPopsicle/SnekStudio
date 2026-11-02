@@ -35,10 +35,11 @@ func _process(_delta):
 						push_error("Download failed (", result, ") (", response_code, ") for platform: ", platform)
 						quit(1))
 
-	# FIXME: Add MacOS.
+	# FIXME: Add MacOS x86_64
 	if updater._check_platform_file_ready("Windows-x86_64") and \
 		updater._check_platform_file_ready("Linux-x86_64") and \
-		updater._check_platform_file_ready("Linux-arm64"):
+		updater._check_platform_file_ready("Linux-arm64") and \
+		updater._check_platform_file_ready("macOS-arm64"):
 
 		# Download pip requirements.
 		var succeeded = true
@@ -48,7 +49,9 @@ func _process(_delta):
 			succeeded = false
 		if not updater.download_platform_requirements("Linux-arm64", true):
 			succeeded = false
-		# FIXME: MacOS.
+		if not updater.download_platform_requirements("macOS-arm64", true):
+			succeeded = false
+		# FIXME: MacOS x86_64
 
 		if not succeeded:
 			push_error("Something went wrong!")

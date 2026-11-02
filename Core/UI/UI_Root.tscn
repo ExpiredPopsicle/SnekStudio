@@ -40,6 +40,7 @@ offset_bottom = 28.52
 
 [node name="MenuBar" type="MenuBar" parent="ColorRect/HBoxContainer" unique_id=1946792517]
 layout_mode = 2
+prefer_global_menu = false
 
 [node name="File" type="PopupMenu" parent="ColorRect/HBoxContainer/MenuBar" unique_id=1005201247]
 size = Vector2i(145, 124)

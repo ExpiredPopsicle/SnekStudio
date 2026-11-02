@@ -27,3 +27,5 @@ Build/godot.zip
 Build/godot_templates.tpz
 
 Saved/*
+
+.DS_Store
