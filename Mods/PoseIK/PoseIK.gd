@@ -13,8 +13,8 @@ var hack_reset_shoulders_every_frame : bool = true
 var hip_adjustment_speed : float = 1.0
 var head_vertical_offset : float = -0.2
 var hips_vertical_blend_speed : float = 6.0
-var shoulder_raise_max_angle: float = 35.0
-var shoulder_rotation_scale: float = 0.25
+var shoulder_raise_max_angle: float = 60.0
+var shoulder_rotation_scale: float = 1.0
 
 var _ikchains_dict : Dictionary = {
 	"arm_left" : null,
@@ -183,7 +183,7 @@ func _ready() -> void:
 
 	add_tracked_setting(
 		"head_vertical_offset", "Head vertical offset",
-		{ "min" : -1.0, "max" : 1.0 },
+		{ "min" : -1.0, "max" : 1.0, "step": 0.01 },
 		"advanced")
 	add_tracked_setting(
 		"hips_vertical_blend_speed", "Hips vertical blend speed",
@@ -191,6 +191,13 @@ func _ready() -> void:
 		"advanced")
 	add_tracked_setting(
 		"hip_adjustment_speed", "Hip Adjustment Speed", { "min" : 0.0, "max" : 10.0 },
+		"advanced")
+
+	add_tracked_setting(
+		"shoulder_raise_max_angle", "Shoulder rotation max angle", { "min" : 0.0, "max" : 90.0 },
+		"advanced")
+	add_tracked_setting(
+		"shoulder_rotation_scale", "Shoulder rotation scale", { "min" : 0.0, "max" : 10.0 },
 		"advanced")
 
 	_reinit()
@@ -216,6 +223,9 @@ func _update_local_trackers() -> void:
 
 	if tracker_dict.has("head"):
 		$Head.global_transform = tracker_dict["head"].transform
+		
+		var head_offset: Vector3 = Vector3(0.0, head_vertical_offset * _get_model_height_scale(), 0.0)
+		$Head.global_transform.origin += head_offset * tracker_dict["head"].transform.basis
 	if tracker_dict.has("hand_left"):
 		$Hand_Left.global_transform = tracker_dict["hand_left"].transform
 	if tracker_dict.has("hand_right"):
@@ -320,7 +330,7 @@ func _process(delta : float) -> void:
 		# FIXME: Hard-coded fudge factor.
 		# FIXME: Why can't we just map this directly again? It looks like we're shrugging when the arms get set up wrong or something.
 		model_root.transform.origin.y = lerp(
-			model_pos.y, head_pos.y - head_rest_transform.origin.y + head_vertical_offset,
+			model_pos.y, head_pos.y - head_rest_transform.origin.y,
 			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
 
 	# ---------------------------------------------------------------------
@@ -669,7 +679,9 @@ func _calculate_arm_across_chest_alpha(chain_name: String) -> float:
 	var dp_percentage: float = dp / upper_arm_offset_from_center.length()
 
 	# That's our output.
-	return clamp(-dp_percentage, 0.0, 1.0)
+	# FIXME(GIANTESS): make configurable value for the 1.0 and 0.75 (starting
+	#   threshold and scaling of alpha value)
+	return clamp(0.75 * (1.0 -dp_percentage), 0.0, 1.0)
 
 func _calculate_arms_down_alpha(chain_name: String) -> float:
 
@@ -762,7 +774,7 @@ func _adjust_shoulders_for_arms_up(chain_name: String) -> void:
 	var chest_bone_index: int = skel.find_bone("Chest")
 
 	var rotation_scale: float = shoulder_rotation_scale
-	var rotation_max: float = shoulder_raise_max_angle * (180.0/PI)
+	var rotation_max: float = shoulder_raise_max_angle * (PI/180)
 
 	# Figure out left/right strings, trackers, and inverted scales based on
 	# which side we're on.
@@ -786,11 +798,33 @@ func _adjust_shoulders_for_arms_up(chain_name: String) -> void:
 		var tracker_local_chest = chest_pose_inv * tracker_local_position
 		if tracker_local_chest.origin.y > shoulder_y:
 			
-			var shoulder_rotation_angle: float = (tracker_local_chest.origin.y - shoulder_y) * 2.0 * rotation_scale
+			var shoulder_rotation_angle: float = \
+				(tracker_local_chest.origin.y - shoulder_y) * 2.0 * rotation_scale
+
+			# Apply scale based on height of model.
+			shoulder_rotation_angle /= _get_model_height_scale()
 
 			shoulder_rotation_angle = clampf(shoulder_rotation_angle, -rotation_max, rotation_max)
-
 			# Actually rotate the thing!
 			skel.set_bone_pose_rotation(shoulder_bone_index,
 				Quaternion(Vector3(0.0, 0.0, 1.0), shoulder_rotation_angle) *
 				skel.get_bone_rest(shoulder_bone_index).basis.get_rotation_quaternion())
+
+#func _get_model_height_scale() -> float:
+	#var skel: Skeleton3D = get_skeleton()
+	#var head_pos: Vector3 = skel.get_bone_global_rest(skel.find_bone("Head")).origin
+	#var foot_left_pos: Vector3 = skel.get_bone_global_rest(skel.find_bone("LeftFoot")).origin
+	#var foot_right_pos: Vector3 = skel.get_bone_global_rest(skel.find_bone("RightFoot")).origin
+	#var foot_mid_pos: Vector3 = (foot_left_pos + foot_right_pos) / 2.0
+	#var model_height_approx: float = (head_pos - foot_mid_pos).length()
+	## Arbitrary scale value here determined by the result of this math from
+	## Kiri's snake model. :P
+	#return model_height_approx / 1.76
+
+func _get_model_height_scale() -> float:
+	var skel: Skeleton3D = get_skeleton()
+	var head_pos: Vector3 = skel.get_bone_global_rest(skel.find_bone("Head")).origin
+	var model_height_approx = head_pos.y
+	# Arbitrary scale value here determined by the result of this math from
+	# Kiri's snake model. :P
+	return model_height_approx / 1.8
