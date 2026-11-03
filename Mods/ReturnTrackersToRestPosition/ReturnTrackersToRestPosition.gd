@@ -67,7 +67,7 @@ func _update_tracker(
 
 	var trackers : Dictionary = get_global_mod_data("trackers")
 
-	if trackers[tracker_name]["active"]:
+	if trackers.has(tracker_name) and trackers[tracker_name]["active"]:
 		# Tracker active. Copy data directly over.
 		tracker_object.transform = trackers[tracker_name]["transform"]
 	else:
@@ -76,7 +76,8 @@ func _update_tracker(
 			reference_object.global_transform, arm_reset_speed * delta)
 
 	# Copy from *our* proxy tracker object back to the tracker data.
-	trackers[tracker_name]["transform"] = tracker_object.global_transform
+	if trackers.has(tracker_name):
+		trackers[tracker_name]["transform"] = tracker_object.global_transform
 
 func _process(delta: float) -> void:
 
