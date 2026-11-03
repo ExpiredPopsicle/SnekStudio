@@ -5,7 +5,7 @@ x fix arm pole forward/backward being different on JunkRaven vs Kiri
 - add alpha scaling setting for pole target for arm-across-chest
 x fix lean
 x fix shoulder-up thing being broken on Kiri's model
-- get rid of debug display objects
+x get rid of debug display objects
 - add KeepHandsInFront to our default mod list
 - see if you can track down that weird glitch that makes thing twitch.
 - document all the new modules
@@ -14,3 +14,6 @@ x fix shoulder-up thing being broken on Kiri's model
   - fingers probably not rotating to new position
 - search for TODO(GIANTESS) for anything that didn't end up in this list!
 x fix pole targets messing up when model goes for extreme lean
+- add counter-rotation to arm when leaning
+- Warn that the automatic camera height adjuster will probably break other camera modules like camerapositions
+- add icon for PoseIK
