@@ -13,3 +13,4 @@ x fix shoulder-up thing being broken on Kiri's model
 - fix fingers when returning to rest pose
   - fingers probably not rotating to new position
 - search for TODO(GIANTESS) for anything that didn't end up in this list!
+x fix pole targets messing up when model goes for extreme lean

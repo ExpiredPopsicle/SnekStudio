@@ -384,6 +384,22 @@ func _process(delta : float) -> void:
 			model_pos.y, head_pos.y - head_rest_transform.origin.y,
 			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
 
+
+	# FIXME: Fix this comment.
+	# Do hand stuff.
+	if do_hands:
+		update_hand(hand_landmarks_left, "Left")
+		update_hand(hand_landmarks_right, "Right")
+
+	# Solve spine.
+	for chain_name in ["spine"]:
+		_ikchains_dict[chain_name].do_ik_chain()
+
+	# Solve arms.
+	for chain_name in ["arm_left", "arm_right"]:
+		_ikchains_dict[chain_name].do_ik_chain()
+
+
 	# ---------------------------------------------------------------------
 	# IK stuff starts here
 
@@ -413,20 +429,6 @@ func _process(delta : float) -> void:
 			$PoleTargetElbowLeft.transform.origin = pole_target_vec
 		else:
 			$PoleTargetElbowRight.transform.origin = pole_target_vec
-
-	# FIXME: Fix this comment.
-	# Do hand stuff.
-	if do_hands:
-		update_hand(hand_landmarks_left, "Left")
-		update_hand(hand_landmarks_right, "Right")
-
-	# Solve spine.
-	for chain_name in ["spine"]:
-		_ikchains_dict[chain_name].do_ik_chain()
-
-	# Solve arms.
-	for chain_name in ["arm_left", "arm_right"]:
-		_ikchains_dict[chain_name].do_ik_chain()
 
 	# Do pole target stuff.
 	polemodifier_left_arm._do_rotation_update(delta, true)
