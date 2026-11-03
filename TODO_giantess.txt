@@ -17,3 +17,5 @@ x fix pole targets messing up when model goes for extreme lean
 - add counter-rotation to arm when leaning
 - Warn that the automatic camera height adjuster will probably break other camera modules like camerapositions
 - add icon for PoseIK
+x fix fingers getting scrunkled when leaning
+- make stuff NOT crash when MediaPipeController is absent
