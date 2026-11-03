@@ -389,13 +389,6 @@ func _process(delta : float) -> void:
 			model_pos.y, head_pos.y - head_rest_transform.origin.y,
 			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
 
-
-	# FIXME: Fix this comment.
-	# Do hand stuff.
-	if do_hands:
-		update_hand(hand_landmarks_left, "Left")
-		update_hand(hand_landmarks_right, "Right")
-
 	# ---------------------------------------------------------------------
 	# IK stuff starts here
 
@@ -408,6 +401,11 @@ func _process(delta : float) -> void:
 	# Solve arms.
 	for chain_name in ["arm_left", "arm_right"]:
 		_ikchains_dict[chain_name].do_ik_chain()
+
+	# Do hand stuff.
+	if do_hands:
+		update_hand(hand_landmarks_left, "Left")
+		update_hand(hand_landmarks_right, "Right")
 
 	for chain_name in ["arm_left", "arm_right"]:
 
@@ -606,6 +604,11 @@ func _update_finger_chain(finger_bone_array : Array, hand_landmarks : Array, whi
 
 	var tracker_dict : Dictionary = get_global_mod_data("trackers")
 
+	# Don't update fingers on inactive hands.
+	# FIXME: Just return to rest pose for these fingers?
+	if not tracker_dict["hand_" + which_hand.to_lower()].active:
+		return
+
 	var skel : Skeleton3D = get_skeleton()
 	var finger_rotation_main_axis : Vector3 = Vector3(0, 0, 0)
 	var is_first_bone : bool = true
@@ -681,14 +684,15 @@ func _update_finger_chain(finger_bone_array : Array, hand_landmarks : Array, whi
 			rotation_axis_local = Vector3(-1, 0, 0)
 
 		# Convert that to a rotation offset from the rest rotation.
-		var global_rotation_from_rest = skel.get_bone_global_rest(bone_to_modify_index).basis * rotation_axis_local
+		var local_rotation_axis_from_rest: Vector3 = \
+			skel.get_bone_global_rest(bone_to_modify_index).basis * rotation_axis_local
 
 		var hand_index = "hand_" + which_hand.to_lower()
 		if tracker_dict.has(hand_index):
 			if not tracker_dict[hand_index]:
 				skel.set_bone_pose_rotation(bone_to_modify_index, Basis())
 			else:
-				rotate_bone_in_global_space(skel, bone_to_modify_index, global_rotation_from_rest, -angle_between)
+				rotate_bone_in_global_space(skel, bone_to_modify_index, local_rotation_axis_from_rest, -angle_between)
 
 		is_first_bone = false
 

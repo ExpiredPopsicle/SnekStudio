@@ -7,10 +7,14 @@ var tracker_scale: float = 1.0
 var should_use_automatic_scale: bool = true
 var show_debug_trackers: bool = false
 
+## Scale the feature points of the hands within the hand's coordinate space.
+var hand_point_scale: float = 1.0
+
 func _ready() -> void:
 	add_tracked_setting("tracker_scale", "Scale", { "min": 0.0, "max": 100.0 });
 	add_tracked_setting("should_use_automatic_scale", "Use automatic height scale");
 	add_tracked_setting("show_debug_trackers", "Show debug trackers")
+	add_tracked_setting("hand_point_scale", "Hand feature point scale", { "min": 0.0, "max": 100.0, "step": 0.01 })
 
 func _process(_delta: float) -> void:
 	
@@ -23,8 +27,20 @@ func _process(_delta: float) -> void:
 	for tracker_name: String in ["head", "hand_left", "hand_right" ]:
 		var tracker = trackers[tracker_name]
 		tracker.transform.origin *= tracker_scale_to_use
-	for finger_name: String in trackers["finger_positions"]:
-		trackers["finger_positions"][finger_name] *= tracker_scale_to_use
+
+	for side in ["left", "right"]:
+		for point_name: String in trackers["finger_positions"]:
+
+			if not point_name.begins_with(side):
+				continue
+
+			trackers["finger_positions"][point_name] *= tracker_scale_to_use
+			
+			var position_in_hand_space: Vector3 = \
+				trackers["finger_positions"][point_name] - trackers["finger_positions"][side + "_wrist"]
+			position_in_hand_space *= hand_point_scale
+			trackers["finger_positions"][point_name] = \
+				position_in_hand_space + trackers["finger_positions"][side + "_wrist"]
 
 	$DebugHead.global_transform = trackers["head"].transform
 	$DebugLeftHand.global_transform = trackers["hand_left"].transform
