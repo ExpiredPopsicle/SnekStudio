@@ -11,11 +11,6 @@ var has_initialized := false
 var status_label := Label.new()
 var connect_button := Button.new()
 
-func load_after(_old: Dictionary, _new: Dictionary) -> void:
-	$AltStream.autoconnect = autoconnect
-	# This is updated only when input is submitted or unfocused.
-	# $AltStream.channel = channel
-
 func _ready() -> void:
 	var alt_stream = $AltStream
 
@@ -53,7 +48,10 @@ func scene_init() -> void:
 	# but also when the model is changed, which we don't care about.
 	if has_initialized: return
 	has_initialized = true
-	if autoconnect: $AltStream.start()
+
+	var alt_stream = $AltStream
+	alt_stream.channel = channel
+	if autoconnect: alt_stream.start()
 
 func _process(_delta: float) -> void:
 	match $AltStream.client.status:
@@ -70,6 +68,7 @@ func _process(_delta: float) -> void:
 func _on_connect_pressed() -> void:
 	var alt_stream = $AltStream
 	if alt_stream.client.status == EventStreamClient.Status.DISCONNECTED:
+		alt_stream.channel = channel
 		alt_stream.start()
 	else:
 		alt_stream.stop()

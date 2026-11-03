@@ -61,6 +61,9 @@ signal user_shouted_out(target: User, game_name: String, game_cover_url: String,
 @export var channel := ""
 
 func start() -> void:
+	if channel.is_empty():
+		printerr("AltStream: no channel provided")
+		return
 	if client.status == EventStreamClient.Status.DISCONNECTED:
 		client.connect_to_host(HOST, ENDPOINT % channel)
 
