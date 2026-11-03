@@ -162,6 +162,8 @@ var pole_target_angle_hands_across:         Vector3 = Vector3(-5.0 * PI/180.0, 1
 var pole_target_angle_hands_above_shoulder: Vector3 = Vector3(45.0 * PI/180.0, PI/2.0,          0.0)
 var pole_target_alpha_scale_hands_above_shoulder: float = 2.0
 
+var shoulder_lean_counter_rotation_scale: float = 1.0
+
 func _clear_ik_chains() -> void:
 	for key in _ikchains_dict.keys():
 		_ikchains_dict[key] = null
@@ -211,6 +213,9 @@ func _ready() -> void:
 		"advanced")
 	add_tracked_setting(
 		"shoulder_rotation_scale", "Shoulder rotation scale", { "min" : 0.0, "max" : 10.0 },
+		"advanced")
+	add_tracked_setting(
+		"shoulder_lean_counter_rotation_scale", "Counter-rotated inside shoulder for lean scale", { "min" : 0.0, "max" : 2.0 },
 		"advanced")
 
 	# Euler angles to use with Basis.from_euler().
@@ -391,19 +396,18 @@ func _process(delta : float) -> void:
 		update_hand(hand_landmarks_left, "Left")
 		update_hand(hand_landmarks_right, "Right")
 
+	# ---------------------------------------------------------------------
+	# IK stuff starts here
+
 	# Solve spine.
 	for chain_name in ["spine"]:
 		_ikchains_dict[chain_name].do_ik_chain()
 
+	# Arm IK.
+
 	# Solve arms.
 	for chain_name in ["arm_left", "arm_right"]:
 		_ikchains_dict[chain_name].do_ik_chain()
-
-
-	# ---------------------------------------------------------------------
-	# IK stuff starts here
-
-	# Arm IK.
 
 	for chain_name in ["arm_left", "arm_right"]:
 
@@ -535,6 +539,7 @@ func _reset_hand_landmarks():
 # This function will rotate a bone in the global (skeleton object) coordiate
 # space, as though it were in its rest position. So hardcoded Y axis can be
 # used for elbow, hardcoded X axis can be used for spine, etc.
+# FIXME(GIANTESS): Stop using this. We should be doing things in local coordinate spaces.
 static func rotate_bone_in_global_space(
 	skel : Skeleton3D,
 	bone_index : int,
@@ -577,6 +582,16 @@ func handle_lean(skel : Skeleton3D, angle : float):
 	while current_bone != hips_bone and current_bone != -1:
 		rotate_bone_in_global_space(skel, current_bone, Vector3(0.0, 0.0, 1.0), angle, true)
 		current_bone = skel.get_bone_parent(current_bone)
+
+	# Apply counter-rotation to shoulder on the side we're leaning into.
+	var arm_bone_to_modify: String = "LeftShoulder"
+	if angle > 0:
+		arm_bone_to_modify = "RightShoulder"
+
+	var arm_bone_idx: int = skel.find_bone(arm_bone_to_modify)
+	var current_arm_bone_transform: Transform3D = skel.get_bone_pose(arm_bone_idx)
+	var new_transform: Transform3D = current_arm_bone_transform.rotated(Vector3(0.0, 0.0, 1.0), -angle * shoulder_lean_counter_rotation_scale)
+	skel.set_bone_pose(arm_bone_idx, new_transform)
 
 func update_hand(hand_landmarks : Array, which_hand : String):
 
