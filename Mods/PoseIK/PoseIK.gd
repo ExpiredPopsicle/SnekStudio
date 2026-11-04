@@ -443,9 +443,26 @@ func _process(delta : float) -> void:
 	# Handle Leaning
 
 	# Lean the entire model based on the head rotation/
-	var head_rotation: float = skel.get_bone_pose_rotation(skel.find_bone("Head")).get_euler(EULER_ORDER_XYZ).z
-	var lean_amount = head_rotation * lean_scale
-	handle_lean(skel, lean_amount)
+	#var head_rotation: float = skel.get_bone_pose_rotation(
+		#skel.find_bone("Head")).get_euler(EULER_ORDER_XYZ).z
+	#var lean_amount: float = head_rotation * lean_scale
+	
+	# FIXME(GIANTESS): Try using the hips transform offset from the rest pose
+	#var hips_pose: Transform3D = \
+	#	(skel.global_transform * skel.get_bone_global_rest(skel.find_bone("Hips"))).inverse() * \
+	#	(skel.global_transform * skel.get_bone_global_pose(skel.find_bone("Hips")))
+	var hips_pose: Transform3D = \
+		skel.global_transform * skel.get_bone_global_pose(skel.find_bone("Root"))
+	var hips_inv: Transform3D = \
+		hips_pose.inverse()
+	var head_in_hips_space: Vector3 = hips_inv * tracker_dict.head.transform.origin
+	#print(head_in_hips_space)
+	# Problem with this is that the hips have already been rotated from the IK.
+	var lean_amount: float = -head_in_hips_space.x / get_model_height_scale() 
+
+	get_app().debug_draw_transform(hips_pose)
+
+	handle_lean(skel, lean_amount * lean_scale)
 
 func _reinit() -> void:
 	_reset_hand_landmarks()
@@ -754,10 +771,12 @@ func _calculate_arm_across_chest_alpha(chain_name: String) -> float:
 	# Convert that to percentage based on the breadth of the shoulders.
 	var dp_percentage: float = dp / upper_arm_offset_from_center.length()
 
-	# That's our output.
 	# FIXME(GIANTESS): make configurable value for the 1.0 and 0.75 (starting
 	#   threshold and scaling of alpha value)
-	return clamp(0.75 * (1.0 -dp_percentage), 0.0, 1.0)
+	var final_alpha: float = clamp(0.75 * (1.0 -dp_percentage), 0.0, 1.0)
+
+	# That's our output.
+	return final_alpha
 
 func _calculate_arms_down_alpha(chain_name: String) -> float:
 
@@ -870,7 +889,7 @@ func _calculate_final_pole_target_position(
 	if chain_name == "arm_right":
 		adjusted_pole_target_angle_arms_down.y *= -1.0
 		adjusted_pole_target_angle_hands_up.y *= -1.0
-		adjusted_pole_target_angle_hands_across *= -1.0
+		adjusted_pole_target_angle_hands_across.y *= -1.0
 		adjusted_pole_target_angle_hands_above_shoulder *= -1.0
 
 	var pole_target_basis_arms_down: Basis = Basis.from_euler(adjusted_pole_target_angle_arms_down)

@@ -565,6 +565,28 @@ static func get_added_mods_locations() -> PackedStringArray:
 func get_debug_mesh() -> ImmediateMesh:
 	return debug_mesh_buffers[debug_mesh_current_buffer]
 
+## Draw a transform as three axes.
+func debug_draw_transform(tx: Transform3D, uniform_scale: float = 1.0) -> void:
+	var tx2: Transform3D = \
+		tx.scaled(Vector3(uniform_scale, uniform_scale, uniform_scale))
+
+	var mesh: ImmediateMesh = get_debug_mesh()
+	mesh.surface_begin(Mesh.PRIMITIVE_LINES)
+
+	mesh.surface_set_color(Color(1.0, 0.0, 0.0))
+	mesh.surface_add_vertex(tx2 * Vector3(0.0, 0.0, 0.0))
+	mesh.surface_add_vertex(tx2 * Vector3(1.0, 0.0, 0.0))
+
+	mesh.surface_set_color(Color(0.0, 1.0, 0.0))
+	mesh.surface_add_vertex(tx2 * Vector3(0.0, 0.0, 0.0))
+	mesh.surface_add_vertex(tx2 * Vector3(0.0, 1.0, 0.0))
+
+	mesh.surface_set_color(Color(0.0, 0.0, 1.0))
+	mesh.surface_add_vertex(tx2 * Vector3(0.0, 0.0, 0.0))
+	mesh.surface_add_vertex(tx2 * Vector3(0.0, 0.0, 1.0))
+
+	mesh.surface_end()
+
 ## Get the CameraBoom for use in mods and stuff.
 func get_cameraboom() -> Node3D:
 	return $CameraBoom
