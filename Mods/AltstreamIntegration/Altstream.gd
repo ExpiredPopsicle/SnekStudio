@@ -4,7 +4,7 @@ extends Node
 # This is required for SnekStudio runtime mod loading.
 # If you're using these types in your own project, get rid of these two lines!
 @warning_ignore("shadowed_global_identifier")
-static var EventStreamClient: GDScript = preload("res://Mods/AltStreamIntegration/EventStreamClient.gd")
+static var EventStreamClient: GDScript = preload("res://Mods/AltstreamIntegration/EventStreamClient.gd")
 
 const HOST     := "https://altstream.online"
 const ENDPOINT := "/api/chat/stream?channel=%s"
@@ -62,7 +62,7 @@ signal user_shouted_out(target: User, game_name: String, game_cover_url: String,
 
 func start() -> void:
 	if channel.is_empty():
-		printerr("AltStream: no channel provided")
+		printerr("Altstream: no channel provided")
 		return
 	if client.status == EventStreamClient.Status.DISCONNECTED:
 		client.connect_to_host(HOST, ENDPOINT % channel)
