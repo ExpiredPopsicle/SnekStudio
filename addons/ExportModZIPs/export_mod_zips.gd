@@ -42,37 +42,42 @@ func _export_begin(_features: PackedStringArray, _is_debug: bool, path: String, 
 		# For modded scripts to be able to refer to each other (and themselves) they need
 		# to be known to the engine in its script cache that maps `class_name` to scripts.
 		# This is usually done by the engine in its export process, but we do it manually.
-		var is_first := true
-		zip.start_file(".godot/global_script_class_cache.cfg")
-		zip.write_file("list=[".to_utf8_buffer())
-		for script: GDScript in files.filter(_is_extension.bind("gd")).map(load):
-			if is_first: is_first = false
-			else: zip.write_file(", ".to_utf8_buffer())
-			var class_info := CLASS_TEMPLATE.format({
-				"base"  : script.get_base_script().get_global_name() if script.get_base_script() else script.get_instance_base_type(),
-				"class" : script.get_global_name(),
+		var class_info: PackedStringArray
+		for file_path in files:
+			if file_path.get_extension() != "gd": continue
+			var script: GDScript = load(file_path)
+
+			var global_name := script.get_global_name()
+			if global_name == "": continue # doesn't have a `class_name`, skip
+
+			# When extending another user-created GDScript, use its `class_name`,
+			# otherwise use the engine's type name (like "Node" or "RefCounted").
+			var base := script.get_base_script()
+			var base_name := base.get_global_name() if base else script.get_instance_base_type()
+
+			class_info.append(CLASS_TEMPLATE.format({
+				"base"  : base_name,
+				"class" : global_name,
 				"path"  : script.resource_path,
-			})
-			zip.write_file(class_info.to_utf8_buffer())
-		zip.write_file("]\n".to_utf8_buffer())
-		zip.close_file()
+			}))
+
+		if not class_info.is_empty():
+			zip.start_file(".godot/global_script_class_cache.cfg")
+			zip.write_file(("list=[" + ", ".join(class_info) + "]\n").to_utf8_buffer())
+			zip.close_file()
 
 		# Resources reference additional compressed / pre-processed files,
 		# listed in their `.import` file, that are exported to `.godot/`.
-		for config: ConfigFile in files.filter(_is_extension.bind("import")).map(_load_config_file):
+		for file_path in files:
+			if file_path.get_extension() != "import": continue
+			var config := ConfigFile.new()
+			config.load(file_path)
+
 			for dep_file_path in config.get_value("deps", "dest_files", []):
 				_zip_file(zip, dep_file_path)
 
 		zip.close()
 
-
-static func _is_extension(file_path: String, ext: String) -> bool:
-	return (file_path.get_extension() == ext)
-
-static func _load_config_file(file_path: String) -> ConfigFile:
-	var config := ConfigFile.new()
-	config.load(file_path)
-	return config
 
 static func _get_files_recursive(dir_path: String, result: Array[String]) -> void:
 	for name in DirAccess.get_files_at(dir_path):
