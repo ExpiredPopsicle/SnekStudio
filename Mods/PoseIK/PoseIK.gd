@@ -428,7 +428,7 @@ func _process(delta : float) -> void:
 		# pole target upwards. Depends on shoulder bone transform and tracker.
 		var arm_across_chest_alpha: float = _calculate_arm_across_chest_alpha(chain_name)
 
-		# FIXME(GIANTESS): Do shoulders-forward based on arm_across_chest_alpha.
+		# Rotate the shoulder forward a bit if we're reaching across the chest.
 		_rotate_shoulder_forward(chain_name, arm_across_chest_alpha)
 
 		# Update IK chain.
@@ -455,7 +455,6 @@ func _process(delta : float) -> void:
 
 		# Counter-rotate upper arm (hack). This keeps the bicep from pointing
 		# outwards when the arm goes outwards.
-		# FIXME(GIANTESS): Parameterize the amount of effect this has.
 		_fix_upperarm_HACK(chain_name)
 
 	# Debug display of pole targets.

@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://b2n8nnpq1p4no"]
 
 [ext_resource type="Script" uid="uid://bhwmfiiu0cips" path="res://Mods/PoseIK/PoseIK.gd" id="1_nrhi5"]
+[ext_resource type="Texture2D" uid="uid://bmikb855t85sa" path="res://Mods/PoseIK/polseik_icon.svg" id="2_oblvv"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_4e0ao"]
 
@@ -8,6 +9,7 @@
 
 [node name="PoseIk" type="Node3D" unique_id=453228202]
 script = ExtResource("1_nrhi5")
+icon = ExtResource("2_oblvv")
 
 [node name="Head" type="Node3D" parent="." unique_id=2129869701]
 
