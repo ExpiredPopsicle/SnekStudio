@@ -1,7 +1,7 @@
 extends Mod_Base
 class_name Mod_PoseIK
 
-var lean_scale : float = 4.0
+var lean_scale : float = 6.0
 var chest_yaw_scale : float = 0.3
 # FIXME: Add settings for all of these.
 var lock_fingers_to_single_axis_of_rotation : bool = false # FIXME: only false for thumb
@@ -9,11 +9,11 @@ var lock_fingers_to_z_axis : bool = true
 var debug_visible_hand_trackers : bool = false
 var hack_reset_hips_every_frame : bool = true
 var hack_reset_shoulders_every_frame : bool = true
-var hip_adjustment_speed : float = 1.0
-var head_vertical_offset : float = -0.2
-var hips_vertical_blend_speed : float = 6.0
-var shoulder_raise_max_angle: float = 60.0
-var shoulder_rotation_scale: float = 1.0
+var hip_adjustment_speed : float = 2.0
+var head_vertical_offset : float = 0.0
+var hips_vertical_blend_speed : float = 5.0
+var shoulder_raise_max_angle: float = 30.0
+var shoulder_raise_rotation_scale: float = 1.0
 
 var debug_pole_targets: bool = false
 
@@ -165,6 +165,10 @@ var shoulder_lean_counter_rotation_scale: float = 1.0
 var shoulder_rotate_forward_scale: float = 1.0
 var shoulder_rotate_forward_angle_limit: float = 60.0
 
+var upperarm_counter_rotation_scale: float = 0.5
+var upperarm_counter_rotation_threshold_start: float = -0.1
+var upperarm_counter_rotation_threshold_end: float = 0.1
+
 func _clear_ik_chains() -> void:
 	for key in _ikchains_dict.keys():
 		_ikchains_dict[key] = null
@@ -213,7 +217,7 @@ func _ready() -> void:
 		"shoulder_raise_max_angle", "Shoulder rotation max angle", { "min" : 0.0, "max" : 90.0 },
 		"advanced")
 	add_tracked_setting(
-		"shoulder_rotation_scale", "Shoulder rotation scale", { "min" : 0.0, "max" : 10.0 },
+		"shoulder_raise_rotation_scale", "Shoulder rotation scale", { "min" : 0.0, "max" : 10.0 },
 		"advanced")
 	add_tracked_setting(
 		"shoulder_lean_counter_rotation_scale", "Counter-rotated inside shoulder for lean scale", { "min" : 0.0, "max" : 2.0 },
@@ -228,8 +232,14 @@ func _ready() -> void:
 	add_tracked_setting("pole_target_angle_hands_above_shoulder", "Hands above shoulders", {}, "pole_targets")
 	add_tracked_setting("pole_target_alpha_scale_hands_above_shoulder", "Hands above shoulder alpha scale", {"min": 0.0, "max": 5.0, "step": 0.01}, "pole_targets")
 
-	add_tracked_setting("shoulder_rotate_forward_scale", "Shoulder forward rotation scale", {"min": 0.0, "max": 2.0, "step": 0.01}, "advanced")
-	add_tracked_setting("shoulder_rotate_forward_angle_limit", "Shoulder forward rotation limit", {"min": 0.0, "max": 180.0, "step": 0.1}, "advanced")
+	add_setting_group("shoulder_rotate_forard", "Rotate shoulder forward when arms across chest")
+	add_tracked_setting("shoulder_rotate_forward_scale", "Shoulder forward rotation scale", {"min": 0.0, "max": 2.0, "step": 0.01}, "shoulder_rotate_forard")
+	add_tracked_setting("shoulder_rotate_forward_angle_limit", "Shoulder forward rotation limit", {"min": 0.0, "max": 180.0, "step": 0.1}, "shoulder_rotate_forard")
+
+	add_setting_group("upper_arm_counter_rotation", "Upper arm counter-rotation (keep bicep in reasonable direction)")
+	add_tracked_setting("upperarm_counter_rotation_scale", "Upper arm counter-rotation scale", {"min": 0.0, "max": 2.0, "step": 0.01}, "upper_arm_counter_rotation")
+	add_tracked_setting("upperarm_counter_rotation_threshold_start", "Upper arm counter-rotation threshold start", {"min": -1.0, "max": 1.0, "step": 0.01}, "upper_arm_counter_rotation")
+	add_tracked_setting("upperarm_counter_rotation_threshold_end", "Upper arm counter-rotation threshold end", {"min": -1.0, "max": 1.0, "step": 0.01}, "upper_arm_counter_rotation")
 
 	_reinit()
 
@@ -921,7 +931,7 @@ func _adjust_shoulders_for_arms_up(chain_name: String, alpha: float) -> void:
 
 	var skel: Skeleton3D = get_skeleton()
 
-	var rotation_scale: float = shoulder_rotation_scale
+	var rotation_scale: float = shoulder_raise_rotation_scale
 	var rotation_max: float = shoulder_raise_max_angle * (PI/180)
 
 	# Figure out left/right strings, trackers, and inverted scales based on
@@ -1028,14 +1038,17 @@ func _fix_upperarm_HACK(chain_name: String) -> void:
 	# flips and it crosses over its original orientation.
 	# FIXME(GIANTESS): Make the thresholds here configurable!
 	var axis_alignment: float = rotation_axis.dot(cross_forwards.normalized())
-	rotation_displacement = lerp(rotation_displacement, 0.0, smoothstep(-0.1, 0.1, axis_alignment))
+	rotation_displacement = lerp(rotation_displacement, 0.0, smoothstep(
+		upperarm_counter_rotation_threshold_start,
+		upperarm_counter_rotation_threshold_end,
+		axis_alignment))
 
 	# Another mirror flip.
 	if side == "Right":
 		rotation_displacement *= -1
 
 	# FIXME(GIANTESS): Make configurable.
-	var rotation_displacement_scale: float = 0.5
+	var rotation_displacement_scale: float = upperarm_counter_rotation_scale
 
 	# Set the rotation.
 	skel.set_bone_pose_rotation(upperarm_index,
