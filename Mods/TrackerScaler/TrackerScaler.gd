@@ -26,7 +26,6 @@ func _process(_delta: float) -> void:
 	var trackers: Dictionary = get_global_mod_data("trackers")
 	for tracker_name: String in ["head", "hand_left", "hand_right" ]:
 		if trackers.has(tracker_name):
-			# FIXME(GIANTESS): What type is this?
 			var tracker: Dictionary = trackers[tracker_name]
 			tracker.transform.origin *= tracker_scale_to_use
 

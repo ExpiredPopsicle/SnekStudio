@@ -8,13 +8,12 @@ extends Mod_Base
 @onready var right_hand_tacker: Node3D = $Hand_Right
 
 var visible_trackers: bool = false
-var arm_rest_angle: float = 60
-#var arm_reset_time: float = 0.5
+var arm_rest_angle: float = 69
 var arm_reset_speed: float = 6.0
 var arm_length_scale: float = 1.0
 
 func _ready() -> void:
-	add_tracked_setting("visible_trackers", "Visible trackers")
+	add_tracked_setting("visible_trackers", "Visible rest position trackers")
 	add_tracked_setting("arm_rest_angle", "Arm rest angle", { "min": 0.0, "max": 180.0 })
 	add_tracked_setting("arm_reset_speed", "Arm reset speed", { "min": 0.0, "max": 50.0 })
 	add_tracked_setting("arm_length_scale", "Arm length scale", { "min": 0.0, "max": 5.0, "step": 0.01 })
