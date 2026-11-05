@@ -2,21 +2,18 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://6k7cjxcmlsnn"
-path.s3tc="res://.godot/imported/flightstick6_Stick Geo Nodes-Stick Geo Nodes.png-61b9b426ae199b5d6df40775f918c455.s3tc.ctex"
-path.etc2="res://.godot/imported/flightstick6_Stick Geo Nodes-Stick Geo Nodes.png-61b9b426ae199b5d6df40775f918c455.etc2.ctex"
+uid="uid://bwcwhbrew0363"
+path.s3tc="res://.godot/imported/throttle_albido.png-d6905c446b20ad03e14af3dea76ffc3c.s3tc.ctex"
+path.etc2="res://.godot/imported/throttle_albido.png-d6905c446b20ad03e14af3dea76ffc3c.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
-generator_parameters={
-"md5": "4bcd1a2918d9e275d5440f256180189c"
-}
 
 [deps]
 
-source_file="res://Mods/HOTAS/FlightStick/Model/flightstick6_Stick Geo Nodes-Stick Geo Nodes.png"
-dest_files=["res://.godot/imported/flightstick6_Stick Geo Nodes-Stick Geo Nodes.png-61b9b426ae199b5d6df40775f918c455.s3tc.ctex", "res://.godot/imported/flightstick6_Stick Geo Nodes-Stick Geo Nodes.png-61b9b426ae199b5d6df40775f918c455.etc2.ctex"]
+source_file="res://Mods/HOTAS/FlightStick/Model/throttle_albido.png"
+dest_files=["res://.godot/imported/throttle_albido.png-d6905c446b20ad03e14af3dea76ffc3c.s3tc.ctex", "res://.godot/imported/throttle_albido.png-d6905c446b20ad03e14af3dea76ffc3c.etc2.ctex"]
 
 [params]
 
