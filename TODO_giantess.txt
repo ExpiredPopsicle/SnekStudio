@@ -7,18 +7,23 @@ x fix fingers getting scrunkled when leaning
 x make stuff NOT crash when MediaPipeController is absent
 x fix arm pole target going wrong direction
 x fix arm pole forward/backward being different on JunkRaven vs Kiri
+? see if you can track down that weird glitch that makes thing twitch.
 
+Stuff I absolutely need to do before merging to main:
 - modify the default scene to include the ReturnTrackersToRestPosition mod
+- add KeepHandsInFront to our default mod list
+- document all the new modules
+- search for TODO(GIANTESS) for anything that didn't end up in this list!
+- Warn that the automatic camera height adjuster will probably break other camera modules like camerapositions
+
+Stuff I *want* to do.
 - add scaling setting for elbow-forward pole target Z axis
 - add alpha scaling setting for pole target for arm-across-chest
-- add KeepHandsInFront to our default mod list
-- see if you can track down that weird glitch that makes thing twitch.
-- document all the new modules
 - add the dependency order check stuff for them
 - fix fingers when returning to rest pose
   - fingers probably not rotating to new position
-- search for TODO(GIANTESS) for anything that didn't end up in this list!
-- Warn that the automatic camera height adjuster will probably break other camera modules like camerapositions
 - add icon for PoseIK
+- hand position scale is borked?
+
 - fix upper arm rotation looking weird at the shoulder (move to CCDIK3D?)
-- distribute bone roll as skeletonmodifier?
+  - distribute bone roll as skeletonmodifier?
