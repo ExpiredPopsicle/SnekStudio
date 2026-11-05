@@ -4,6 +4,10 @@ class_name VectorSettingWidget
 # FIXME: Make this and BasicSliderWithNumber both use the same base class.
 
 var value : Vector3 = Vector3(0.0, 0.0, 0.0) : set = _set_value
+var min_value : float = 0.0 : set = _set_min_value
+var max_value : float = 100.0  : set = _set_max_value
+var step : float = 1.0  : set = _set_step
+
 
 signal value_changed(value)
 
@@ -23,9 +27,19 @@ var _dont_handle_change_temporarily = false
 
 func _update_widgets_with_new_values():
 	_dont_handle_change_temporarily = true
+
 	$SpinBox0.value = value[0]
 	$SpinBox1.value = value[1]
 	$SpinBox2.value = value[2]
+
+	$SpinBox0.min_value = min_value
+	$SpinBox1.min_value = min_value
+	$SpinBox2.min_value = min_value
+
+	$SpinBox0.max_value = max_value
+	$SpinBox1.max_value = max_value
+	$SpinBox2.max_value = max_value
+
 	_dont_handle_change_temporarily = false
 
 func _set_value(new_value : Vector3):
@@ -56,3 +70,21 @@ func _set_disabled(new_disabled : bool):
 	$SpinBox0.editable = not new_disabled
 	$SpinBox1.editable = not new_disabled
 	$SpinBox2.editable = not new_disabled
+
+func _set_min_value(new_min_value):
+	_dont_handle_change_temporarily = true
+	min_value = new_min_value
+	_dont_handle_change_temporarily = false
+	_update_widgets_with_new_values()
+
+func _set_max_value(new_max_value):
+	_dont_handle_change_temporarily = true
+	max_value = new_max_value
+	_dont_handle_change_temporarily = false
+	_update_widgets_with_new_values()
+
+func _set_step(new_step):
+	_dont_handle_change_temporarily = true
+	step = new_step
+	_dont_handle_change_temporarily = false
+	_update_widgets_with_new_values()

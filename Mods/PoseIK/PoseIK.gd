@@ -153,12 +153,10 @@ var polemodifier_left_arm: KiriPoleTargetModifier3D = null
 var polemodifier_right_arm: KiriPoleTargetModifier3D = null
 
 # Euler angles to use with Basis.from_euler().
-# FIXME(GIANTESS): Make these degrees. Convert to radians later.
-# FIXME(GIANTESS): Set better defaults based on our tweaking.
-var pole_target_angle_arms_down:            Vector3 = Vector3(0.0,             PI,              0.0)
-var pole_target_angle_hands_up:             Vector3 = Vector3(45.0 * PI/180.0, PI/2.0,          0.0)
-var pole_target_angle_hands_across:         Vector3 = Vector3(-5.0 * PI/180.0, 15.0 * PI/180.0, 0.0)
-var pole_target_angle_hands_above_shoulder: Vector3 = Vector3(45.0 * PI/180.0, PI/2.0,          0.0)
+var pole_target_angle_arms_down:            Vector3 = Vector3(0.0,  180.0, 0.0)
+var pole_target_angle_hands_up:             Vector3 = Vector3(67.0,  40.0, 0.0)
+var pole_target_angle_hands_across:         Vector3 = Vector3(18.0,  50.0, 0.0)
+var pole_target_angle_hands_above_shoulder: Vector3 = Vector3( 0.0, 140.0, 0.0)
 var pole_target_alpha_scale_hands_above_shoulder: float = 2.0
 
 var shoulder_lean_counter_rotation_scale: float = 1.0
@@ -226,10 +224,10 @@ func _ready() -> void:
 	# Euler angles to use with Basis.from_euler().
 	add_setting_group("pole_targets", "Pole Target pitch/yaw/roll")
 	add_tracked_setting("debug_pole_targets", "Show pole targts for debugging", {}, "pole_targets")
-	add_tracked_setting("pole_target_angle_arms_down", "Arms down", {}, "pole_targets")
-	add_tracked_setting("pole_target_angle_hands_up", "Hands up", {}, "pole_targets")
-	add_tracked_setting("pole_target_angle_hands_across", "Reaching across the chest", {}, "pole_targets")
-	add_tracked_setting("pole_target_angle_hands_above_shoulder", "Hands above shoulders", {}, "pole_targets")
+	add_tracked_setting("pole_target_angle_arms_down", "Arms down", {"min": -180.0, "max": 180.0, "step": 0.01}, "pole_targets")
+	add_tracked_setting("pole_target_angle_hands_up", "Hands up", {"min": -180.0, "max": 180.0, "step": 0.01}, "pole_targets")
+	add_tracked_setting("pole_target_angle_hands_across", "Reaching across the chest", {"min": -180.0, "max": 180.0, "step": 0.01}, "pole_targets")
+	add_tracked_setting("pole_target_angle_hands_above_shoulder", "Hands above shoulders", {"min": -180.0, "max": 180.0, "step": 0.01}, "pole_targets")
 	add_tracked_setting("pole_target_alpha_scale_hands_above_shoulder", "Hands above shoulder alpha scale", {"min": 0.0, "max": 5.0, "step": 0.01}, "pole_targets")
 
 	add_setting_group("shoulder_rotate_forard", "Rotate shoulder forward when arms across chest")
@@ -899,10 +897,10 @@ func _calculate_final_pole_target_position(
 	var chest_bone_tx: Transform3D = skel.global_transform * skel.get_bone_global_pose(chest_bone_index)
 
 	# Figure out final pole target location.
-	var adjusted_pole_target_angle_arms_down:    Vector3 = pole_target_angle_arms_down
-	var adjusted_pole_target_angle_hands_up:     Vector3 = pole_target_angle_hands_up
-	var adjusted_pole_target_angle_hands_across: Vector3 = pole_target_angle_hands_across
-	var adjusted_pole_target_angle_hands_above_shoulder: Vector3 = pole_target_angle_hands_above_shoulder
+	var adjusted_pole_target_angle_arms_down: Vector3 = pole_target_angle_arms_down * PI/180.0
+	var adjusted_pole_target_angle_hands_up: Vector3 = pole_target_angle_hands_up * PI/180.0
+	var adjusted_pole_target_angle_hands_across: Vector3 = pole_target_angle_hands_across * PI/180.0
+	var adjusted_pole_target_angle_hands_above_shoulder: Vector3 = pole_target_angle_hands_above_shoulder * PI/180.0
 
 	# Figure out left/right strings and trackers based on which side we're
 	# on.

@@ -215,7 +215,10 @@ func add_tracked_setting(
 
 	elif prop_val is Vector3:
 		new_widget = settings_window_add_vector3(
-			new_setting_prop["label"], new_setting_prop["name"])
+			new_setting_prop["label"], new_setting_prop["name"],
+			new_setting_prop["args"].get("min", 0.0),
+			new_setting_prop["args"].get("max", 100.0),
+			new_setting_prop["args"].get("step", 0.01))
 
 	else:
 		# I don't recognize that type for a new setting.
@@ -894,7 +897,9 @@ func settings_window_add_colorpicker(
 	return outer_container
 
 func settings_window_add_vector3(
-	setting_label : String, setting_name : String) -> Control:
+	setting_label : String, setting_name : String,
+	min_value : float = 0.0, max_value : float = 1.0,
+	step : float = 0.1) -> Control:
 
 	var outer_container : VBoxContainer = VBoxContainer.new()
 	outer_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -904,6 +909,11 @@ func settings_window_add_vector3(
 
 	var vec3_widget : VectorSettingWidget = \
 		load("res://Core/UI/VectorSettingWidget.tscn").instantiate()
+
+	vec3_widget.min_value = min_value
+	vec3_widget.max_value = max_value
+	vec3_widget.step = step
+
 	vec3_widget.custom_minimum_size.y = 32
 	vec3_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
