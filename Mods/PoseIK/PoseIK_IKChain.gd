@@ -394,7 +394,7 @@ func attempt_spine_rotation(
 	rotation_amount /= bone_count
 	
 	while current_bone_index != -1 and current_bone_index != base_bone_index:
-		Mod_PoseIK.	rotate_bone_in_global_space(skel, current_bone_index, main_axis_of_rotation, rotation_amount)
+		Mod_PoseIK.rotate_bone_in_global_space(skel, current_bone_index, main_axis_of_rotation, rotation_amount)
 		current_bone_index = skel.get_bone_parent(current_bone_index)
 		last_bone = current_bone_index
 	
