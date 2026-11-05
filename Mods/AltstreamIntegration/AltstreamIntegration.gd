@@ -1,9 +1,6 @@
 class_name AltStreamIntegration
 extends Mod_Base
 
-@warning_ignore("shadowed_global_identifier")
-static var EventStreamClient: GDScript = preload("res://Mods/AltstreamIntegration/EventStreamClient.gd")
-
 @export var autoconnect := true
 @export var channel := ""
 
@@ -12,22 +9,22 @@ var status_label := Label.new()
 var connect_button := Button.new()
 
 func _ready() -> void:
-	var alt_stream = $Altstream
+	var altstream = $AltstreamService
 
-	alt_stream.connected.connect(func():
+	altstream.connected.connect(func():
 		print_log("Connected!"))
-	alt_stream.connection_failed.connect(func(error: String):
+	altstream.connection_failed.connect(func(error: String):
 		if error: print_log("Failed to connect: " + error)
 		else: print_log("Failed to connect!"))
-	alt_stream.disconnected.connect(func(error: String):
+	altstream.disconnected.connect(func(error: String):
 		if error: print_log("Disconnected: " + error)
 		else: print_log("Disconnected!"))
 
-	alt_stream.chat_message_received.connect(func(user, message, _reward_name):
+	altstream.chat_message_received.connect(func(user, message, _reward_name):
 		get_app()._on_handle_channel_chat_message(user.username, user.display_name, message.text, 0))
-	alt_stream.reward_redeemed.connect(func(user, _message_id, reward_name, user_input):
+	altstream.reward_redeemed.connect(func(user, _message_id, reward_name, user_input):
 		get_app()._on_handle_channel_points_redeem(user.username, user.display_name, reward_name, user_input))
-	alt_stream.raid_incoming.connect(func(user, raider_count):
+	altstream.raid_incoming.connect(func(user, raider_count):
 		get_app()._on_handle_channel_raid(user.username, user.display_name, raider_count))
 
 	add_tracked_setting("autoconnect", "Auto-connect on startup")
@@ -39,9 +36,9 @@ func _ready() -> void:
 	connect_button.pressed.connect(_on_connect_pressed)
 
 	var channel_widget: LineEdit = _settings_widgets_by_setting_name["channel"]
-	channel_widget.text_changed  .connect(func(_text: String): alt_stream.stop())
-	channel_widget.text_submitted.connect(func(_text: String): alt_stream.channel = channel)
-	channel_widget.focus_exited  .connect(func(): alt_stream.channel = channel)
+	channel_widget.text_changed  .connect(func(_text: String): altstream.stop())
+	channel_widget.text_submitted.connect(func(_text: String): altstream.channel = channel)
+	channel_widget.focus_exited  .connect(func(): altstream.channel = channel)
 
 func scene_init() -> void:
 	# This is called once when the mod is enabled, after settings have loaded,
@@ -49,12 +46,12 @@ func scene_init() -> void:
 	if has_initialized: return
 	has_initialized = true
 
-	var alt_stream = $Altstream
-	alt_stream.channel = channel
-	if autoconnect: alt_stream.start()
+	var altstream = $AltstreamService
+	altstream.channel = channel
+	if autoconnect: altstream.start()
 
 func _process(_delta: float) -> void:
-	match $Altstream.client.status:
+	match $AltstreamService.client.status:
 		EventStreamClient.Status.CONNECTED:
 			status_label.text = "Status: ✅ Connected"
 			connect_button.text = "Disconnect"
@@ -66,9 +63,9 @@ func _process(_delta: float) -> void:
 			connect_button.text = "Connect"
 
 func _on_connect_pressed() -> void:
-	var alt_stream = $Altstream
-	if alt_stream.client.status == EventStreamClient.Status.DISCONNECTED:
-		alt_stream.channel = channel
-		alt_stream.start()
+	var altstream = $AltstreamService
+	if altstream.client.status == EventStreamClient.Status.DISCONNECTED:
+		altstream.channel = channel
+		altstream.start()
 	else:
-		alt_stream.stop()
+		altstream.stop()

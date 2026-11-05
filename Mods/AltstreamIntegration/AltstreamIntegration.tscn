@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://boc64vxmfj6p1"]
 
 [ext_resource type="Script" uid="uid://cba4t00b5mlnh" path="res://Mods/AltstreamIntegration/AltstreamIntegration.gd" id="1_jpfc6"]
-[ext_resource type="Script" uid="uid://5mr24pybnfej" path="res://Mods/AltstreamIntegration/Altstream.gd" id="2_acm14"]
+[ext_resource type="Script" uid="uid://5mr24pybnfej" path="res://Mods/AltstreamIntegration/AltstreamService.gd" id="2_acm14"]
 
 [node name="AltstreamIntegration" type="Node3D" unique_id=282699300]
 script = ExtResource("1_jpfc6")
 
-[node name="Altstream" type="Node" parent="." unique_id=200284]
+[node name="AltstreamService" type="Node" parent="." unique_id=200284]
 script = ExtResource("2_acm14")
