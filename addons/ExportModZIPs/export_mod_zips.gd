@@ -39,6 +39,24 @@ func _export_begin(_features: PackedStringArray, _is_debug: bool, path: String, 
 		_get_files_recursive(MODS_PATH + "/" + name, files)
 		for file_path in files: _zip_file(zip, file_path)
 
+		# For modded scripts to be able to refer to each other (and themselves) they need
+		# to be known to the engine in its script cache that maps `class_name` to scripts.
+		# This is usually done by the engine in its export process, but we do it manually.
+		var is_first := true
+		zip.start_file(".godot/global_script_class_cache.cfg")
+		zip.write_file("list=[".to_utf8_buffer())
+		for script: GDScript in files.filter(_is_extension.bind("gd")).map(load):
+			if is_first: is_first = false
+			else: zip.write_file(", ".to_utf8_buffer())
+			var class_info := CLASS_TEMPLATE.format({
+				"base"  : script.get_base_script().get_global_name() if script.get_base_script() else script.get_instance_base_type(),
+				"class" : script.get_global_name(),
+				"path"  : script.resource_path,
+			})
+			zip.write_file(class_info.to_utf8_buffer())
+		zip.write_file("]\n".to_utf8_buffer())
+		zip.close_file()
+
 		# Resources reference additional compressed / pre-processed files,
 		# listed in their `.import` file, that are exported to `.godot/`.
 		for config: ConfigFile in files.filter(_is_extension.bind("import")).map(_load_config_file):
