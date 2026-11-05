@@ -1,3 +1,0 @@
-A module that provides AltStream (altstream.online) integration.
-
-Captures public channel events on from AltStream's API and triggers chat message, redeem and raid events in SnekStudio in response, just like the Twitch integration.

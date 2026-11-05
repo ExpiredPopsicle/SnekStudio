@@ -2,7 +2,7 @@ class_name AltStreamIntegration
 extends Mod_Base
 
 @warning_ignore("shadowed_global_identifier")
-static var EventStreamClient: GDScript = preload("res://Mods/AltStreamIntegration/EventStreamClient.gd")
+static var EventStreamClient: GDScript = preload("res://Mods/AltstreamIntegration/EventStreamClient.gd")
 
 @export var autoconnect := true
 @export var channel := ""
@@ -12,7 +12,7 @@ var status_label := Label.new()
 var connect_button := Button.new()
 
 func _ready() -> void:
-	var alt_stream = $AltStream
+	var alt_stream = $Altstream
 
 	alt_stream.connected.connect(func():
 		print_log("Connected!"))
@@ -31,7 +31,7 @@ func _ready() -> void:
 		get_app()._on_handle_channel_raid(user.username, user.display_name, raider_count))
 
 	add_tracked_setting("autoconnect", "Auto-connect on startup")
-	add_tracked_setting("channel", "AltStream Channel")
+	add_tracked_setting("channel", "Altstream Channel")
 
 	var settings: Container = get_settings_window()
 	settings.add_child(status_label)
@@ -49,12 +49,12 @@ func scene_init() -> void:
 	if has_initialized: return
 	has_initialized = true
 
-	var alt_stream = $AltStream
+	var alt_stream = $Altstream
 	alt_stream.channel = channel
 	if autoconnect: alt_stream.start()
 
 func _process(_delta: float) -> void:
-	match $AltStream.client.status:
+	match $Altstream.client.status:
 		EventStreamClient.Status.CONNECTED:
 			status_label.text = "Status: ✅ Connected"
 			connect_button.text = "Disconnect"
@@ -66,7 +66,7 @@ func _process(_delta: float) -> void:
 			connect_button.text = "Connect"
 
 func _on_connect_pressed() -> void:
-	var alt_stream = $AltStream
+	var alt_stream = $Altstream
 	if alt_stream.client.status == EventStreamClient.Status.DISCONNECTED:
 		alt_stream.channel = channel
 		alt_stream.start()
