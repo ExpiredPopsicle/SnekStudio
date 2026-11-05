@@ -162,6 +162,8 @@ var pole_target_angle_hands_above_shoulder: Vector3 = Vector3(45.0 * PI/180.0, P
 var pole_target_alpha_scale_hands_above_shoulder: float = 2.0
 
 var shoulder_lean_counter_rotation_scale: float = 1.0
+var shoulder_rotate_forward_scale: float = 1.0
+var shoulder_rotate_forward_angle_limit: float = 60.0
 
 func _clear_ik_chains() -> void:
 	for key in _ikchains_dict.keys():
@@ -173,7 +175,7 @@ func _ready() -> void:
 
 	add_tracked_setting(
 		"lean_scale", "Lean Scale",
-		{ "min" : -6.0, "max" : 6.0 },
+		{ "min" : -20.0, "max" : 20.0 },
 		"advanced")
 
 	add_tracked_setting(
@@ -225,6 +227,9 @@ func _ready() -> void:
 	add_tracked_setting("pole_target_angle_hands_across", "Reaching across the chest", {}, "pole_targets")
 	add_tracked_setting("pole_target_angle_hands_above_shoulder", "Hands above shoulders", {}, "pole_targets")
 	add_tracked_setting("pole_target_alpha_scale_hands_above_shoulder", "Hands above shoulder alpha scale", {"min": 0.0, "max": 5.0, "step": 0.01}, "pole_targets")
+
+	add_tracked_setting("shoulder_rotate_forward_scale", "Shoulder forward rotation scale", {"min": 0.0, "max": 2.0, "step": 0.01}, "advanced")
+	add_tracked_setting("shoulder_rotate_forward_angle_limit", "Shoulder forward rotation limit", {"min": 0.0, "max": 180.0, "step": 0.1}, "advanced")
 
 	_reinit()
 
@@ -403,10 +408,13 @@ func _process(delta : float) -> void:
 		if chain_name == "arm_right":
 			side = "Right"
 
+		var arms_above_shoulder_alpha: float = \
+			_calculate_arms_above_shoulders_alpha(chain_name)
+
 		# Adjust shoulders upward when the arm is raised up past a certain
 		# point. Depends on tracker position and chest bone already being in the
 		# right transform.
-		_adjust_shoulders_for_arms_up(chain_name)
+		_adjust_shoulders_for_arms_up(chain_name, arms_above_shoulder_alpha)
 
 		# Determine how much we're reaching across the chest so we can pivot the
 		# pole target upwards. Depends on shoulder bone transform and tracker.
@@ -424,8 +432,6 @@ func _process(delta : float) -> void:
 		# Determine how much the arms are lowered so we can move the pole
 		# targets backwards, so the elbows face back.
 		var arms_down_alpha: float = _calculate_arms_down_alpha(chain_name)
-
-		var arms_above_shoulder_alpha: float = _calculate_arms_above_shoulders_alpha(chain_name)
 
 		var pole_target_vec: Vector3 = _calculate_final_pole_target_position(
 			chain_name, arms_down_alpha, arm_across_chest_alpha,
@@ -911,48 +917,35 @@ func _calculate_final_pole_target_position(
 
 	return pole_target_vec
 
-func _adjust_shoulders_for_arms_up(chain_name: String) -> void:
+func _adjust_shoulders_for_arms_up(chain_name: String, alpha: float) -> void:
 
 	var skel: Skeleton3D = get_skeleton()
-
-	var chest_bone_index: int = skel.find_bone("Chest")
 
 	var rotation_scale: float = shoulder_rotation_scale
 	var rotation_max: float = shoulder_raise_max_angle * (PI/180)
 
 	# Figure out left/right strings, trackers, and inverted scales based on
 	# which side we're on.
-	var tracker_to_use: Node3D = $Hand_Left
 	var shoulder_bone: String = "LeftShoulder"
 	if chain_name == "arm_right":
-		tracker_to_use = $Hand_Right
 		shoulder_bone = "RightShoulder"
 		rotation_scale = -rotation_scale
 
-	var tracker_local_position = \
-		skel.get_global_transform().inverse() * tracker_to_use.get_global_transform()
-
-	var chest_pose = skel.get_bone_global_pose(chest_bone_index)
-
 	var shoulder_bone_index = skel.find_bone(shoulder_bone)
 	if shoulder_bone_index != -1:
-		var shoulder_pose = skel.get_bone_global_pose(shoulder_bone_index)
-		var chest_pose_inv = chest_pose.inverse()
-		var shoulder_y = (chest_pose_inv * shoulder_pose).origin.y
-		var tracker_local_chest = chest_pose_inv * tracker_local_position
-		if tracker_local_chest.origin.y > shoulder_y:
-			
-			var shoulder_rotation_angle: float = \
-				(tracker_local_chest.origin.y - shoulder_y) * 2.0 * rotation_scale
 
-			# Apply scale based on height of model.
-			shoulder_rotation_angle /= get_model_height_scale()
+		var shoulder_rotation_angle: float = rotation_scale * alpha
 
-			shoulder_rotation_angle = clampf(shoulder_rotation_angle, -rotation_max, rotation_max)
-			# Actually rotate the thing!
-			skel.set_bone_pose_rotation(shoulder_bone_index,
-				Quaternion(Vector3(0.0, 0.0, 1.0), shoulder_rotation_angle) *
-				skel.get_bone_rest(shoulder_bone_index).basis.get_rotation_quaternion())
+		# Apply scale based on height of model.
+		shoulder_rotation_angle /= get_model_height_scale()
+
+		# Clamp it.
+		shoulder_rotation_angle = clampf(shoulder_rotation_angle, -rotation_max, rotation_max)
+
+		# Actually rotate the thing!
+		skel.set_bone_pose_rotation(shoulder_bone_index,
+			Quaternion(Vector3(0.0, 0.0, 1.0), shoulder_rotation_angle) *
+			skel.get_bone_rest(shoulder_bone_index).basis.get_rotation_quaternion())
 
 # Debug display of pole targets.
 func _update_debug_draw_pole_targets() -> void:
@@ -1056,4 +1049,30 @@ func _fix_upperarm_HACK(chain_name: String) -> void:
 		skel.set_bone_pose_position(child_record[0], skel.get_bone_rest(child_record[0]).origin)
 
 func _rotate_shoulder_forward(chain_name: String, alpha: float) -> void:
-	pass
+
+	var skel: Skeleton3D = get_skeleton()
+
+	var shoulder_bone: String = "LeftShoulder"
+	if chain_name == "arm_right":
+		shoulder_bone = "RightShoulder"
+	else:
+		alpha *= -1.0
+
+	var shoulder_rotation_angle: float = \
+		alpha * shoulder_rotate_forward_scale * \
+		shoulder_rotate_forward_angle_limit * PI/180.0
+
+	# Get the rotation offset from rest.
+	var shoulder_bone_idx: int = skel.find_bone(shoulder_bone)
+	var shoulder_bone_tx_offset: Transform3D = \
+		skel.get_bone_rest(shoulder_bone_idx).inverse() * \
+		skel.get_bone_pose(shoulder_bone_idx)
+
+	# Apply the offset.
+	shoulder_bone_tx_offset = shoulder_bone_tx_offset.rotated(
+		Vector3(0.0, 0.0, 1.0), shoulder_rotation_angle)
+
+	# Apply it to the pose/
+	skel.set_bone_pose(
+		shoulder_bone_idx,
+		skel.get_bone_rest(shoulder_bone_idx) * shoulder_bone_tx_offset)
