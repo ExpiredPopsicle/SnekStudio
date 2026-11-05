@@ -4,7 +4,6 @@ class_name Mod_PoseIK
 var lean_scale : float = 4.0
 var chest_yaw_scale : float = 0.3
 # FIXME: Add settings for all of these.
-var do_hands : bool = true
 var lock_fingers_to_single_axis_of_rotation : bool = false # FIXME: only false for thumb
 var lock_fingers_to_z_axis : bool = true
 var debug_visible_hand_trackers : bool = false
@@ -398,17 +397,11 @@ func _process(delta : float) -> void:
 
 	# Arm IK.
 
-	# Solve arms.
-	# FIXME(GIANTESS): See if we can do this after shoulders-up and shoulders-forward.
 	for chain_name in ["arm_left", "arm_right"]:
-		_ikchains_dict[chain_name].do_ik_chain()
 
-	# Do hand stuff.
-	if do_hands:
-		update_hand(hand_landmarks_left, "Left")
-		update_hand(hand_landmarks_right, "Right")
-
-	for chain_name in ["arm_left", "arm_right"]:
+		var side: String = "Left"
+		if chain_name == "arm_right":
+			side = "Right"
 
 		# Adjust shoulders upward when the arm is raised up past a certain
 		# point. Depends on tracker position and chest bone already being in the
@@ -420,6 +413,13 @@ func _process(delta : float) -> void:
 		var arm_across_chest_alpha: float = _calculate_arm_across_chest_alpha(chain_name)
 
 		# FIXME(GIANTESS): Do shoulders-forward based on arm_across_chest_alpha.
+		_rotate_shoulder_forward(chain_name, arm_across_chest_alpha)
+
+		# Update IK chain.
+		_ikchains_dict[chain_name].do_ik_chain()
+
+		# Update fingers and stuff.
+		update_hand(hand_landmarks_right, side)
 
 		# Determine how much the arms are lowered so we can move the pole
 		# targets backwards, so the elbows face back.
@@ -431,20 +431,18 @@ func _process(delta : float) -> void:
 			chain_name, arms_down_alpha, arm_across_chest_alpha,
 			arms_above_shoulder_alpha)
 
+		# Actually do the pole target stuff.
 		if chain_name == "arm_left":
 			$PoleTargetElbowLeft.transform.origin = pole_target_vec
+			polemodifier_left_arm._do_rotation_update(delta, true)
 		else:
 			$PoleTargetElbowRight.transform.origin = pole_target_vec
+			polemodifier_right_arm._do_rotation_update(delta, true)
 
-	# Do pole target stuff.
-	polemodifier_left_arm._do_rotation_update(delta, true)
-	polemodifier_right_arm._do_rotation_update(delta, true)
-
-	# Counter-rotate upper arm (hack). This keeps the bicep from pointing
-	# outwards when the arm goes outwards.
-	# FIXME(GIANTESS): Arm chain argument.
-	# FIXME(GIANTESS): Parameterize the amount of effect this has.
-	fix_upperarm_HACK()
+		# Counter-rotate upper arm (hack). This keeps the bicep from pointing
+		# outwards when the arm goes outwards.
+		# FIXME(GIANTESS): Parameterize the amount of effect this has.
+		_fix_upperarm_HACK(chain_name)
 
 	# Debug display of pole targets.
 	_update_debug_draw_pole_targets()
@@ -994,81 +992,68 @@ func _update_debug_draw_pole_targets() -> void:
 	$PoleTargetElbowRight.visible = debug_pole_targets
 	$PoleTargetElbowLeft.visible = debug_pole_targets
 
-func fix_upperarm_HACK() -> void:
+func _fix_upperarm_HACK(chain_name: String) -> void:
 
 	var skel: Skeleton3D = get_skeleton()
 
-	for side in ["Left", "Right"]:
-		if randf() > 0.0:
+	var side: String = "Left"
+	if chain_name == "arm_right":
+		side = "Right"
 
-			var upperarm_index: int = skel.find_bone(side + "UpperArm")
+	var upperarm_index: int = skel.find_bone(side + "UpperArm")
 
-			# Preserve child transforms.
-			var children: Array = []
-			for child_index: int in skel.get_bone_children(upperarm_index):
-				children.push_back([child_index, skel.get_bone_global_pose(child_index),skel. get_bone_pose(child_index)])
+	# Preserve child transforms.
+	var children: Array = []
+	for child_index: int in skel.get_bone_children(upperarm_index):
+		children.push_back([child_index, skel.get_bone_global_pose(child_index),skel. get_bone_pose(child_index)])
 
-			var rotation_euler: Vector3 = \
-				(skel.get_bone_rest(upperarm_index).inverse() *
-				skel.get_bone_pose(upperarm_index)).basis.get_euler()
+	# Axis we'll be rotating the upper arm by, and also to check how far
+	# we have to rotate.
+	var rotation_axis: Vector3 = skel.get_bone_global_pose(upperarm_index).basis * Vector3(0.0, 1.0, 0.0)
 
-			# Axis we'll be rotating the upper arm by, and also to check how far
-			# we have to rotate.
-			var rotation_axis: Vector3 = skel.get_bone_global_pose(upperarm_index).basis * Vector3(0.0, 1.0, 0.0)
+	# Current forward vector for the upper arm.
+	var upperarm_forward_vector: Vector3 = skel.get_bone_global_pose(upperarm_index).basis * Vector3(1.0, 0.0, 0.0)
 
-			# Current forward vector for the upper arm.
-			var upperarm_forward_vector: Vector3 = skel.get_bone_global_pose(upperarm_index).basis * Vector3(1.0, 0.0, 0.0)
+	# Current forward vector for the chest (rotation target).
+	var chest_forward_vector: Vector3 = skel.get_bone_global_pose(skel.find_bone("Chest")).basis * Vector3(0.0, 0.0, 1.0)
 
-			# Current forward vector for the chest (rotation target).
-			var chest_forward_vector: Vector3 = skel.get_bone_global_pose(skel.find_bone("Chest")).basis * Vector3(0.0, 0.0, 1.0)
+	# Get the dot product and cross product to construct the rotation
+	# from. DP tells us how much and CP tells us which way.
+	var cos_forward_displacement: float = upperarm_forward_vector.normalized().dot(chest_forward_vector.normalized())
+	var cross_forwards: Vector3 = upperarm_forward_vector.normalized().cross(chest_forward_vector.normalized())
 
-			# Get the dot product and cross product to construct the rotation
-			# from. DP tells us how much and CP tells us which way.
-			var cos_forward_displacement: float = upperarm_forward_vector.normalized().dot(chest_forward_vector.normalized())
-			var cross_forwards: Vector3 = upperarm_forward_vector.normalized().cross(chest_forward_vector.normalized())
+	# Flip stuff for mirrored side.
+	if side == "Left":
+		cos_forward_displacement *= -1.0
 
-			# Flip stuff for mirrored side.
-			if side == "Left":
-				cos_forward_displacement *= -1.0
+	# Get the angle to rotate by.
+	var rotation_displacement: float = acos(cos_forward_displacement)
 
-			# Get the angle to rotate by.
-			var rotation_displacement: float = acos(cos_forward_displacement)
+	# Rotate outwards, but not inwards. We'll drop the rotation
+	# displacement to zero as it crosses from the cross product pointing
+	# one way and the other way. Basically, when the rotation direction
+	# flips and it crosses over its original orientation.
+	# FIXME(GIANTESS): Make the thresholds here configurable!
+	var axis_alignment: float = rotation_axis.dot(cross_forwards.normalized())
+	rotation_displacement = lerp(rotation_displacement, 0.0, smoothstep(-0.1, 0.1, axis_alignment))
 
-			# Rotate outwards, but not inwards. We'll drop the rotation
-			# displacement to zero as it crosses from the cross product pointing
-			# one way and the other way. Basically, when the rotation direction
-			# flips and it crosses over its original orientation.
-			# FIXME(GIANTESS): Make the thresholds here configurable!
-			var axis_alignment: float = rotation_axis.dot(cross_forwards.normalized())
-			rotation_displacement = lerp(rotation_displacement, 0.0, smoothstep(-0.1, 0.1, axis_alignment))
+	# Another mirror flip.
+	if side == "Right":
+		rotation_displacement *= -1
 
-			# Another mirror flip.
-			if side == "Right":
-				rotation_displacement *= -1
+	# FIXME(GIANTESS): Make configurable.
+	var rotation_displacement_scale: float = 0.5
 
-			#print(side, " ", rotation_displacement)
+	# Set the rotation.
+	skel.set_bone_pose_rotation(upperarm_index,
+		Basis(skel.get_bone_pose_rotation(upperarm_index)) * \
+		Basis.from_euler(Vector3(0.0, rotation_displacement * rotation_displacement_scale, 0.0)) \
+	)
 
-			#get_app().debug_draw_transform(
-				#skel.global_transform * \
-				#skel.get_bone_global_pose(skel.find_bone("Chest")), 0.25)
+	# Restore child transforms.
+	for child_record: Array in children:
+		skel.set_bone_global_pose(child_record[0], child_record[1])
+		skel.set_bone_pose_position(child_record[0], skel.get_bone_rest(child_record[0]).origin)
 
-			#print(rotation_euler)
-			#if randf() < 0.5:
-			#rotation_euler.x += rotation_displacement #0.1
-			#rotation_euler.z *= 0.5
-			var rotation_displacement_scale: float = 0.5
-			skel.set_bone_pose_rotation(upperarm_index,
-				Basis(skel.get_bone_pose_rotation(upperarm_index)) * \
-				Basis.from_euler(Vector3(0.0, rotation_displacement * rotation_displacement_scale, 0.0)) \
-			)
-			#get_app().debug_draw_transform(skel.global_transform * skel.get_bone_global_pose(upperarm_index), 0.25)
-
-			# Restore child transforms.
-			for child_record: Array in children:
-				skel.set_bone_global_pose(child_record[0], child_record[1])
-				#skel.set_bone_pose_position(child_record[0], child_record[1].origin)
-				skel.set_bone_pose_position(child_record[0], skel.get_bone_rest(child_record[0]).origin)
-
-
-			
-			#skel.set_bone_pose_rotation(upperarm_index, Quaternion.from_euler(Vector3(0.0, PI * 2.0 * randf(), 0.0)))
+func _rotate_shoulder_forward(chain_name: String, alpha: float) -> void:
+	pass
