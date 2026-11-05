@@ -463,28 +463,14 @@ func _process(delta : float) -> void:
 	# ---------------------------------------------------------------------------------------------
 	# Handle Leaning
 
-	# Lean the entire model based on the head rotation/
-	#var head_rotation: float = skel.get_bone_pose_rotation(
-		#skel.find_bone("Head")).get_euler(EULER_ORDER_XYZ).z
-	#var lean_amount: float = head_rotation * lean_scale
-	
-	# FIXME(GIANTESS): Try using the hips transform offset from the rest pose
-	#var hips_pose: Transform3D = \
-	#	(skel.global_transform * skel.get_bone_global_rest(skel.find_bone("Hips"))).inverse() * \
-	#	(skel.global_transform * skel.get_bone_global_pose(skel.find_bone("Hips")))
-	var hips_pose: Transform3D = \
+	# Lean the entire model based on the head rotation/movement.
+	var root_pose: Transform3D = \
 		skel.global_transform * skel.get_bone_global_pose(skel.find_bone("Root"))
 	var hips_inv: Transform3D = \
-		hips_pose.inverse()
-	var head_in_hips_space: Vector3 = hips_inv * tracker_dict.head.transform.origin
-	#print(head_in_hips_space)
-	# Problem with this is that the hips have already been rotated from the IK.
-	var lean_amount: float = -head_in_hips_space.x / get_model_height_scale() 
-
+		root_pose.inverse()
+	var head_in_root_space: Vector3 = hips_inv * tracker_dict.head.transform.origin
+	var lean_amount: float = -head_in_root_space.x / get_model_height_scale() 
 	handle_lean(skel, lean_amount * lean_scale)
-
-
-
 
 func _reinit() -> void:
 	_reset_hand_landmarks()
@@ -1033,7 +1019,6 @@ func _fix_upperarm_HACK(chain_name: String) -> void:
 	# displacement to zero as it crosses from the cross product pointing
 	# one way and the other way. Basically, when the rotation direction
 	# flips and it crosses over its original orientation.
-	# FIXME(GIANTESS): Make the thresholds here configurable!
 	var axis_alignment: float = rotation_axis.dot(cross_forwards.normalized())
 	rotation_displacement = lerp(rotation_displacement, 0.0, smoothstep(
 		upperarm_counter_rotation_threshold_start,
@@ -1044,7 +1029,6 @@ func _fix_upperarm_HACK(chain_name: String) -> void:
 	if side == "Right":
 		rotation_displacement *= -1
 
-	# FIXME(GIANTESS): Make configurable.
 	var rotation_displacement_scale: float = upperarm_counter_rotation_scale
 
 	# Set the rotation.
