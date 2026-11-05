@@ -47,7 +47,6 @@ var do_yaw_global = true
 var do_point_tracker = true
 var do_pole_targets = true
 var do_rotate_to_match_tracker = true
-var do_hands = true
 
 # Temp variables for settings.
 var _devices_by_list_entry = {}
