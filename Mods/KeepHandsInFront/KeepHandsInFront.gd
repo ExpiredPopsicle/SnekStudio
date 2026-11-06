@@ -1,6 +1,6 @@
 extends Mod_Base
 
-var minimum_z: float = 0.0
+var minimum_z: float = 0.2
 var use_model_height_scale: bool = true
 
 func _ready() -> void:

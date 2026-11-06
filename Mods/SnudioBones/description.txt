@@ -1,0 +1,11 @@
+WORK IN PROGRESS!!!
+
+Takes specifically-named bones and applies some extra functionality to them such as "look at" constraints.
+
+Examples:
+	Snudio.LookAt.Bottom.Trapezius_L
+	Snudio.LookAt.Top.Trapezius_L
+
+These two bones will be pointed at each other.
+
+Must be used *after* PoseIK, or the rotations will not be accurate.

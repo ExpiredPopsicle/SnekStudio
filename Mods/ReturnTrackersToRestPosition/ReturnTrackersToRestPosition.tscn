@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bsgdalg80m7fx"]
 
 [ext_resource type="Script" uid="uid://bnf462e51i0ce" path="res://Mods/ReturnTrackersToRestPosition/ReturnTrackersToRestPosition.gd" id="1_hf7qb"]
+[ext_resource type="Texture2D" uid="uid://dow5f1dngwr04" path="res://Mods/ReturnTrackersToRestPosition/returntrackerstorestposition_icon.svg" id="2_2porb"]
 
 [sub_resource type="BoxMesh" id="BoxMesh_8guj7"]
 size = Vector3(0.25, 0.25, 0.25)
@@ -13,6 +14,7 @@ albedo_color = Color(1, 0, 1, 1)
 
 [node name="ReturnTrackersToRestPosition" type="Node3D" unique_id=1318524387]
 script = ExtResource("1_hf7qb")
+icon = ExtResource("2_2porb")
 metadata/_custom_type_script = "uid://bsjotf2wtnmeq"
 
 [node name="LeftHandRestReference" type="MeshInstance3D" parent="." unique_id=1446332512]

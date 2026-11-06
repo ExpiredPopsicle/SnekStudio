@@ -1,0 +1,5 @@
+Adjusts camera height and zoom depending on the height of the model being used.
+
+Allows switching more seamlessly between giant/normal/tiny models.
+
+May conflict with other camera modules such as CameraPositions.

@@ -1,0 +1,3 @@
+After a period of tracker inactivity, returns hand trackers to a rest position where they're at the side of the model.
+
+Should be used before PoseIK or it will likely have no effect.
