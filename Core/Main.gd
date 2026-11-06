@@ -373,7 +373,7 @@ func save_settings(path : String = ""):
 		settings_filename = _get_default_settings_path()
 	
 	# Create settings directory if it doesn't already exist
-	var settings_dir = ProjectSettings.globalize_path(settings_filename.get_basename())
+	var settings_dir = ProjectSettings.globalize_path(settings_filename.get_base_dir())
 	if not DirAccess.dir_exists_absolute(settings_dir):
 		if DirAccess.make_dir_recursive_absolute(settings_dir) != OK:
 			push_error("Failed to create settings directory: " + settings_dir)
