@@ -435,7 +435,10 @@ func _process(delta : float) -> void:
 		_ikchains_dict[chain_name].do_ik_chain()
 
 		# Update fingers and stuff.
-		update_hand(hand_landmarks_right, side)
+		if chain_name == "arm_right":
+			update_hand(hand_landmarks_right, side)
+		else:
+			update_hand(hand_landmarks_left, side)
 
 		# Determine how much the arms are lowered so we can move the pole
 		# targets backwards, so the elbows face back.
