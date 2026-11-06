@@ -417,16 +417,34 @@ func load_settings(path : String = ""):
 				"name": "MediaPipeController",
 				"scene_path": "res://Mods/MediaPipe/MediaPipeController.tscn",
 				"settings": {
-				"arm_rest_angle": 60,
-				"debug_visible_hand_trackers": false,
-				"hand_confidence_time_threshold": 1,
-				"hand_count_change_time_threshold": 1,
-				"hand_tracking_enabed": true,
-				"mirror_mode": true,
-				"tracking_pause": false,
-				"use_mediapipe_shapes": true,
-				"use_vrm_basic_shapes": true,
-				"video_device": []
+					"arm_rest_angle": 60,
+					"debug_visible_hand_trackers": false,
+					"hand_confidence_time_threshold": 1,
+					"hand_count_change_time_threshold": 1,
+					"hand_tracking_enabed": true,
+					"mirror_mode": true,
+					"tracking_pause": false,
+					"use_mediapipe_shapes": true,
+					"use_vrm_basic_shapes": true,
+					"video_device": []
+				}
+			},
+			{
+				"name": "TrackerScaler",
+				"scene_path": "res://Mods/TrackerScaler/TrackerScaler.tscn",
+				"settings": {
+				}
+			},
+			{
+				"name": "KeepHandsInFront",
+				"scene_path": "res://Mods/KeepHandsInFront/KeepHandsInFront.tscn",
+				"settings": {
+				}
+			},
+			{
+				"name": "ReturnTrackersToRestPosition",
+				"scene_path": "res://Mods/ReturnTrackersToRestPosition/ReturnTrackersToRestPosition.tscn",
+				"settings": {
 				}
 			},
 			{

@@ -31,7 +31,6 @@ var head_pitch_offset: float = 0.0
 
 # Settings stuff
 @export var mirror_mode : bool = true
-@export var arm_rest_angle : float = 60
 @export var arm_reset_time : float = 0.5
 @export var arm_reset_speed : float = 0.1
 @export var hand_tracking_enabed : bool = true
@@ -70,7 +69,7 @@ var hand_rotation_smoothing : float = 2.0
 var hand_position_smoothing : float = 4.0
 
 var hand_position_scale : Vector3 = Vector3(7.0, 7.0, 3.5)
-var hand_position_offset : Vector3 = Vector3(0.0, -0.14, 0.0)
+var hand_position_offset : Vector3 = Vector3(0.0, 0.0, 0.0)
 var hand_to_head_scale : float = 2.0
 
 var minimum_hand_z: float = 0.0
@@ -111,7 +110,6 @@ func _ready():
 
 	add_tracked_setting("hand_tracking_enabed", "Hand tracking enabled")
 	add_tracked_setting("mirror_mode", "Mirror mode")
-	add_tracked_setting("arm_rest_angle", "Arm rest angle", { "min" : 0.0, "max" : 180.0 })
 
 	add_tracked_setting("tracking_pause", "Pause tracking")
 

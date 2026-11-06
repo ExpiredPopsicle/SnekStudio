@@ -1,0 +1,5 @@
+Forces hand trackers to be in front of the model.
+
+Use this to keep hands from clipping into your boobs.
+
+Should be before PoseIK, or it won't be accurate.

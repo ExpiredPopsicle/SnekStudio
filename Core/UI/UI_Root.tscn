@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://yq6jyoi206yb" path="res://Core/UI/SettingsWindow_Sound.tscn" id="2_22ujg"]
 [ext_resource type="PackedScene" uid="uid://1yetg6crf27v" path="res://Core/UI/HelpControlsWindow.tscn" id="2_kenqi"]
 [ext_resource type="PackedScene" uid="uid://y6nky8evh76x" path="res://Core/UI/SettingsWindow_Colliders.tscn" id="2_m5fmr"]
+[ext_resource type="Texture2D" uid="uid://o7pmhw7f1aef" path="res://Core/UI/Images/save_icon.svg" id="2_qhls5"]
 [ext_resource type="PackedScene" uid="uid://d25kthtdlqgfo" path="res://Core/UI/ModsWindow.tscn" id="2_v48gv"]
 [ext_resource type="PackedScene" uid="uid://cmwophradpbf7" path="res://Core/UI/HelpAboutWindow.tscn" id="3_krby6"]
 [ext_resource type="PackedScene" uid="uid://6rc2mjibeujw" path="res://Core/UI/SettingsWindow_General.tscn" id="4_kl5fl"]
@@ -49,6 +50,7 @@ item_0/id = 0
 item_1/id = 5
 item_1/separator = true
 item_2/text = "Save settings..."
+item_2/icon = ExtResource("2_qhls5")
 item_2/id = 3
 item_3/text = "Load settings..."
 item_3/id = 4

@@ -1,7 +1,9 @@
 [gd_scene format=3 uid="uid://bxawjesycctts"]
 
 [ext_resource type="Script" uid="uid://4oq2y3okh57f" path="res://Mods/SnudioBones/SnudioBones.gd" id="1_i43jl"]
+[ext_resource type="Texture2D" uid="uid://c5ke5xy8vii75" path="res://Mods/SnudioBones/snudiobones_icon.svg" id="2_ur0fv"]
 
 [node name="SnudioBones" type="Node3D" unique_id=616144927]
 script = ExtResource("1_i43jl")
+icon = ExtResource("2_ur0fv")
 metadata/_custom_type_script = "uid://bsjotf2wtnmeq"

@@ -1,0 +1,5 @@
+Scales the tracker positions.
+
+Can factor in the size of the model to try to scale the trackers to match giant/tiny models.
+
+Use before PoseIK, and probably before most other modules that use the tracker positions.

@@ -918,7 +918,7 @@ func settings_window_add_vector3(
 	vec3_widget.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	outer_container.add_child(label_widget)
-	
+
 	var default_value = get(setting_name)
 	
 	var reset_default = Button.new()
