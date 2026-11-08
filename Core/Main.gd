@@ -14,6 +14,11 @@ var module_global_data : Dictionary = {}
 # Array of all serializable BasicSubWindows
 var subwindows : Array[BasicSubWindow] = []
 
+## Set to true when calling mod init/deinit code while switching models. This
+## allows skipping some expensive operations that don't depend on the model,
+## like camera initialization.
+var switching_models: bool = true
+
 var debug_mesh_buffers: Array[ImmediateMesh] = [
 	ImmediateMesh.new(),
 	ImmediateMesh.new()
@@ -508,12 +513,14 @@ func load_vrm(path) -> bool:
 
 	# FIXME: Handle failure cases.
 
+	switching_models = true
 	mods._shutdown_mods()
 	var new_model_root : Node3D = $ModelController.load_vrm(path)
 
 	if not new_model_root:
 		mods._reinit_mods()
 		push_error("Failed to load VRM: ", path)
+		switching_models = false
 		return false
 
 	# Load colliders list
@@ -523,6 +530,7 @@ func load_vrm(path) -> bool:
 	get_skeleton().reset_bone_poses()
 
 	mods._reinit_mods()
+	switching_models = false
 	_force_update_ui()
 
 	return true
