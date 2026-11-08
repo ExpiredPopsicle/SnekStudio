@@ -270,20 +270,22 @@ func load_after(_settings_old : Dictionary, _settings_new : Dictionary):
 
 func scene_init():
 
-	# Find a port number that's open to use. Must be done before start_tracker.
-	# OR call the set port number RPC after changing it.
-	assert(!udp_server)
-	udp_server = PacketPeerUDP.new()
-	var udp_error = 1
-	_udp_port = udp_port_base
-	while udp_error != OK:
-		udp_error = udp_server.bind(_udp_port, "127.0.0.1")
-		if udp_error != OK:
-			_udp_port += 1
+	if not get_app().switching_models:
 
-	_start_process()
+		# Find a port number that's open to use. Must be done before start_tracker.
+		# OR call the set port number RPC after changing it.
+		assert(!udp_server)
+		udp_server = PacketPeerUDP.new()
+		var udp_error = 1
+		_udp_port = udp_port_base
+		while udp_error != OK:
+			udp_error = udp_server.bind(_udp_port, "127.0.0.1")
+			if udp_error != OK:
+				_udp_port += 1
 
-	_start_tracker()
+		_start_process()
+
+		_start_tracker()
 
 	blend_shape_last_values = {}
 	last_parsed_data = {}
@@ -304,12 +306,12 @@ func scene_init():
 
 func scene_shutdown():
 
-	_stop_tracker()
+	if not get_app().switching_models:
+		_stop_tracker()
+		_stop_process()
 
-	_stop_process()
-
-	udp_server.close()
-	udp_server = null
+		udp_server.close()
+		udp_server = null
 
 	# Reset pose and blendshapes.
 	get_app().get_controller().reset_skeleton_to_rest_pose()
