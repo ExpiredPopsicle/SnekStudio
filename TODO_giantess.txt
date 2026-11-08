@@ -1,9 +1,0 @@
-Stuff I *want* to do.
-- search for FIXME(GIANTESS) for anything that didn't end up in this list!
-- add scaling setting for elbow-forward pole target Z axis
-- add alpha scaling setting for pole target for arm-across-chest
-- add the dependency order check stuff for them
-- fix fingers when returning to rest pose
-  - fingers probably not rotating to new position
-- hand position scale is borked?
-- fix new module instance names (right now they end up as @Nodewhatever if there's already one of that name)
