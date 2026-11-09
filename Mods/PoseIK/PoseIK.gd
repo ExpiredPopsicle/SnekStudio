@@ -16,6 +16,7 @@ var shoulder_raise_max_angle: float = 30.0
 var shoulder_raise_rotation_scale: float = 1.0
 
 var debug_pole_targets: bool = false
+var distribute_arm_bone_roll: bool = true
 
 var _ikchains_dict : Dictionary = {
 	"arm_left" : null,
@@ -220,6 +221,9 @@ func _ready() -> void:
 	add_tracked_setting(
 		"shoulder_lean_counter_rotation_scale", "Counter-rotated inside shoulder for lean scale", { "min" : 0.0, "max" : 2.0 },
 		"advanced")
+
+	add_tracked_setting(
+		"distribute_arm_bone_roll", "Distribute arm bone roll along chain", {}, "advanced");
 
 	# Euler angles to use with Basis.from_euler().
 	add_setting_group("pole_targets", "Pole Target pitch/yaw/roll")
@@ -519,7 +523,7 @@ func _setup_ik_chains():
 		chain_hand.rotation_low = 0.05 * PI
 		chain_hand.rotation_high = 2.0 * 0.99 * PI
 		chain_hand.do_yaw = false
-		chain_hand.do_bone_roll = true
+		chain_hand.do_bone_roll = distribute_arm_bone_roll
 		chain_hand.secondary_axis_of_rotation = Vector3(0.0, 1.0, 0.0)
 
 		if side == "Left":
@@ -931,9 +935,6 @@ func _adjust_shoulders_for_arms_up(chain_name: String, alpha: float) -> void:
 	if shoulder_bone_index != -1:
 
 		var shoulder_rotation_angle: float = rotation_scale * alpha
-
-		# Apply scale based on height of model.
-		shoulder_rotation_angle /= get_model_height_scale()
 
 		# Clamp it.
 		shoulder_rotation_angle = clampf(shoulder_rotation_angle, -rotation_max, rotation_max)
