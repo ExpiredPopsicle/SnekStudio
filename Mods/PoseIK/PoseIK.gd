@@ -14,6 +14,7 @@ var head_vertical_offset : float = 0.0
 var hips_vertical_blend_speed : float = 5.0
 var shoulder_raise_max_angle: float = 30.0
 var shoulder_raise_rotation_scale: float = 1.0
+var smooth_vertical_hips_movement: bool = false
 
 var debug_pole_targets: bool = false
 var distribute_arm_bone_roll: bool = true
@@ -204,6 +205,11 @@ func _ready() -> void:
 		"head_vertical_offset", "Head vertical offset",
 		{ "min" : -1.0, "max" : 1.0, "step": 0.01 },
 		"advanced")
+
+	add_tracked_setting(
+		"smooth_vertical_hips_movement",
+		"Blend hips vertical movement", {}, "advanced")
+
 	add_tracked_setting(
 		"hips_vertical_blend_speed", "Hips vertical blend speed",
 		{ "min" : 0.0, "max" : 20.0 },
@@ -401,9 +407,14 @@ func _process(delta : float) -> void:
 		
 		# FIXME: Hard-coded fudge factor.
 		# FIXME: Why can't we just map this directly again? It looks like we're shrugging when the arms get set up wrong or something.
-		model_root.transform.origin.y = lerp(
-			model_pos.y, head_pos.y - head_rest_transform.origin.y,
-			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
+
+		if smooth_vertical_hips_movement:
+			model_root.transform.origin.y = lerp(
+				model_pos.y, head_pos.y - head_rest_transform.origin.y,
+				clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
+		else:
+			model_root.transform.origin.y = \
+				head_pos.y - head_rest_transform.origin.y
 
 	# ---------------------------------------------------------------------
 	# IK stuff starts here
