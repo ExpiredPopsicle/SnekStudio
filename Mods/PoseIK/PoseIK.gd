@@ -15,6 +15,7 @@ var hips_vertical_blend_speed : float = 5.0
 var shoulder_raise_max_angle: float = 30.0
 var shoulder_raise_rotation_scale: float = 1.0
 var smooth_vertical_hips_movement: bool = false
+var spine_stretch: float = 0.01
 
 var debug_pole_targets: bool = false
 var distribute_arm_bone_roll: bool = true
@@ -217,6 +218,8 @@ func _ready() -> void:
 	add_tracked_setting(
 		"hip_adjustment_speed", "Hip Adjustment Speed", { "min" : 0.0, "max" : 10.0 },
 		"advanced")
+	add_tracked_setting(
+		"spine_stretch", "Spine stretch", { "min": 0.0, "max": 1.0, "step": 0.001 }, "advanced")
 
 	add_tracked_setting(
 		"shoulder_raise_max_angle", "Shoulder rotation max angle", { "min" : 0.0, "max" : 90.0 },
@@ -392,29 +395,24 @@ func _process(delta : float) -> void:
 	# This just moves the body based on the head position.
 	var head_pos = $Head.transform.origin
 	var model_pos = model_root.transform.origin
-	
-	# FIXME(GIANTESS): This is possibly affected by model/tracker scale.
-	if true: # FIXME: ???????
-		model_root.transform.origin = model_pos.lerp(head_pos, delta * hip_adjustment_speed)
-		#model_root.transform.origin = head_pos
-		#model_root.transform.origin.y = model_y 
-		#model_root.transform.origin.y = lerp(model_pos.y, head_pos.y - 1.9, 0.01)
-		
-		# FIXME: Another hack!
-		var head_rest_transform = get_skeleton().get_bone_global_rest(
-			get_skeleton().find_bone("Head"))
-		#print(head_rest_transform.origin.y)
-		
-		# FIXME: Hard-coded fudge factor.
-		# FIXME: Why can't we just map this directly again? It looks like we're shrugging when the arms get set up wrong or something.
 
-		if smooth_vertical_hips_movement:
-			model_root.transform.origin.y = lerp(
-				model_pos.y, head_pos.y - head_rest_transform.origin.y,
-				clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
-		else:
-			model_root.transform.origin.y = \
-				head_pos.y - head_rest_transform.origin.y
+	# Adjust the hips x/z values. y is also set, but will be overwritten by the
+	# hips adjustment.
+	model_root.transform.origin = model_pos.lerp(head_pos, delta * hip_adjustment_speed)
+
+	# FIXME: Another hack!
+	var head_rest_transform = get_skeleton().get_bone_global_rest(
+		get_skeleton().find_bone("Head"))
+
+	# Adjust hips y value.
+	if smooth_vertical_hips_movement:
+		model_root.transform.origin.y = lerp(
+			model_pos.y,
+			head_pos.y - head_rest_transform.origin.y - spine_stretch * get_model_height_scale(),
+			clamp(hips_vertical_blend_speed * delta, 0.0, 1.0))
+	else:
+		model_root.transform.origin.y = \
+			head_pos.y - head_rest_transform.origin.y
 
 	# ---------------------------------------------------------------------
 	# IK stuff starts here
