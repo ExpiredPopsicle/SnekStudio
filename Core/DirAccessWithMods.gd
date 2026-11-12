@@ -23,7 +23,7 @@ static func add_zip(zip_path : String):
 			pack_directories_added.append(dir_path)
 		
 	
-	ProjectSettings.load_resource_pack(zip_path, false)
+	ProjectSettings.load_resource_pack(zip_path, true)
 
 static func get_file_list(path):
 
