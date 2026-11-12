@@ -7,13 +7,13 @@ enum KiriPythonWrapperStatus {
 }
 
 class KiriPythonWrapperActiveRequest:
-	
+
 	enum KiriPythonWrapperActiveRequestState {
 		STATE_WAITING_TO_SEND,
 		STATE_SENT,
 		STATE_RESPONSE_RECEIVED
 	}
-	
+
 	var id : int
 	var method_name : String
 	var arguments : Variant # Dictionary or Array
@@ -32,7 +32,7 @@ var python_script_path : String = ""
 
 var _build_wrangler : KiriPythonBuildWrangler = null
 
-var _external_process_pid = -1
+var _child_process_thread: Thread
 
 signal _rpc_async_response_received
 
@@ -117,17 +117,17 @@ func setup_python(force_unpack_extras : bool = false):
 		var extra_scripts = _build_wrangler.get_extra_scripts_list()
 
 		for extra_script : String in extra_scripts:
-			
+
 			# Chop off the "res://".
 			var extra_script_relative : String = extra_script.substr(len("res://"))
 
 			# Some other path wrangling.
 			var extraction_path : String = _get_wrapper_cache_path().path_join(extra_script_relative)
 			var extraction_path_dir : String = extraction_path.get_base_dir()
-			
+
 			# Make the dir.
 			DirAccess.make_dir_recursive_absolute(extraction_path_dir)
-			
+
 			# Extract the file.
 			var bytes : PackedByteArray = FileAccess.get_file_as_bytes(extra_script)
 			FileAccess.open(extraction_path, FileAccess.WRITE).store_buffer(bytes)
@@ -135,7 +135,7 @@ func setup_python(force_unpack_extras : bool = false):
 	# Run pip to install packages from .whl files.
 	var successfully_ran_pip_setup : bool = false
 	if needs_setup:
-		
+
 		# Get a list of all the wheel files.
 		var wheels_path : String = _build_wrangler._get_cache_path_godot().path_join("packaged_scripts/addons/KiriPythonRPCWrapper/Wheels")
 		if DirAccess.dir_exists_absolute(wheels_path):
@@ -169,7 +169,7 @@ func setup_python(force_unpack_extras : bool = false):
 
 	# FIXME: Delete wheel files? I don't think we need them anymore. If we made
 	# it this far, then we know we succeeded at the install.
-	
+
 	# Write success marker.
 	if successfully_ran_pip_setup:
 		cache_status = _build_wrangler.get_cache_status()
@@ -177,15 +177,15 @@ func setup_python(force_unpack_extras : bool = false):
 		if data_hash != null:
 			cache_status["extra_data_hash"] = data_hash
 		_build_wrangler.write_cache_status(cache_status)
-	
+
 	return true
 
 func get_status():
 
-	if _external_process_pid == -1:
+	if _child_process_thread == null:
 		return KiriPythonWrapperStatus.STATUS_STOPPED
 
-	if not OS.is_process_running(_external_process_pid):
+	if not _child_process_thread.is_alive():
 		return KiriPythonWrapperStatus.STATUS_STOPPED
 
 	return KiriPythonWrapperStatus.STATUS_RUNNING
@@ -197,14 +197,14 @@ func run_python_command(
 	open_console : bool = false):
 
 	var python_exe_path : String = _get_python_executable()
-	
+
 	# Do a little switcheroo on Linux to open a console.
 	# FIXME: Remove this?
 	if open_console:
 		if OS.get_name() == "Linux":
 			args = PackedStringArray(["-e", python_exe_path]) + args
 			python_exe_path = "xterm"
-	
+
 	return OS.execute(python_exe_path, args, output, read_stderr, open_console)
 
 func convert_cache_item_to_real_path(path : String):
@@ -227,7 +227,7 @@ func execute_python_async(arguments : PackedStringArray):
 		return OS.execute(path, arguments)
 
 	thread.start(thread_func.bind(python_exe_path, arguments))
-	
+
 	while thread.is_alive():
 		await null # FIXME: ???????
 
@@ -246,29 +246,29 @@ func execute_python(
 
 func start_process(open_terminal : bool = false):
 
-	assert(_external_process_pid == -1)
+	assert(_child_process_thread == null)
 
 	# FIXME: Make sure we don't have one running.
 
 	var open_port = 9500
-	
+
 	var real_python_script_path = convert_cache_item_to_real_path(
 		python_script_path)
-	
+
 	assert(not _server_packet_socket)
 	_server_packet_socket = KiriPacketSocket.new()
 	while true:
 		_server_packet_socket.start_server(["127.0.0.1", open_port])
-		
+
 		# Wait for the server to start.
 		while _server_packet_socket.get_state() == KiriPacketSocket.KiriSocketState.SERVER_STARTING:
 			OS.delay_usec(1)
-		
+
 		# If we're successfully listening, then we found a port to use and we
 		# don't need to loop anymore.
 		if _server_packet_socket.get_state() == KiriPacketSocket.KiriSocketState.SERVER_LISTENING:
 			break
-		
+
 		# This port is busy. Try the next one.
 		_server_packet_socket.stop()
 		open_port += 1
@@ -277,26 +277,19 @@ func start_process(open_terminal : bool = false):
 	var wrapper_script_path : String = \
 		ProjectSettings.globalize_path(_get_wrapper_script_cache_path())
 
-	var startup_command : Array = [
-		python_exe_path,
+	var arguments: PackedStringArray = [
 		wrapper_script_path,
 		"--script", real_python_script_path,
-		"--port", open_port]
+		"--port", open_port,
+	]
 
-	# FIXME: Remove this?
-	if open_terminal:
-		if OS.get_name() == "Linux":
-			startup_command = ["xterm", "-e"] + startup_command
+	var thread_func := func(path: String, args: PackedStringArray, open_terminal: bool) -> void:
+		OS.execute(path, args, [], false, open_terminal)
 
-	_external_process_pid = OS.create_process(
-		startup_command[0], startup_command.slice(1),
-		open_terminal)
+	_child_process_thread = Thread.new()
+	_child_process_thread.start(thread_func.bind(python_exe_path, arguments, open_terminal))
 
 func stop_process():
-
-	if _external_process_pid != -1:
-		OS.kill(_external_process_pid)
-		_external_process_pid = -1
 
 	# Clean up server and communication sockets.
 	if _server_packet_socket:
@@ -307,11 +300,19 @@ func stop_process():
 		communication_packet_socket.stop()
 		communication_packet_socket = null
 
+	if _child_process_thread != null:
+		# FIXME: This will currently block forever, despite the sockets having been closed?
+		#        Skipping may not be ideal but seems mostly non-problematic. It does however
+		#        result in a warning being printed to the output. Figure out how to cleanly
+		#        close the python process?
+		# _child_process_thread.wait_to_finish()
+		_child_process_thread = null
+
 func call_rpc_callback(method : String, args : Variant, callback = null) -> int:
-	
+
 	assert((args is Dictionary) or (args is Array))
 	assert((callback == null) or (callback is Callable))
-	
+
 	var new_request = KiriPythonWrapperActiveRequest.new()
 	new_request.id = _request_counter
 	_request_counter += 1
@@ -336,10 +337,10 @@ func call_rpc_async(method : String, args : Variant):
 		if not rpc_response:
 			push_error("Error happened while waiting for RPC response in async call.")
 			break
-		
+
 		if rpc_response.id == request_id:
 			return rpc_response.response
-	
+
 	return null
 
 func call_rpc_sync(method : String, args : Variant):
@@ -357,7 +358,7 @@ func call_rpc_sync(method : String, args : Variant):
 
 	# Wait (block) until we get a response.
 	while not done_array[0]:
-		
+
 		# Bail out if something happened to our instance or connection to it.
 		if communication_packet_socket:
 			if communication_packet_socket.is_disconnected_or_error():
@@ -366,7 +367,7 @@ func call_rpc_sync(method : String, args : Variant):
 		if (not communication_packet_socket) and (not _server_packet_socket):
 			push_error("RPC socket evaporated into thin air.")
 			break
-		if _external_process_pid == -1:
+		if _child_process_thread == null:
 			push_error("RPC client died.")
 			break
 
@@ -379,16 +380,16 @@ func call_rpc_sync(method : String, args : Variant):
 	return null
 
 func poll() -> Error:
-	
+
 	# Hand-off between listening socket and actual communications socket.
 	if _server_packet_socket:
 		communication_packet_socket = _server_packet_socket.get_next_server_connection()
 		if communication_packet_socket:
 			_server_packet_socket.stop()
 			_server_packet_socket = null
-	
+
 	if communication_packet_socket:
-		
+
 		if communication_packet_socket.is_disconnected_or_error():
 			# Tell any awaiting async calls that they're never getting an
 			# answer. So sad.
@@ -396,12 +397,12 @@ func poll() -> Error:
 			stop_process()
 			push_error("poll(): Disconnected from RPC client.")
 			return FAILED
-		
+
 		# Send all waiting requests
 		for request_id in _active_request_queue:
 			var request : KiriPythonWrapperActiveRequest = _active_request_queue[request_id]
 			if request.state == request.KiriPythonWrapperActiveRequestState.STATE_WAITING_TO_SEND:
-				
+
 				var request_dict = {
 					"jsonrpc": "2.0",
 					"method": request.method_name,
@@ -417,7 +418,7 @@ func poll() -> Error:
 		while packet != null:
 			var packet_dict = JSON.parse_string(packet.get_string_from_utf8())
 			if packet_dict:
-				
+
 				if packet_dict.has("kirijsonrpcerror"):
 					push_error(packet_dict["kirijsonrpcerror"])
 
@@ -450,12 +451,12 @@ func poll() -> Error:
 			packet = communication_packet_socket.get_next_packet()
 
 	# Clean up if the process has died.
-	if _external_process_pid != -1:
-		if !OS.is_process_running(_external_process_pid):
+	if _child_process_thread != null:
+		if not _child_process_thread.is_alive():
 			push_error("Process appears to have died. :(")
 			stop_process()
 
-	if _external_process_pid == -1:
+	if _child_process_thread == null:
 		if _server_packet_socket:
 			# Still waiting for a connection. Not an error.
 			return OK
