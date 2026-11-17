@@ -40,6 +40,10 @@ func _update_widgets_with_new_values():
 	$SpinBox1.max_value = max_value
 	$SpinBox2.max_value = max_value
 
+	$SpinBox0.step = step
+	$SpinBox1.step = step
+	$SpinBox2.step = step
+
 	_dont_handle_change_temporarily = false
 
 func _set_value(new_value : Vector3):
