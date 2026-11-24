@@ -20,12 +20,12 @@ func _ready() -> void:
 		if error: print_log("Disconnected: " + error)
 		else: print_log("Disconnected!"))
 
-	altstream.chat_message_received.connect(func(user, message, _reward_name):
-		get_app()._on_handle_channel_chat_message(user.username, user.display_name, message.text, 0))
-	altstream.reward_redeemed.connect(func(user, _message_id, reward_name, user_input):
-		get_app()._on_handle_channel_points_redeem(user.username, user.display_name, reward_name, user_input))
-	altstream.raid_incoming.connect(func(user, raider_count):
-		get_app()._on_handle_channel_raid(user.username, user.display_name, raider_count))
+	altstream.chat_message_received.connect(func(message: Altstream.Message, _reply_to: Altstream.Message, _is_highlight: bool):
+		get_app()._on_handle_channel_chat_message(message.author.channel_name, message.author.display_name, message.text, 0))
+	altstream.reward_redeemed.connect(func(user: Altstream.User, _message_id: String, reward_name: String, user_input: String):
+		get_app()._on_handle_channel_points_redeem(user.channel_name, user.display_name, reward_name, user_input))
+	altstream.raid_received.connect(func(user: Altstream.User, viewers: int):
+		get_app()._on_handle_channel_raid(user.channel_name, user.display_name, viewers))
 
 	add_tracked_setting("autoconnect", "Auto-connect on startup")
 	add_tracked_setting("channel", "Altstream Channel")

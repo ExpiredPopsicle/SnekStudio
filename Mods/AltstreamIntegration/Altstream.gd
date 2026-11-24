@@ -1,44 +1,52 @@
 class_name Altstream
 
 enum Type {
-	MESSAGE,      ## Regular chat message.
-	HIGHLIGHT,    ## Highlighted chat message.
-	REDEMPTION,   ## Reward redemption.
-	TIP,          ## Ko-Fi tip received.
-	SHOP,         ## Ko-Fi shop purchase.
-	SUBSCRIPTION, ## New Ko-Fi membership.
-	PIN,          ## Message being pinned.
-	UNPIN,        ## Currently active pin removed.
-	SHOUTOUT,     ## Another user shouted out.
-	RAID,         ## Incoming / outgoing raids.
-	DELETE,       ## Chat message deleted.
-	CLEAR,        ## Chat cleared.
-	SYSTEM,       ## Some messages don't have a unique message type.
+	MESSAGE,        ## Regular chat message.
+	REPLY,          ## Reply to another chat message.
+	HIGHLIGHT,      ## Highlighted chat message.
+	REDEMPTION,     ## Reward redemption.
+
+	PIN,            ## Message being pinned.
+	UNPIN,          ## Currently active pin removed.
+	DELETE,         ## Chat message deleted.
+	CLEAR,          ## Chat cleared.
+
+	TIP,            ## Ko-Fi tip received.
+	SHOP,           ## Ko-Fi shop purchase.
+	SUBSCRIPTION,   ## New Ko-Fi membership.
+
+	FOLLOW,         ## User followed channel. (requires permission)
+	SHOUTOUT,       ## Another user shouted out.
+
+	RAID_RECEIVED,  ## Incoming raid.
+	RAID_STARTED,   ## Outgoing raid started.
+	RAID_CANCELLED, ## Outgoing raid cancelled.
+
+	SYSTEM,         ## Currently not handled.
 }
 
 enum Role {
-	BROADCASTER, ## The streamer.
-	MODERATOR,   ## Channel moderator.
-	SUBSCRIBER,  ## Platform supporter.
-	SUPPORTER,   ## Channel supporter.
-	# NOTE: Yes this is confusing. Hopefully it'll get fixed.
+	BROADCASTER,
+	MODERATOR,
+	ALTSTREAM_SUBSCRIBER,
+	CHANNEL_SUBSCRIBER,
+	FOLLOWER,
+	BOT,
 }
 
 class User:
-	var username     : String
-	var display_name : String # "author" in the API
-	var pronouns     : String
+	var channel_name : String ## Unique channel ID (all-lowercase).
+	var display_name : String ## Custom display name.
+	var pronouns     : String ## For example "She/Her", may be empty.
 	var roles        : Dictionary[Role, bool]
-	var badges       : Array[Role]
+	var badges       : Array[Role] # TODO: Add non-role badges.
 	var avatar_url   : String
-	var user_color   : Color
+	var color        : Color
 	func _to_string() -> String: return display_name
 
 class Message:
 	var id      : String
-	var text    : String
 	var sent_at : int
-	var reply_to_id           : String
-	var reply_to_username     : String
-	var reply_to_display_name : String
+	var author  : User   # may be null
+	var text    : String # may be empty
 	func _to_string() -> String: return text
