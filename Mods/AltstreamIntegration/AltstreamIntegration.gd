@@ -8,9 +8,9 @@ var has_initialized := false
 var status_label := Label.new()
 var connect_button := Button.new()
 
-func _ready() -> void:
-	var altstream = $AltstreamService
+@onready var altstream: AltstreamService = $AltstreamService
 
+func _ready() -> void:
 	altstream.connected.connect(func():
 		print_log("Connected!"))
 	altstream.connection_failed.connect(func(error: String):
@@ -40,30 +40,33 @@ func _ready() -> void:
 	channel_widget.text_submitted.connect(func(_text: String): altstream.channel = channel)
 	channel_widget.focus_exited  .connect(func(): altstream.channel = channel)
 
-func scene_init() -> void:
-	# This is called once when the mod is enabled, after settings have loaded,
-	# but also when the model is changed, which we don't care about.
-	if has_initialized: return
-	has_initialized = true
-
-	var altstream = $AltstreamService
+	# Wait until settings have been loaded, which happens after
+	# the node is added to the scene tree and `_ready` is called.
+	await get_tree().process_frame
 	altstream.channel = channel
 	if autoconnect: altstream.start()
 
 func _process(_delta: float) -> void:
-	match $AltstreamService.client.status:
+	var client := altstream.client
+	match client.status:
 		EventStreamClient.Status.CONNECTED:
 			status_label.text = "Status: ✅ Connected"
 			connect_button.text = "Disconnect"
 		EventStreamClient.Status.CONNECTING:
-			status_label.text = "Status: ⏳ Connecting ..."
+			if not client.is_reconnecting:
+				status_label.text = "Status: ⏳ Connecting ..."
+			elif client.reconnection_delay <= 0.0:
+				status_label.text = "Status: ♻️ Reconnecting ... (attempt #%d)" \
+								  % client.reconnection_attempt
+			else:
+				status_label.text = "Status: ♻️ Reconnecting ... (attempt #%d, in %ds)" \
+								  % [ client.reconnection_attempt, ceilf(client.reconnection_delay) ]
 			connect_button.text = "Disconnect"
 		EventStreamClient.Status.DISCONNECTED:
 			status_label.text = "Status: ❌ Disconnected"
 			connect_button.text = "Connect"
 
 func _on_connect_pressed() -> void:
-	var altstream = $AltstreamService
 	if altstream.client.status == EventStreamClient.Status.DISCONNECTED:
 		altstream.channel = channel
 		altstream.start()

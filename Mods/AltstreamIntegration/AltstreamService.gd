@@ -43,7 +43,7 @@ func stop() -> void:
 # Below you can find the implementation details.
 # You should not need to access this.
 
-var client = EventStreamClient.new()
+var client := EventStreamClient.new()
 
 func _init() -> void:
 	client.connected.connect(connected.emit)

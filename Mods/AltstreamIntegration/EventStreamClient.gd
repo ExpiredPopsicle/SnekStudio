@@ -20,6 +20,18 @@ var headers: Dictionary[String, String] = {
 	"User-Agent" = "SnekStudio/" + ProjectSettings.get_setting("application/config/version"),
 }
 
+var reconnect := true
+var reconnect_attempts := 20
+var reconnect_delay_min :=  2.0 # seconds
+var reconnect_delay_max := 30.0 # seconds
+
+var is_reconnecting: bool:
+	get: return _reconnect_at > 0.0
+var reconnection_attempt: int:
+	get: return _reconnect_counter
+var reconnection_delay: float: ## Seconds until next reconnection attempt.
+	get: return maxf(0.0, _reconnect_at - Time.get_ticks_msec() / 1000.0)
+
 @warning_ignore("shadowed_variable")
 func connect_to_host(host: String, endpoint: String) -> void:
 	self.host     = host
@@ -29,7 +41,9 @@ func connect_to_host(host: String, endpoint: String) -> void:
 	status = Status.CONNECTING
 	var err := _http.connect_to_host(host)
 	if err: return _on_disconnected("error during connect: " + error_string(err))
-	# TODO: Automatically attempt to reconnect?
+
+	_reconnect_at = 0.0
+	_reconnect_counter = 0
 
 func close() -> void:
 	_on_disconnected()
@@ -39,16 +53,27 @@ var _http := HTTPClient.new()
 var _request_sent := false
 var _buffer: PackedByteArray
 
+var _reconnect_at := 0.0
+var _reconnect_counter := 0
+
 func poll() -> void:
 	if status == Status.DISCONNECTED: return
+
+	if is_reconnecting and (_http.get_status() == HTTPClient.STATUS_DISCONNECTED):
+		if reconnection_delay > 0.0: return # wait before reconnecting
+		var err := _http.connect_to_host(host)
+		if err: return _on_disconnected("error during reconnect: " + error_string(err))
+
 	_http.poll() # ignore error, handle via status
 	match _http.get_status():
-		HTTPClient.STATUS_DISCONNECTED: return _on_disconnected()
+		# Clean disconnect by server, but we probably still want to reconnect?
+		# If the server wants to reject our connection, it'll send a non-OK status code.
+		HTTPClient.STATUS_DISCONNECTED: return _on_disconnected("", true)
 		HTTPClient.STATUS_RESOLVING: pass
-		HTTPClient.STATUS_CANT_RESOLVE: return _on_disconnected("cant resolve")
-		HTTPClient.STATUS_CANT_CONNECT: return _on_disconnected("cant connect")
-		HTTPClient.STATUS_CONNECTION_ERROR: return _on_disconnected("connection error")
-		HTTPClient.STATUS_TLS_HANDSHAKE_ERROR: return _on_disconnected("tls handshake error")
+		HTTPClient.STATUS_CANT_RESOLVE: return _on_disconnected("cant resolve", true)
+		HTTPClient.STATUS_CANT_CONNECT: return _on_disconnected("cant connect", true)
+		HTTPClient.STATUS_CONNECTION_ERROR: return _on_disconnected("connection error", true)
+		HTTPClient.STATUS_TLS_HANDSHAKE_ERROR: return _on_disconnected("tls handshake error", true)
 
 		HTTPClient.STATUS_CONNECTED:
 			# After we send our request we should enter `STATUS_REQUESTING` and then stay
@@ -66,10 +91,14 @@ func poll() -> void:
 
 		HTTPClient.STATUS_BODY:
 			var code := _http.get_response_code()
-			if code != 200: return _on_disconnected("status code: " + str(code))
+			if code != 200: return _on_disconnected("status code: " + str(code)) # don't attempt to reconnect?
 
 			# Successfully established an event stream, so consider ourselves connected now!
-			if status != Status.CONNECTED: status = Status.CONNECTED; connected.emit()
+			if status != Status.CONNECTED:
+				status = Status.CONNECTED
+				connected.emit() # at this point, `is_reconnecting` may still return true
+				_reconnect_at = 0.0
+				_reconnect_counter = 0
 
 			var chunk := _http.read_response_body_chunk()
 			if chunk.is_empty(): return
@@ -82,14 +111,25 @@ func poll() -> void:
 				_buffer = _buffer.slice(i + 2)
 				_process_message(message)
 
-func _on_disconnected(error_message := "") -> void:
+func _on_disconnected(error_message := "", attempt_reconnect := false) -> void:
 	if status == Status.DISCONNECTED: return
 	var was_connected := (status == Status.CONNECTED)
 
-	status = Status.DISCONNECTED
 	_http.close()
 	_request_sent = false
 	_buffer.clear()
+
+	if attempt_reconnect and (_reconnect_counter < reconnect_attempts):
+		status = Status.CONNECTING
+		var current_time   := Time.get_ticks_msec() / 1000.0
+		var delay_uncapped := reconnect_delay_min * pow(2, _reconnect_counter)
+		var delay_capped   := minf(reconnect_delay_max, delay_uncapped)
+		_reconnect_at = current_time + delay_capped
+		_reconnect_counter += 1
+	else:
+		status = Status.DISCONNECTED
+		_reconnect_at = 0.0
+		_reconnect_counter = 0
 
 	if was_connected: disconnected.emit(error_message)
 	else: connection_failed.emit(error_message)
