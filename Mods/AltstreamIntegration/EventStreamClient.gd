@@ -15,6 +15,10 @@ signal event_received(event: String, data: String)
 var status := Status.DISCONNECTED
 var host: String
 var endpoint: String
+var headers: Dictionary[String, String] = {
+	"Accept" = "text/event-stream",
+	"User-Agent" = "SnekStudio/" + ProjectSettings.get_setting("application/config/version"),
+}
 
 @warning_ignore("shadowed_variable")
 func connect_to_host(host: String, endpoint: String) -> void:
@@ -51,7 +55,9 @@ func poll() -> void:
 			# in `STATUS_BODY` for the remainder of the session, receiving event messages.
 			if _request_sent: return _on_disconnected("unexpectedly entered STATUS_CONNECTED again")
 
-			var err := _http.request(HTTPClient.METHOD_GET, endpoint, [ "Accept: text/event-stream" ])
+			var headers_list: PackedStringArray
+			for name in headers: headers_list.append(name + ": " + headers[name])
+			var err := _http.request(HTTPClient.METHOD_GET, endpoint, headers_list)
 			if err: return _on_disconnected("error during request: " + error_string(err))
 			_request_sent = true
 
